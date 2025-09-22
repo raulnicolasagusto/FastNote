@@ -1,19 +1,41 @@
-import { Stack, Link } from 'expo-router';
-
-import { Button } from '~/components/Button';
-import { Container } from '~/components/Container';
-import { ScreenContent } from '~/components/ScreenContent';
+import React from 'react';
+import { Stack, router } from 'expo-router';
+import { MainScreen } from '../components/layout/MainScreen';
+import { Note } from '../types';
 
 export default function Home() {
+  const handleNotePress = (note: Note) => {
+    // Navigate to note detail/edit screen
+    router.push({
+      pathname: '/note-detail',
+      params: { noteId: note.id },
+    });
+  };
+
+  const handleNewNotePress = () => {
+    // Navigate to new note screen
+    router.push('/new-note');
+  };
+
+  const handleSearchPress = () => {
+    // Navigate to search screen
+    router.push('/search');
+  };
+
+  const handleMenuPress = () => {
+    // Navigate to settings/menu screen
+    router.push('/settings');
+  };
+
   return (
     <>
-      <Stack.Screen options={{ title: 'Home' }} />
-      <Container>
-        <ScreenContent path="app/index.tsx" title="Home"></ScreenContent>
-        <Link href={{ pathname: '/details', params: { name: 'Dan' } }} asChild>
-          <Button title="Show Details" />
-        </Link>
-      </Container>
+      <Stack.Screen options={{ headerShown: false }} />
+      <MainScreen
+        onNotePress={handleNotePress}
+        onNewNotePress={handleNewNotePress}
+        onSearchPress={handleSearchPress}
+        onMenuPress={handleMenuPress}
+      />
     </>
   );
 }
