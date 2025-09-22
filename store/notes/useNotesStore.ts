@@ -17,6 +17,8 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
       id: StorageService.generateId(),
       createdAt: new Date(),
       updatedAt: new Date(),
+      isPinned: false,
+      isLocked: false,
     };
 
     const notes = [...get().notes, newNote];
@@ -41,6 +43,22 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   archiveNote: (id) => {
     const notes = get().notes.map((note) =>
       note.id === id ? { ...note, isArchived: true, updatedAt: new Date() } : note
+    );
+    set({ notes });
+    StorageService.saveNotes(notes);
+  },
+
+  togglePinNote: (id) => {
+    const notes = get().notes.map((note) =>
+      note.id === id ? { ...note, isPinned: !note.isPinned, updatedAt: new Date() } : note
+    );
+    set({ notes });
+    StorageService.saveNotes(notes);
+  },
+
+  toggleLockNote: (id) => {
+    const notes = get().notes.map((note) =>
+      note.id === id ? { ...note, isLocked: !note.isLocked, updatedAt: new Date() } : note
     );
     set({ notes });
     StorageService.saveNotes(notes);
@@ -116,10 +134,15 @@ export const useFilteredNotes = () => {
       );
     }
 
-    // Sort by updated date (newest first)
-    return filtered.sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    );
+    // Sort by pinned status first, then by updated date (newest first)
+    return filtered.sort((a, b) => {
+      // Pinned notes come first
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+
+      // If both pinned or both not pinned, sort by updated date
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
   });
 };
 

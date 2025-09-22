@@ -40,6 +40,8 @@ export default function NewNote() {
       type: 'text',
       images: [],
       isArchived: false,
+      isPinned: false,
+      isLocked: false,
     });
 
     router.back();

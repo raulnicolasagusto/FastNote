@@ -9,6 +9,8 @@ export interface Note {
   images: string[]; // Base64 encoded images
   checklistItems?: ChecklistItem[];
   isArchived: boolean;
+  isPinned: boolean; // For star functionality
+  isLocked: boolean; // For lock functionality
 }
 
 export interface ChecklistItem {
@@ -38,6 +40,8 @@ export interface NotesActions {
   updateNote: (id: string, updates: Partial<Note>) => void;
   deleteNote: (id: string) => void;
   archiveNote: (id: string) => void;
+  togglePinNote: (id: string) => void;
+  toggleLockNote: (id: string) => void;
   setCurrentCategory: (categoryId: string | null) => void;
   setSearchQuery: (query: string) => void;
   loadNotes: () => Promise<void>;

@@ -64,6 +64,20 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit }) => 
 
       {/* Category indicator dot */}
       <View style={[styles.categoryDot, { backgroundColor: note.category.color }]} />
+
+      {/* Pin indicator */}
+      {note.isPinned && (
+        <View style={styles.pinIndicator}>
+          <MaterialIcons name="star" size={16} color={COLORS.accent.orange} />
+        </View>
+      )}
+
+      {/* Lock indicator */}
+      {note.isLocked && (
+        <View style={styles.lockIndicator}>
+          <MaterialIcons name="lock" size={14} color={COLORS.accent.red} />
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -134,5 +148,31 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
+  },
+  pinIndicator: {
+    position: 'absolute',
+    top: SPACING.xs,
+    right: SPACING.xs,
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: 10,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  lockIndicator: {
+    position: 'absolute',
+    top: SPACING.xs,
+    left: SPACING.xs,
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: 8,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
 });

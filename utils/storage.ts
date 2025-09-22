@@ -90,6 +90,8 @@ export class StorageService {
         updatedAt: new Date('2022-07-28'),
         images: [],
         isArchived: false,
+        isPinned: false,
+        isLocked: false,
         checklistItems: [
           { id: this.generateId(), text: 'Oranges', completed: false, order: 0 },
           { id: this.generateId(), text: 'Eggs', completed: false, order: 1 },
@@ -108,6 +110,8 @@ export class StorageService {
         updatedAt: new Date('2022-07-28'),
         images: [],
         isArchived: false,
+        isPinned: false,
+        isLocked: false,
       },
       {
         id: this.generateId(),
@@ -120,6 +124,8 @@ export class StorageService {
         updatedAt: new Date('2022-07-28'),
         images: [],
         isArchived: false,
+        isPinned: false,
+        isLocked: false,
       },
       {
         id: this.generateId(),
@@ -132,6 +138,8 @@ export class StorageService {
         updatedAt: new Date('2022-07-28'),
         images: [],
         isArchived: false,
+        isPinned: false,
+        isLocked: false,
       },
       {
         id: this.generateId(),
@@ -143,6 +151,8 @@ export class StorageService {
         updatedAt: new Date('2022-07-28'),
         images: [],
         isArchived: false,
+        isPinned: false,
+        isLocked: false,
         checklistItems: [
           { id: this.generateId(), text: 'Go to the gym', completed: false, order: 0 },
           { id: this.generateId(), text: 'Work', completed: false, order: 1 },
@@ -159,6 +169,8 @@ export class StorageService {
         updatedAt: new Date('2022-07-28'),
         images: [],
         isArchived: false,
+        isPinned: false,
+        isLocked: false,
         checklistItems: [
           { id: this.generateId(), text: 'Mango', completed: false, order: 0 },
           { id: this.generateId(), text: 'Apples', completed: false, order: 1 },
