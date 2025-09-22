@@ -1,6 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, LAYOUT, SHADOWS } from '../../constants/theme';
 
 interface FloatingActionButtonProps {
@@ -8,9 +9,16 @@ interface FloatingActionButtonProps {
 }
 
 export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ onPress }) => {
+  const insets = useSafeAreaInsets();
+
   return (
     <TouchableOpacity
-      style={styles.fab}
+      style={[
+        styles.fab,
+        {
+          bottom: LAYOUT.fabMargin + (Platform.OS === 'android' ? insets.bottom : 0),
+        },
+      ]}
       onPress={onPress}
       activeOpacity={0.8}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -22,7 +30,6 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ onPr
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    bottom: LAYOUT.fabMargin,
     right: LAYOUT.fabMargin,
     width: LAYOUT.fabSize,
     height: LAYOUT.fabSize,

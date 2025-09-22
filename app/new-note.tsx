@@ -5,11 +5,12 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   Alert,
+  Platform,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import {
   DEFAULT_CATEGORIES,
@@ -56,8 +57,12 @@ export default function NewNote() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" backgroundColor={COLORS.background} />
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <StatusBar
+        style="dark"
+        backgroundColor={COLORS.background}
+        translucent={false}
+      />
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Background overlay */}

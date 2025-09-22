@@ -122,3 +122,89 @@ export const useFilteredNotes = () => {
     );
   });
 };
+
+// Helper function to format date for search
+const formatDateForSearch = (date: Date) => {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear().toString();
+
+  return {
+    ddmm: `${day}/${month}`, // 22/09
+    ddmmyyyy: `${day}/${month}/${year}`, // 22/09/2024
+    mmdd: `${month}/${day}`, // 09/22 (US format)
+    mmddyyyy: `${month}/${day}/${year}`, // 09/22/2024
+    yyyymmdd: `${year}/${month}/${day}`, // 2024/09/22
+    ddmmyy: `${day}/${month}/${year.slice(-2)}`, // 22/09/24
+    mmddyy: `${month}/${day}/${year.slice(-2)}`, // 09/22/24
+  };
+};
+
+// Search utility for advanced search functionality
+export const useSearchNotes = (query: string) => {
+  return useNotesStore((state) => {
+    if (!query.trim()) return [];
+
+    const searchTerm = query.toLowerCase();
+    const filtered = state.notes.filter((note) => {
+      if (note.isArchived) return false;
+
+      // Search in title (higher priority)
+      if (note.title.toLowerCase().includes(searchTerm)) return true;
+
+      // Search in content
+      if (note.content.toLowerCase().includes(searchTerm)) return true;
+
+      // Search in checklist items
+      if (note.checklistItems) {
+        const checklistMatch = note.checklistItems.some((item) =>
+          item.text.toLowerCase().includes(searchTerm)
+        );
+        if (checklistMatch) return true;
+      }
+
+      // Search in dates (both created and updated)
+      const createdDateFormats = formatDateForSearch(note.createdAt);
+      const updatedDateFormats = formatDateForSearch(note.updatedAt);
+
+      const dateSearchTerms = [
+        ...Object.values(createdDateFormats),
+        ...Object.values(updatedDateFormats),
+      ];
+
+      const dateMatch = dateSearchTerms.some((dateStr) =>
+        dateStr.toLowerCase().includes(searchTerm)
+      );
+
+      if (dateMatch) return true;
+
+      return false;
+    });
+
+    // Sort by relevance: title matches first, then date matches, then by updated date
+    return filtered.sort((a, b) => {
+      const aTitleMatch = a.title.toLowerCase().includes(searchTerm);
+      const bTitleMatch = b.title.toLowerCase().includes(searchTerm);
+
+      if (aTitleMatch && !bTitleMatch) return -1;
+      if (!aTitleMatch && bTitleMatch) return 1;
+
+      // Check for date matches as second priority
+      const aDateFormats = formatDateForSearch(a.createdAt);
+      const bDateFormats = formatDateForSearch(b.createdAt);
+
+      const aDateMatch = Object.values(aDateFormats).some((dateStr) =>
+        dateStr.toLowerCase().includes(searchTerm)
+      );
+      const bDateMatch = Object.values(bDateFormats).some((dateStr) =>
+        dateStr.toLowerCase().includes(searchTerm)
+      );
+
+      if (aDateMatch && !bDateMatch) return -1;
+      if (!aDateMatch && bDateMatch) return 1;
+
+      // If both match or both don't, sort by updated date
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+  });
+};

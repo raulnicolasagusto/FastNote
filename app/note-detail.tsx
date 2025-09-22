@@ -5,10 +5,11 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
+  Platform,
 } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { Note } from '../types';
@@ -70,8 +71,12 @@ export default function NoteDetail() {
 
   if (!note) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="dark" backgroundColor={COLORS.background} />
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <StatusBar
+          style="dark"
+          backgroundColor={COLORS.background}
+          translucent={false}
+        />
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Note not found</Text>
@@ -84,8 +89,12 @@ export default function NoteDetail() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" backgroundColor={COLORS.background} />
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <StatusBar
+        style="dark"
+        backgroundColor={COLORS.background}
+        translucent={false}
+      />
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header */}

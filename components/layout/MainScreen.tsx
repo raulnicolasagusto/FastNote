@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from './Header';
 import { TabBar } from './TabBar';
 import { NotesGrid } from '../notes/NotesGrid';
@@ -42,8 +43,12 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" backgroundColor={COLORS.background} />
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar
+        style="dark"
+        backgroundColor={COLORS.background}
+        translucent={false}
+      />
 
       <Header title="Notes" onSearchPress={onSearchPress} onMenuPress={onMenuPress} />
 
@@ -54,6 +59,9 @@ export const MainScreen: React.FC<MainScreenProps> = ({
 
         <FloatingActionButton onPress={onNewNotePress} />
       </View>
+
+      {/* Add bottom safe area for Android navigation */}
+      <SafeAreaView style={styles.bottomSafeArea} edges={['bottom']} />
     </SafeAreaView>
   );
 };
@@ -66,5 +74,8 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     position: 'relative',
+  },
+  bottomSafeArea: {
+    backgroundColor: COLORS.background,
   },
 });
