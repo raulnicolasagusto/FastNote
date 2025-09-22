@@ -14,18 +14,19 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNotesStore } from '../store/notes/useNotesStore';
-import { Note } from '../types';
+import { Note, ChecklistItem } from '../types';
 import { COLORS, SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES } from '../constants/theme';
+import { StorageService } from '../utils/storage';
 
 export default function NoteDetail() {
   const { noteId } = useLocalSearchParams<{ noteId: string }>();
   const { notes, updateNote, togglePinNote, toggleLockNote } = useNotesStore();
   const [note, setNote] = useState<Note | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [editingElement, setEditingElement] = useState<'title' | 'content' | 'checklist' | null>(null);
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-  const [pressedElement, setPressedElement] = useState<'title' | 'content' | null>(null);
+  const [editedChecklistItems, setEditedChecklistItems] = useState<ChecklistItem[]>([]);
 
   useEffect(() => {
     if (noteId) {
@@ -34,27 +35,44 @@ export default function NoteDetail() {
       if (foundNote) {
         setEditedTitle(foundNote.title);
         setEditedContent(foundNote.content);
+        setEditedChecklistItems(foundNote.checklistItems || []);
       }
     }
   }, [noteId, notes]);
 
   const handleBack = () => {
-    if (isEditing) {
+    if (editingElement) {
       handleCancelEdit();
     } else {
       router.back();
     }
   };
 
-  const handleStartEditing = () => {
+  const handleStartTitleEdit = () => {
     if (!note) return;
-
     if (note.isLocked) {
       Alert.alert('Note Locked', 'This note is locked. Unlock it first to edit.');
       return;
     }
+    setEditingElement('title');
+  };
 
-    setIsEditing(true);
+  const handleStartContentEdit = () => {
+    if (!note) return;
+    if (note.isLocked) {
+      Alert.alert('Note Locked', 'This note is locked. Unlock it first to edit.');
+      return;
+    }
+    setEditingElement('content');
+  };
+
+  const handleStartChecklistEdit = () => {
+    if (!note) return;
+    if (note.isLocked) {
+      Alert.alert('Note Locked', 'This note is locked. Unlock it first to edit.');
+      return;
+    }
+    setEditingElement('checklist');
   };
 
   const handleSaveEdit = () => {
@@ -65,12 +83,15 @@ export default function NoteDetail() {
       return;
     }
 
-    updateNote(note.id, {
+    const updates: Partial<Note> = {
       title: editedTitle.trim(),
       content: editedContent.trim(),
-    });
+      checklistItems: editedChecklistItems,
+      type: editedChecklistItems.length > 0 ? 'checklist' : 'text',
+    };
 
-    setIsEditing(false);
+    updateNote(note.id, updates);
+    setEditingElement(null);
   };
 
   const handleCancelEdit = () => {
@@ -78,7 +99,8 @@ export default function NoteDetail() {
 
     setEditedTitle(note.title);
     setEditedContent(note.content);
-    setIsEditing(false);
+    setEditedChecklistItems(note.checklistItems || []);
+    setEditingElement(null);
   };
 
   const handleTogglePin = () => {
@@ -97,6 +119,52 @@ export default function NoteDetail() {
     setShowCategoryPicker(false);
   };
 
+  const addChecklistItem = (text: string = '') => {
+    const newItem: ChecklistItem = {
+      id: StorageService.generateId(),
+      text,
+      completed: false,
+      order: editedChecklistItems.length,
+    };
+    setEditedChecklistItems([...editedChecklistItems, newItem]);
+    return newItem;
+  };
+
+  const updateChecklistItem = (itemId: string, updates: Partial<ChecklistItem>) => {
+    if (!note) return;
+
+    // Update both the edited items and immediately save to the note
+    const updatedItems = note.checklistItems?.map(item =>
+      item.id === itemId ? { ...item, ...updates } : item
+    ) || [];
+
+    const updatedNote: Partial<Note> = {
+      checklistItems: updatedItems,
+    };
+
+    updateNote(note.id, updatedNote);
+    setEditedChecklistItems(updatedItems);
+  };
+
+  const removeChecklistItem = (itemId: string) => {
+    setEditedChecklistItems(items => items.filter(item => item.id !== itemId));
+  };
+
+  const handleChecklistItemSubmit = (itemId: string) => {
+    const currentIndex = editedChecklistItems.findIndex(item => item.id === itemId);
+    if (currentIndex !== -1) {
+      addChecklistItem();
+    }
+  };
+
+  const toggleChecklistMode = () => {
+    if (editedChecklistItems.length === 0) {
+      addChecklistItem();
+    }
+    setEditingElement('checklist');
+  };
+
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -108,22 +176,55 @@ export default function NoteDetail() {
   const renderContent = () => {
     if (!note) return null;
 
-    if (note.type === 'checklist' && note.checklistItems) {
-      return note.checklistItems.map((item, index) => (
-        <View key={item.id} style={styles.checklistItem}>
-          <Text style={styles.bullet}>•</Text>
-          <Text style={styles.checklistText}>{item.text}</Text>
+    // If note has checklist items, render them
+    if (note.checklistItems && note.checklistItems.length > 0) {
+      return (
+        <View>
+          {note.checklistItems.map((item) => (
+            <View key={item.id} style={styles.checklistItem}>
+              <TouchableOpacity
+                style={styles.checkboxDisplay}
+                onPress={() => {
+                  updateChecklistItem(item.id, { completed: !item.completed });
+                  handleStartChecklistEdit();
+                }}
+                activeOpacity={0.7}>
+                <MaterialIcons
+                  name={item.completed ? "check-box" : "check-box-outline-blank"}
+                  size={20}
+                  color={item.completed ? COLORS.accent.green : COLORS.textSecondary}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.checklistTextContainer}
+                onPress={handleStartChecklistEdit}
+                activeOpacity={1}>
+                <Text style={[styles.checklistText, item.completed && styles.completedText]}>
+                  {item.text}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ))}
         </View>
+      );
+    }
+
+    // If note has text content, render it
+    if (note.content && note.content.trim()) {
+      const paragraphs = note.content.split('\n').filter((p) => p.trim());
+      return paragraphs.map((paragraph, index) => (
+        <Text key={index} style={styles.contentText}>
+          {paragraph}
+        </Text>
       ));
     }
 
-    // Split content into paragraphs
-    const paragraphs = note.content.split('\n').filter((p) => p.trim());
-    return paragraphs.map((paragraph, index) => (
-      <Text key={index} style={styles.contentText}>
-        {paragraph}
+    // Empty state
+    return (
+      <Text style={styles.emptyText}>
+        Start writing or add a checklist...
       </Text>
-    ));
+    );
   };
 
   if (!note) {
@@ -161,7 +262,7 @@ export default function NoteDetail() {
           onPress={handleBack}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <MaterialIcons
-            name={isEditing ? "close" : "arrow-back"}
+            name={editingElement ? "close" : "arrow-back"}
             size={24}
             color={COLORS.textPrimary}
           />
@@ -175,7 +276,7 @@ export default function NoteDetail() {
               styles.categoryIndicator,
               { backgroundColor: note.category.color },
             ]}
-            disabled={note.isLocked && !isEditing}
+            disabled={note.isLocked && !editingElement}
           />
 
           {/* Star/Pin icon */}
@@ -202,8 +303,23 @@ export default function NoteDetail() {
             />
           </TouchableOpacity>
 
+
+          {/* Checklist icon - only show when not editing checklist */}
+          {!editingElement && (
+            <TouchableOpacity
+              style={styles.actionIcon}
+              onPress={toggleChecklistMode}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <MaterialIcons
+                name="checklist"
+                size={24}
+                color={note.checklistItems && note.checklistItems.length > 0 ? COLORS.accent.blue : COLORS.textSecondary}
+              />
+            </TouchableOpacity>
+          )}
+
           {/* Save icon - only show when editing */}
-          {isEditing && (
+          {editingElement && (
             <TouchableOpacity
               style={styles.actionIcon}
               onPress={handleSaveEdit}
@@ -223,13 +339,13 @@ export default function NoteDetail() {
         {/* Date and edit hint */}
         <View style={styles.dateContainer}>
           <Text style={styles.date}>{formatDate(note.createdAt)}</Text>
-          {!isEditing && !note.isLocked && (
+          {!editingElement && !note.isLocked && (
             <Text style={styles.editHint}>Tap to edit</Text>
           )}
         </View>
 
         {/* Title */}
-        {isEditing ? (
+        {editingElement === 'title' ? (
           <TextInput
             style={styles.titleInput}
             value={editedTitle}
@@ -242,22 +358,16 @@ export default function NoteDetail() {
           />
         ) : (
           <TouchableOpacity
-            onPress={handleStartEditing}
-            onPressIn={() => setPressedElement('title')}
-            onPressOut={() => setPressedElement(null)}
-            activeOpacity={0.7}>
-            <Text
-              style={[
-                styles.title,
-                pressedElement === 'title' && styles.pressedElement,
-              ]}>
+            onPress={handleStartTitleEdit}
+            activeOpacity={1}>
+            <Text style={styles.title}>
               {note.title}
             </Text>
           </TouchableOpacity>
         )}
 
         {/* Content */}
-        {isEditing ? (
+        {editingElement === 'content' ? (
           <TextInput
             style={styles.contentInput}
             value={editedContent}
@@ -266,18 +376,53 @@ export default function NoteDetail() {
             placeholderTextColor={COLORS.textSecondary}
             multiline
             textAlignVertical="top"
+            autoFocus
           />
+        ) : editingElement === 'checklist' ? (
+          <View style={styles.checklistContainer}>
+            {editedChecklistItems.map((item, index) => (
+              <View key={item.id} style={styles.checklistEditItem}>
+                <TouchableOpacity
+                  style={styles.checkbox}
+                  onPress={() => updateChecklistItem(item.id, { completed: !item.completed })}>
+                  <MaterialIcons
+                    name={item.completed ? "check-box" : "check-box-outline-blank"}
+                    size={20}
+                    color={item.completed ? COLORS.accent.green : COLORS.textSecondary}
+                  />
+                </TouchableOpacity>
+                <TextInput
+                  style={[
+                    styles.checklistInput,
+                    item.completed && styles.completedChecklistInput,
+                  ]}
+                  value={item.text}
+                  onChangeText={(text) => updateChecklistItem(item.id, { text })}
+                  placeholder="Add item..."
+                  placeholderTextColor={COLORS.textSecondary}
+                  onSubmitEditing={() => handleChecklistItemSubmit(item.id)}
+                  returnKeyType="next"
+                  autoFocus={index === editedChecklistItems.length - 1 && !item.text}
+                />
+                <TouchableOpacity
+                  style={styles.deleteItemButton}
+                  onPress={() => removeChecklistItem(item.id)}>
+                  <MaterialIcons name="close" size={16} color={COLORS.textSecondary} />
+                </TouchableOpacity>
+              </View>
+            ))}
+            <TouchableOpacity
+              style={styles.addItemButton}
+              onPress={() => addChecklistItem()}>
+              <MaterialIcons name="add" size={20} color={COLORS.accent.blue} />
+              <Text style={styles.addItemText}>Add item</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <TouchableOpacity
-            onPress={handleStartEditing}
-            onPressIn={() => setPressedElement('content')}
-            onPressOut={() => setPressedElement(null)}
-            activeOpacity={0.7}>
-            <View
-              style={[
-                styles.contentContainer,
-                pressedElement === 'content' && styles.pressedElement,
-              ]}>
+            onPress={handleStartContentEdit}
+            activeOpacity={1}>
+            <View style={styles.contentContainer}>
               {renderContent()}
             </View>
           </TouchableOpacity>
@@ -385,23 +530,6 @@ const styles = StyleSheet.create({
     lineHeight: TYPOGRAPHY.bodySize * 1.6,
     marginBottom: SPACING.md,
   },
-  checklistItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.sm,
-  },
-  bullet: {
-    fontSize: TYPOGRAPHY.bodySize + 2,
-    color: COLORS.textPrimary,
-    marginRight: SPACING.sm,
-    lineHeight: TYPOGRAPHY.bodySize * 1.6,
-  },
-  checklistText: {
-    fontSize: TYPOGRAPHY.bodySize + 2,
-    color: COLORS.textPrimary,
-    flex: 1,
-    lineHeight: TYPOGRAPHY.bodySize * 1.6,
-  },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -430,10 +558,7 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     lineHeight: 34,
     marginBottom: SPACING.xl,
-    borderWidth: 1,
-    borderColor: COLORS.textSecondary,
-    borderRadius: 8,
-    padding: SPACING.md,
+    padding: SPACING.xs,
     minHeight: 60,
   },
   contentInput: {
@@ -441,10 +566,7 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     lineHeight: TYPOGRAPHY.bodySize * 1.6,
     paddingBottom: SPACING.xl * 2,
-    borderWidth: 1,
-    borderColor: COLORS.textSecondary,
-    borderRadius: 8,
-    padding: SPACING.md,
+    padding: SPACING.xs,
     minHeight: 200,
   },
   modalOverlay: {
@@ -506,8 +628,77 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.bodySize,
     fontWeight: '600',
   },
-  pressedElement: {
-    backgroundColor: COLORS.textSecondary,
-    opacity: 0.1,
+  checklistItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  checkboxDisplay: {
+    marginRight: SPACING.sm,
+    padding: SPACING.xs,
+  },
+  checklistTextContainer: {
+    flex: 1,
+  },
+  checklistText: {
+    fontSize: TYPOGRAPHY.bodySize + 2,
+    color: COLORS.textPrimary,
+    lineHeight: TYPOGRAPHY.bodySize * 1.6,
+  },
+  completedText: {
+    textDecorationLine: 'line-through',
+    opacity: 0.6,
+  },
+  emptyText: {
+    fontSize: TYPOGRAPHY.bodySize,
+    color: COLORS.textSecondary,
+    opacity: 0.7,
+    fontStyle: 'italic',
+  },
+  checklistContainer: {
+    marginBottom: SPACING.xl,
+  },
+  checklistEditItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  checkbox: {
+    marginRight: SPACING.sm,
+    padding: SPACING.xs,
+  },
+  checklistInput: {
+    flex: 1,
+    fontSize: TYPOGRAPHY.bodySize,
+    color: COLORS.textPrimary,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.xs,
+    marginRight: SPACING.sm,
+  },
+  completedChecklistInput: {
+    textDecorationLine: 'line-through',
+    opacity: 0.6,
+  },
+  deleteItemButton: {
+    padding: SPACING.xs,
+  },
+  addItemButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.accent.blue,
+    borderRadius: 8,
+    borderStyle: 'dashed',
+    marginTop: SPACING.sm,
+  },
+  addItemText: {
+    marginLeft: SPACING.xs,
+    fontSize: TYPOGRAPHY.bodySize,
+    color: COLORS.accent.blue,
+    fontWeight: '500',
   },
 });
