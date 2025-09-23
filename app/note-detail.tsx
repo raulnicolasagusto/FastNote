@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ export default function NoteDetail() {
   const [editedContent, setEditedContent] = useState('');
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [editedChecklistItems, setEditedChecklistItems] = useState<ChecklistItem[]>([]);
+  const inputRefs = useRef<{ [key: string]: TextInput | null }>({});
 
   useEffect(() => {
     if (noteId) {
@@ -127,23 +128,33 @@ export default function NoteDetail() {
       order: editedChecklistItems.length,
     };
     setEditedChecklistItems([...editedChecklistItems, newItem]);
+
+    // Focus the new item after a short delay to ensure it's rendered
+    setTimeout(() => {
+      const inputRef = inputRefs.current[newItem.id];
+      if (inputRef) {
+        inputRef.focus();
+      }
+    }, 100);
+
     return newItem;
   };
 
   const updateChecklistItem = (itemId: string, updates: Partial<ChecklistItem>) => {
+    // Only update local state while editing, don't save to store until save button is pressed
+    setEditedChecklistItems(items =>
+      items.map(item => item.id === itemId ? { ...item, ...updates } : item)
+    );
+  };
+
+  const toggleCheckboxCompleted = (itemId: string) => {
     if (!note) return;
 
-    // Update both the edited items and immediately save to the note
     const updatedItems = note.checklistItems?.map(item =>
-      item.id === itemId ? { ...item, ...updates } : item
+      item.id === itemId ? { ...item, completed: !item.completed } : item
     ) || [];
 
-    const updatedNote: Partial<Note> = {
-      checklistItems: updatedItems,
-    };
-
-    updateNote(note.id, updatedNote);
-    setEditedChecklistItems(updatedItems);
+    updateNote(note.id, { checklistItems: updatedItems });
   };
 
   const removeChecklistItem = (itemId: string) => {
@@ -151,8 +162,8 @@ export default function NoteDetail() {
   };
 
   const handleChecklistItemSubmit = (itemId: string) => {
-    const currentIndex = editedChecklistItems.findIndex(item => item.id === itemId);
-    if (currentIndex !== -1) {
+    const currentItem = editedChecklistItems.find(item => item.id === itemId);
+    if (currentItem && currentItem.text.trim() !== '') {
       addChecklistItem();
     }
   };
@@ -184,10 +195,7 @@ export default function NoteDetail() {
             <View key={item.id} style={styles.checklistItem}>
               <TouchableOpacity
                 style={styles.checkboxDisplay}
-                onPress={() => {
-                  updateChecklistItem(item.id, { completed: !item.completed });
-                  handleStartChecklistEdit();
-                }}
+                onPress={() => toggleCheckboxCompleted(item.id)}
                 activeOpacity={0.7}>
                 <MaterialIcons
                   name={item.completed ? "check-box" : "check-box-outline-blank"}
@@ -392,6 +400,9 @@ export default function NoteDetail() {
                   />
                 </TouchableOpacity>
                 <TextInput
+                  ref={(ref) => {
+                    inputRefs.current[item.id] = ref;
+                  }}
                   style={[
                     styles.checklistInput,
                     item.completed && styles.completedChecklistInput,
@@ -403,6 +414,7 @@ export default function NoteDetail() {
                   onSubmitEditing={() => handleChecklistItemSubmit(item.id)}
                   returnKeyType="next"
                   autoFocus={index === editedChecklistItems.length - 1 && !item.text}
+                  blurOnSubmit={false}
                 />
                 <TouchableOpacity
                   style={styles.deleteItemButton}
