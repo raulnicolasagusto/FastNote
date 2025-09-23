@@ -13,6 +13,7 @@ import { COLORS } from '../../constants/theme';
 interface MainScreenProps {
   onNotePress: (note: Note) => void;
   onNewNotePress: () => void;
+  onVoiceNotePress: () => void;
   onSearchPress?: () => void;
   onMenuPress?: () => void;
 }
@@ -20,6 +21,7 @@ interface MainScreenProps {
 export const MainScreen: React.FC<MainScreenProps> = ({
   onNotePress,
   onNewNotePress,
+  onVoiceNotePress,
   onSearchPress,
   onMenuPress,
 }) => {
@@ -57,7 +59,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
       <View style={styles.content}>
         <NotesGrid notes={filteredNotes} onNotePress={onNotePress} onNoteEdit={handleNoteEdit} />
 
-        <FloatingActionButton onPress={onNewNotePress} />
+        <FloatingActionButton onNewNotePress={onNewNotePress} onVoiceNotePress={onVoiceNotePress} />
       </View>
 
       {/* Add bottom safe area for Android navigation */}
