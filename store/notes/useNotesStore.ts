@@ -24,6 +24,7 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     const notes = [...get().notes, newNote];
     set({ notes });
     StorageService.saveNotes(notes);
+    return newNote.id;
   },
 
   updateNote: (id, updates) => {

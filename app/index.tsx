@@ -26,8 +26,28 @@ export default function Home() {
   };
 
   const handleNewNotePress = () => {
-    // Navigate to new note screen
-    router.push('/new-note');
+    // Create new note directly with timestamp title
+    const noteTitle = generateNewNoteTitle();
+
+    const newNote: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> = {
+      title: noteTitle,
+      content: '',
+      type: 'text',
+      category: DEFAULT_CATEGORIES[0], // Default category
+      checklistItems: [],
+      images: [],
+      isArchived: false,
+      isPinned: false,
+      isLocked: false,
+    };
+
+    const noteId = addNote(newNote);
+
+    // Navigate directly to the note editor
+    router.push({
+      pathname: '/note-detail',
+      params: { noteId },
+    });
   };
 
   const handleVoiceNotePress = async () => {
@@ -221,6 +241,17 @@ export default function Home() {
     const minutes = now.getMinutes().toString().padStart(2, '0');
 
     return `Nota Rápida ${day}/${month}/${year} ${hours}:${minutes}`;
+  };
+
+  const generateNewNoteTitle = (): string => {
+    const now = new Date();
+    const day = now.getDate();
+    const month = now.getMonth() + 1; // getMonth() returns 0-11
+    const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+
+    return `Nueva Nota ${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
   const createVoiceNote = (transcribedText: string) => {

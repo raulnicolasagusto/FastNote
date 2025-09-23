@@ -36,7 +36,7 @@ export interface NotesState {
 }
 
 export interface NotesActions {
-  addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  addNote: (note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => string;
   updateNote: (id: string, updates: Partial<Note>) => void;
   deleteNote: (id: string) => void;
   archiveNote: (id: string) => void;
