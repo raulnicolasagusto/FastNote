@@ -87,11 +87,24 @@ export default function NoteDetail() {
       return;
     }
 
+    // Determine note type based on content
+    const hasText = editedContent.trim();
+    const hasChecklist = editedChecklistItems.length > 0;
+    let noteType: 'text' | 'checklist' | 'mixed' = 'text';
+
+    if (hasText && hasChecklist) {
+      noteType = 'mixed';
+    } else if (hasChecklist) {
+      noteType = 'checklist';
+    } else {
+      noteType = 'text';
+    }
+
     const updates: Partial<Note> = {
       title: editedTitle.trim(),
       content: editedContent.trim(),
       checklistItems: editedChecklistItems,
-      type: editedChecklistItems.length > 0 ? 'checklist' : 'text',
+      type: noteType,
     };
 
     updateNote(note.id, updates);
@@ -275,6 +288,8 @@ export default function NoteDetail() {
   const detectListKeywords = (text: string): boolean => {
     const lowerText = text.toLowerCase().trim();
     const listKeywords = [
+      'nueva lista',
+      'lista nueva',
       'lista de',
       'lista del',
       'lista para',
@@ -284,7 +299,8 @@ export default function NoteDetail() {
       'to do list',
       'lista de tareas',
       'checklist',
-      'check list'
+      'check list',
+      'new list'
     ];
 
     return listKeywords.some(keyword => lowerText.startsWith(keyword));
@@ -303,11 +319,14 @@ export default function NoteDetail() {
       'lista de tareas',
       'shopping list',
       'to do list',
+      'nueva lista',
+      'lista nueva',
       'lista del',
       'lista para',
       'lista de',
       'checklist',
-      'check list'
+      'check list',
+      'new list'
     ];
 
     // Find and remove the keyword
@@ -351,10 +370,16 @@ export default function NoteDetail() {
         const existingItems = note.checklistItems || [];
         const combinedItems = [...existingItems, ...newChecklistItems];
 
-        // Update the note to be a checklist
+        // Determine note type based on content
+        const hasText = note.content && note.content.trim();
+        const noteType = hasText ? 'mixed' : 'checklist';
+
+        // Update the note with new checklist items, preserving existing content
         const updates: Partial<Note> = {
-          type: 'checklist',
+          type: noteType,
           checklistItems: combinedItems,
+          // Preserve existing text content
+          content: note.content || '',
         };
 
         updateNote(note.id, updates);
@@ -366,13 +391,20 @@ export default function NoteDetail() {
       }
     }
 
-    // If not a list, insert as regular text (existing behavior)
+    // If not a list, insert as regular text
     const updatedContent = editedContent ? `${editedContent}\n\n${transcribedText}` : transcribedText;
     setEditedContent(updatedContent);
 
-    // Auto-save the transcribed text
+    // Determine note type based on content
+    const hasChecklist = note.checklistItems && note.checklistItems.length > 0;
+    const noteType = hasChecklist ? 'mixed' : 'text';
+
+    // Auto-save the transcribed text, preserving existing checklist
     const updates: Partial<Note> = {
+      type: noteType,
       content: updatedContent.trim(),
+      // Preserve existing checklist items
+      checklistItems: note.checklistItems || [],
     };
     updateNote(note.id, updates);
   };
@@ -389,51 +421,59 @@ export default function NoteDetail() {
   const renderContent = () => {
     if (!note) return null;
 
-    // If note has checklist items, render them
-    if (note.checklistItems && note.checklistItems.length > 0) {
+    const hasText = note.content && note.content.trim();
+    const hasChecklist = note.checklistItems && note.checklistItems.length > 0;
+
+    // If neither text nor checklist, show empty state
+    if (!hasText && !hasChecklist) {
       return (
-        <View>
-          {note.checklistItems.map((item) => (
-            <View key={item.id} style={styles.checklistItem}>
-              <TouchableOpacity
-                style={styles.checkboxDisplay}
-                onPress={() => toggleCheckboxCompleted(item.id)}
-                activeOpacity={0.7}>
-                <MaterialIcons
-                  name={item.completed ? "check-box" : "check-box-outline-blank"}
-                  size={20}
-                  color={item.completed ? COLORS.accent.green : COLORS.textSecondary}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.checklistTextContainer}
-                onPress={handleStartChecklistEdit}
-                activeOpacity={1}>
-                <Text style={[styles.checklistText, item.completed && styles.completedText]}>
-                  {item.text}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
+        <Text style={styles.emptyText}>
+          Start writing or add a checklist...
+        </Text>
       );
     }
 
-    // If note has text content, render it
-    if (note.content && note.content.trim()) {
-      const paragraphs = note.content.split('\n').filter((p) => p.trim());
-      return paragraphs.map((paragraph, index) => (
-        <Text key={index} style={styles.contentText}>
-          {paragraph}
-        </Text>
-      ));
-    }
-
-    // Empty state
     return (
-      <Text style={styles.emptyText}>
-        Start writing or add a checklist...
-      </Text>
+      <View>
+        {/* Render text content first if it exists */}
+        {hasText && (
+          <View style={styles.textSection}>
+            {note.content.split('\n').filter((p) => p.trim()).map((paragraph, index) => (
+              <Text key={index} style={styles.contentText}>
+                {paragraph}
+              </Text>
+            ))}
+          </View>
+        )}
+
+        {/* Render checklist items if they exist */}
+        {hasChecklist && (
+          <View style={[styles.checklistSection, hasText && styles.checklistWithText]}>
+            {note.checklistItems!.map((item) => (
+              <View key={item.id} style={styles.checklistItem}>
+                <TouchableOpacity
+                  style={styles.checkboxDisplay}
+                  onPress={() => toggleCheckboxCompleted(item.id)}
+                  activeOpacity={0.7}>
+                  <MaterialIcons
+                    name={item.completed ? "check-box" : "check-box-outline-blank"}
+                    size={20}
+                    color={item.completed ? COLORS.accent.green : COLORS.textSecondary}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.checklistTextContainer}
+                  onPress={handleStartChecklistEdit}
+                  activeOpacity={1}>
+                  <Text style={[styles.checklistText, item.completed && styles.completedText]}>
+                    {item.text}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
     );
   };
 
@@ -1005,5 +1045,17 @@ const styles = StyleSheet.create({
     color: COLORS.cardBackground,
     fontSize: TYPOGRAPHY.bodySize,
     fontWeight: '600',
+  },
+  textSection: {
+    marginBottom: SPACING.lg,
+  },
+  checklistSection: {
+    marginTop: 0,
+  },
+  checklistWithText: {
+    marginTop: SPACING.lg,
+    paddingTop: SPACING.lg,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.textSecondary + '33', // Adding transparency to color instead of opacity
   },
 });
