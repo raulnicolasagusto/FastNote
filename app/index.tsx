@@ -212,7 +212,20 @@ export default function Home() {
     }
   };
 
+  const generateVoiceNoteTitle = (): string => {
+    const now = new Date();
+    const day = now.getDate();
+    const month = now.getMonth() + 1; // getMonth() returns 0-11
+    const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+
+    return `Nota Rápida ${day}/${month}/${year} ${hours}:${minutes}`;
+  };
+
   const createVoiceNote = (transcribedText: string) => {
+    const noteTitle = generateVoiceNoteTitle();
+
     // Check if the transcribed text indicates a list
     if (detectListKeywords(transcribedText)) {
       // Convert to checklist
@@ -221,7 +234,7 @@ export default function Home() {
       if (checklistItems.length > 0) {
         // Create note with checklist
         const newNote: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> = {
-          title: 'Nota de voz rápida',
+          title: noteTitle,
           content: '',
           type: 'checklist',
           category: DEFAULT_CATEGORIES[0], // Default category
@@ -239,7 +252,7 @@ export default function Home() {
 
     // Create regular text note
     const newNote: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> = {
-      title: 'Nota de voz rápida',
+      title: noteTitle,
       content: transcribedText,
       type: 'text',
       category: DEFAULT_CATEGORIES[0], // Default category
