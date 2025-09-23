@@ -13,6 +13,7 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { Note, ChecklistItem } from '../types';
 import { COLORS, SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES } from '../constants/theme';
@@ -26,8 +27,11 @@ export default function NoteDetail() {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [showRecordingModal, setShowRecordingModal] = useState(false);
   const [editedChecklistItems, setEditedChecklistItems] = useState<ChecklistItem[]>([]);
   const inputRefs = useRef<{ [key: string]: TextInput | null }>({});
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
     if (noteId) {
@@ -175,6 +179,114 @@ export default function NoteDetail() {
     setEditingElement('checklist');
   };
 
+  const startRecording = async () => {
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status !== 'granted') {
+        Alert.alert('Permission Required', 'Microphone permission is required to record audio.');
+        return;
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording: newRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+
+      setRecording(newRecording);
+      setIsRecording(true);
+    } catch (err) {
+      console.error('Failed to start recording', err);
+      Alert.alert('Error', 'Failed to start recording. Please try again.');
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!recording) return;
+
+    try {
+      await recording.stopAndUnloadAsync();
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+
+      const uri = recording.getURI();
+      setIsRecording(false);
+
+      if (uri) {
+        await transcribeAudio(uri);
+      }
+    } catch (err) {
+      console.error('Failed to stop recording', err);
+      Alert.alert('Error', 'Failed to stop recording. Please try again.');
+    }
+  };
+
+  const cancelRecording = async () => {
+    if (recording) {
+      await recording.stopAndUnloadAsync();
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+      setRecording(null);
+    }
+    setIsRecording(false);
+    setShowRecordingModal(false);
+  };
+
+  const transcribeAudio = async (audioUri: string) => {
+    try {
+      if (!process.env.EXPO_PUBLIC_OPENAI_API_KEY) {
+        Alert.alert('Error', 'OpenAI API key not found. Please check your configuration.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', {
+        uri: audioUri,
+        type: 'audio/m4a',
+        name: 'recording.m4a',
+      } as any);
+      formData.append('model', 'whisper-1');
+
+      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.text) {
+        insertTranscribedText(result.text);
+      } else {
+        Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
+      }
+    } catch (error) {
+      console.error('Transcription error:', error);
+      Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
+    } finally {
+      setRecording(null);
+      setShowRecordingModal(false);
+    }
+  };
+
+  const insertTranscribedText = (transcribedText: string) => {
+    if (!note) return;
+
+    // Insert transcribed text into current content
+    const updatedContent = editedContent ? `${editedContent}\n\n${transcribedText}` : transcribedText;
+    setEditedContent(updatedContent);
+
+    // Auto-save the transcribed text
+    const updates: Partial<Note> = {
+      content: updatedContent.trim(),
+    };
+    updateNote(note.id, updates);
+  };
+
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -298,6 +410,23 @@ export default function NoteDetail() {
               color={note.isPinned ? COLORS.accent.orange : COLORS.textPrimary}
             />
           </TouchableOpacity>
+
+          {/* Microphone icon - only show when not editing */}
+          {!editingElement && !note.isLocked && (
+            <TouchableOpacity
+              style={styles.actionIcon}
+              onPress={() => {
+                setShowRecordingModal(true);
+                startRecording();
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <MaterialIcons
+                name="mic"
+                size={24}
+                color={COLORS.textPrimary}
+              />
+            </TouchableOpacity>
+          )}
 
           {/* Lock icon */}
           <TouchableOpacity
@@ -465,6 +594,42 @@ export default function NoteDetail() {
               onPress={() => setShowCategoryPicker(false)}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* Recording Modal */}
+      {showRecordingModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.recordingModal}>
+            <View style={styles.recordingIndicator}>
+              <MaterialIcons
+                name="mic"
+                size={48}
+                color={isRecording ? COLORS.accent.red : COLORS.textSecondary}
+              />
+              <Text style={styles.recordingText}>
+                {isRecording ? 'Recording...' : 'Transcribing...'}
+              </Text>
+            </View>
+
+            <View style={styles.recordingActions}>
+              <TouchableOpacity
+                style={[styles.recordingButton, styles.cancelButton]}
+                onPress={cancelRecording}>
+                <MaterialIcons name="close" size={24} color={COLORS.cardBackground} />
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              {isRecording && (
+                <TouchableOpacity
+                  style={[styles.recordingButton, styles.confirmButton]}
+                  onPress={stopRecording}>
+                  <MaterialIcons name="check" size={24} color={COLORS.cardBackground} />
+                  <Text style={styles.buttonText}>Stop & Transcribe</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </View>
       )}
@@ -712,5 +877,43 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.bodySize,
     color: COLORS.accent.blue,
     fontWeight: '500',
+  },
+  recordingModal: {
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: 16,
+    padding: SPACING.xl,
+    margin: SPACING.lg,
+    alignItems: 'center',
+    minWidth: 280,
+  },
+  recordingIndicator: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
+  },
+  recordingText: {
+    fontSize: TYPOGRAPHY.titleSize,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginTop: SPACING.md,
+  },
+  recordingActions: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+  },
+  recordingButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderRadius: 8,
+    gap: SPACING.xs,
+  },
+  confirmButton: {
+    backgroundColor: COLORS.accent.green,
+  },
+  buttonText: {
+    color: COLORS.cardBackground,
+    fontSize: TYPOGRAPHY.bodySize,
+    fontWeight: '600',
   },
 });
