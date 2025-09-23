@@ -437,13 +437,26 @@ export default function NoteDetail() {
       <View>
         {/* Render text content first if it exists */}
         {hasText && (
-          <View style={styles.textSection}>
+          <TouchableOpacity
+            style={styles.textSection}
+            onPress={handleStartContentEdit}
+            activeOpacity={1}>
             {note.content.split('\n').filter((p) => p.trim()).map((paragraph, index) => (
               <Text key={index} style={styles.contentText}>
                 {paragraph}
               </Text>
             ))}
-          </View>
+          </TouchableOpacity>
+        )}
+
+        {/* Text placeholder when no text but has checklist */}
+        {!hasText && hasChecklist && (
+          <TouchableOpacity
+            style={styles.textPlaceholder}
+            onPress={handleStartContentEdit}
+            activeOpacity={1}>
+            <Text style={styles.placeholderText}>Tap to add text...</Text>
+          </TouchableOpacity>
         )}
 
         {/* Render checklist items if they exist */}
@@ -1057,5 +1070,16 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.lg,
     borderTopWidth: 1,
     borderTopColor: COLORS.textSecondary + '33', // Adding transparency to color instead of opacity
+  },
+  textPlaceholder: {
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xs,
+    marginBottom: SPACING.lg,
+  },
+  placeholderText: {
+    fontSize: TYPOGRAPHY.bodySize,
+    color: COLORS.textSecondary,
+    opacity: 0.6,
+    fontStyle: 'italic',
   },
 });
