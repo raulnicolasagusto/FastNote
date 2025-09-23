@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Platform,
   Alert,
 } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
@@ -273,10 +272,101 @@ export default function NoteDetail() {
     }
   };
 
+  const detectListKeywords = (text: string): boolean => {
+    const lowerText = text.toLowerCase().trim();
+    const listKeywords = [
+      'lista de',
+      'lista del',
+      'lista para',
+      'lista de compras',
+      'lista de supermercado',
+      'shopping list',
+      'to do list',
+      'lista de tareas',
+      'checklist',
+      'check list'
+    ];
+
+    return listKeywords.some(keyword => lowerText.startsWith(keyword));
+  };
+
+  const parseTextToChecklistItems = (text: string): ChecklistItem[] => {
+    const items: ChecklistItem[] = [];
+
+    // Remove the list keyword from the beginning
+    let cleanText = text;
+    const lowerText = text.toLowerCase();
+
+    const listKeywords = [
+      'lista de supermercado',
+      'lista de compras',
+      'lista de tareas',
+      'shopping list',
+      'to do list',
+      'lista del',
+      'lista para',
+      'lista de',
+      'checklist',
+      'check list'
+    ];
+
+    // Find and remove the keyword
+    for (const keyword of listKeywords) {
+      if (lowerText.startsWith(keyword.toLowerCase())) {
+        cleanText = text.substring(keyword.length).trim();
+        break;
+      }
+    }
+
+    // Split by common separators and clean up
+    const separators = /[,;\.]\s+|\s+y\s+|\s+and\s+/i;
+    const rawItems = cleanText.split(separators);
+
+    rawItems.forEach((item, index) => {
+      const trimmedItem = item.trim();
+      if (trimmedItem) {
+        const checklistItem: ChecklistItem = {
+          id: StorageService.generateId(),
+          text: trimmedItem,
+          completed: false,
+          order: index,
+        };
+        items.push(checklistItem);
+      }
+    });
+
+    return items;
+  };
+
   const insertTranscribedText = (transcribedText: string) => {
     if (!note) return;
 
-    // Insert transcribed text into current content
+    // Check if the transcribed text indicates a list
+    if (detectListKeywords(transcribedText)) {
+      // Convert to checklist
+      const newChecklistItems = parseTextToChecklistItems(transcribedText);
+
+      if (newChecklistItems.length > 0) {
+        // Combine existing checklist items with new ones
+        const existingItems = note.checklistItems || [];
+        const combinedItems = [...existingItems, ...newChecklistItems];
+
+        // Update the note to be a checklist
+        const updates: Partial<Note> = {
+          type: 'checklist',
+          checklistItems: combinedItems,
+        };
+
+        updateNote(note.id, updates);
+        setEditedChecklistItems(combinedItems);
+
+        // Switch to checklist editing mode
+        setEditingElement('checklist');
+        return;
+      }
+    }
+
+    // If not a list, insert as regular text (existing behavior)
     const updatedContent = editedContent ? `${editedContent}\n\n${transcribedText}` : transcribedText;
     setEditedContent(updatedContent);
 
