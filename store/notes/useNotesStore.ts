@@ -66,6 +66,17 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     StorageService.saveNotes(notes);
   },
 
+  moveNoteToFolder: (noteId, folderId) => {
+    const notes = get().notes.map((note) => {
+      if (note.id === noteId) {
+        return { ...note, folderId, updatedAt: new Date() };
+      }
+      return note;
+    });
+    set({ notes });
+    StorageService.saveNotes(notes);
+  },
+
   setCurrentCategory: (categoryId) => {
     set({ currentCategory: categoryId });
   },
@@ -127,7 +138,8 @@ export const useFilteredNotes = () => {
     if (state.currentFolder && state.currentFolder !== 'all') {
       filtered = filtered.filter((note) => note.folderId === state.currentFolder);
     } else if (state.currentFolder === 'all') {
-      // Show all notes (no folder filtering)
+      // Show only notes that are not assigned to any specific folder
+      filtered = filtered.filter((note) => !note.folderId || note.folderId === undefined);
     }
 
     // Filter by category

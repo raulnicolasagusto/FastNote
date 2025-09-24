@@ -7,6 +7,7 @@ import { TabBar } from './TabBar';
 import { NotesGrid } from '../notes/NotesGrid';
 import { FloatingActionButton } from '../ui/FloatingActionButton';
 import BottomMenu from '../ui/BottomMenu';
+import MoveFolderModal from '../ui/MoveFolderModal';
 import { useNotesStore, useFilteredNotes } from '../../store/notes/useNotesStore';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { Note } from '../../types';
@@ -30,8 +31,10 @@ export const MainScreen: React.FC<MainScreenProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [noteToMove, setNoteToMove] = useState<Note | null>(null);
   const [showBottomMenu, setShowBottomMenu] = useState(false);
-  const { loadNotes, setCurrentCategory, setCurrentFolder, togglePinNote, archiveNote, deleteNote } = useNotesStore();
+  const [showMoveFolderModal, setShowMoveFolderModal] = useState(false);
+  const { loadNotes, setCurrentCategory, setCurrentFolder, togglePinNote, archiveNote, deleteNote, moveNoteToFolder } = useNotesStore();
   const { colors, isDarkMode } = useThemeStore();
   const filteredNotes = useFilteredNotes();
 
@@ -70,8 +73,23 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   };
 
   const handleMoveTo = () => {
-    // TODO: Implement move to folder functionality
-    console.log('Move to folder:', selectedNote?.title);
+    setNoteToMove(selectedNote);
+    setShowMoveFolderModal(true);
+  };
+
+  const handleSelectFolder = (folderId: string) => {
+    if (noteToMove) {
+      moveNoteToFolder(noteToMove.id, folderId);
+      setShowBottomMenu(false);
+      setShowMoveFolderModal(false);
+      setSelectedNote(null);
+      setNoteToMove(null);
+    }
+  };
+
+  const handleCloseMoveModal = () => {
+    setShowMoveFolderModal(false);
+    setNoteToMove(null);
   };
 
   const handleHide = () => {
@@ -124,6 +142,13 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         onHide={handleHide}
         onReminder={handleReminder}
         onDelete={handleDelete}
+      />
+
+      {/* Move Folder Modal */}
+      <MoveFolderModal
+        visible={showMoveFolderModal}
+        onClose={handleCloseMoveModal}
+        onSelectFolder={handleSelectFolder}
       />
 
     </SafeAreaView>

@@ -51,6 +51,7 @@ export interface NotesActions {
   archiveNote: (id: string) => void;
   togglePinNote: (id: string) => void;
   toggleLockNote: (id: string) => void;
+  moveNoteToFolder: (noteId: string, folderId: string) => void;
   setCurrentCategory: (categoryId: string | null) => void;
   setCurrentFolder: (folderId: string | null) => void;
   setSearchQuery: (query: string) => void;
