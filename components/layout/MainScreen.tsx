@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from './Header';
 import { TabBar } from './TabBar';
@@ -34,6 +35,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [pressedNoteId, setPressedNoteId] = useState<string | null>(null);
   const [noteToMove, setNoteToMove] = useState<Note | null>(null);
   const [showBottomMenu, setShowBottomMenu] = useState(false);
   const [showMoveFolderModal, setShowMoveFolderModal] = useState(false);
@@ -67,13 +69,18 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   };
 
   const handleNoteLongPress = (note: Note) => {
+    // Trigger haptic feedback
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
     setSelectedNote(note);
+    setPressedNoteId(note.id);
     setShowBottomMenu(true);
   };
 
   const handleCloseBottomMenu = () => {
     setShowBottomMenu(false);
     setSelectedNote(null);
+    setPressedNoteId(null);
   };
 
   const handlePin = () => {
@@ -168,6 +175,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
           onNotePress={onNotePress}
           onNoteEdit={handleNoteEdit}
           onNoteLongPress={handleNoteLongPress}
+          pressedNoteId={pressedNoteId}
         />
 
         <FloatingActionButton onNewNotePress={onNewNotePress} onVoiceNotePress={onVoiceNotePress} />

@@ -86,7 +86,7 @@ export default function BottomMenu({
     {
       id: 'reminder',
       icon: note?.reminderDate ? 'edit-notifications' : 'schedule',
-      label: note?.reminderDate ? 'Editar' : 'Recordatorio',
+      label: note?.reminderDate ? 'Editar' : 'Recordar',
       action: onReminder,
     },
     {
@@ -240,7 +240,8 @@ const styles = StyleSheet.create({
   menuButton: {
     alignItems: 'center',
     flex: 1,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xs,
   },
   iconContainer: {
     width: 48,

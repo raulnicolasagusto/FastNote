@@ -9,9 +9,10 @@ interface NotesGridProps {
   onNotePress: (note: Note) => void;
   onNoteEdit?: (note: Note) => void;
   onNoteLongPress?: (note: Note) => void;
+  pressedNoteId?: string | null;
 }
 
-export const NotesGrid: React.FC<NotesGridProps> = ({ notes, onNotePress, onNoteEdit, onNoteLongPress }) => {
+export const NotesGrid: React.FC<NotesGridProps> = ({ notes, onNotePress, onNoteEdit, onNoteLongPress, pressedNoteId }) => {
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = (screenWidth - SPACING.md * 2 - LAYOUT.gridGutter) / LAYOUT.gridColumns;
 
@@ -22,6 +23,7 @@ export const NotesGrid: React.FC<NotesGridProps> = ({ notes, onNotePress, onNote
         onPress={() => onNotePress(item)}
         onEdit={onNoteEdit ? () => onNoteEdit(item) : undefined}
         onLongPress={onNoteLongPress ? () => onNoteLongPress(item) : undefined}
+        isPressed={pressedNoteId === item.id}
       />
     </View>
   );

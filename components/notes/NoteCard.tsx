@@ -10,9 +10,10 @@ interface NoteCardProps {
   onPress: () => void;
   onEdit?: () => void;
   onLongPress?: () => void;
+  isPressed?: boolean;
 }
 
-export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLongPress }) => {
+export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLongPress, isPressed }) => {
   const { colors } = useThemeStore();
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-GB', {
@@ -49,7 +50,12 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.cardBackground }]}
+      style={[
+        styles.card,
+        { backgroundColor: colors.cardBackground },
+        isPressed && styles.pressedCard,
+        isPressed && { backgroundColor: colors.cardBackground + 'E0' }
+      ]}
       onPress={onPress}
       onLongPress={onLongPress}
       activeOpacity={0.7}>
@@ -104,6 +110,13 @@ const styles = StyleSheet.create({
     aspectRatio: 1 / 1.2, // Aspect ratio from design
     position: 'relative',
     ...SHADOWS.card,
+  },
+  pressedCard: {
+    transform: [{ scale: 0.95 }],
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   header: {
     marginBottom: SPACING.sm,
