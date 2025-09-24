@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useThemeStore } from '../store/theme/useThemeStore';
 
 interface CalloutData {
   id: string;
@@ -29,6 +30,7 @@ const CALLOUTS: CalloutData[] = [
 ];
 
 export const useCalloutRotation = () => {
+  const { calloutsEnabled } = useThemeStore();
   const [currentCallout, setCurrentCallout] = useState<CalloutData | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -66,8 +68,8 @@ export const useCalloutRotation = () => {
       // If all callouts are dismissed, don't show any
     };
 
-    // Only start showing callouts if there are non-dismissed ones
-    if (dismissedCallouts.size < CALLOUTS.length) {
+    // Only start showing callouts if they are enabled and there are non-dismissed ones
+    if (calloutsEnabled && dismissedCallouts.size < CALLOUTS.length) {
       // Show first callout after 5 seconds
       showTimer = setTimeout(showNextCallout, 5000);
 
@@ -79,8 +81,12 @@ export const useCalloutRotation = () => {
         clearTimeout(hideTimer);
         clearInterval(intervalTimer);
       };
+    } else if (!calloutsEnabled) {
+      // If callouts are disabled, hide any current callout
+      setIsVisible(false);
+      setCurrentCallout(null);
     }
-  }, [dismissedCallouts, currentIndex]);
+  }, [calloutsEnabled, dismissedCallouts, currentIndex]);
 
   const handleCloseCallout = () => {
     if (currentCallout) {

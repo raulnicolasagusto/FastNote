@@ -74,7 +74,7 @@ export default function Callout({ visible, message, iconName, keywords, onClose 
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 0,
+    top: 80,
     left: 0,
     right: 0,
     paddingHorizontal: SPACING.md,

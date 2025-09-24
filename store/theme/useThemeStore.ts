@@ -7,8 +7,10 @@ import { ColorScheme } from '../../types';
 interface ThemeState {
   isDarkMode: boolean;
   colors: ColorScheme;
+  calloutsEnabled: boolean;
   toggleTheme: () => void;
   setDarkMode: (isDark: boolean) => void;
+  toggleCallouts: () => void;
 }
 
 const store = create<ThemeState>()(
@@ -16,6 +18,7 @@ const store = create<ThemeState>()(
     (set) => ({
       isDarkMode: false,
       colors: LIGHT_COLORS,
+      calloutsEnabled: true,
       toggleTheme: () =>
         set((state) => ({
           isDarkMode: !state.isDarkMode,
@@ -25,6 +28,10 @@ const store = create<ThemeState>()(
         set(() => ({
           isDarkMode: isDark,
           colors: isDark ? DARK_COLORS : LIGHT_COLORS,
+        })),
+      toggleCallouts: () =>
+        set((state) => ({
+          calloutsEnabled: !state.calloutsEnabled,
         })),
     }),
     {
@@ -54,8 +61,10 @@ export const useThemeStore = () => {
     return {
       isDarkMode: false,
       colors: LIGHT_COLORS,
+      calloutsEnabled: true,
       toggleTheme: () => {},
       setDarkMode: () => {},
+      toggleCallouts: () => {},
     };
   }
 

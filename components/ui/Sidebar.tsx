@@ -17,7 +17,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ visible, onClose }: SidebarProps) {
-  const { isDarkMode, colors, toggleTheme } = useThemeStore();
+  const { isDarkMode, colors, calloutsEnabled, toggleTheme, toggleCallouts } = useThemeStore();
 
   return (
     <Modal
@@ -74,6 +74,34 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
                 true: colors.accent.blue
               }}
               thumbColor={isDarkMode ? colors.cardBackground : colors.cardBackground}
+            />
+          </View>
+
+          {/* Callouts Toggle */}
+          <View style={styles.settingItem}>
+            <View style={styles.settingInfo}>
+              <MaterialIcons
+                name="tips-and-updates"
+                size={24}
+                color={colors.textPrimary}
+              />
+              <View style={styles.settingText}>
+                <Text style={[styles.settingTitle, { color: colors.textPrimary }]}>
+                  Desactivar Tips
+                </Text>
+                <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>
+                  {calloutsEnabled ? 'Tips activados' : 'Tips desactivados'}
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={!calloutsEnabled}
+              onValueChange={toggleCallouts}
+              trackColor={{
+                false: colors.textSecondary,
+                true: colors.accent.red
+              }}
+              thumbColor={!calloutsEnabled ? colors.cardBackground : colors.cardBackground}
             />
           </View>
 
