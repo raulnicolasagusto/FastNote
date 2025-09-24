@@ -17,13 +17,15 @@ import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { File } from 'expo-file-system';
 import { useNotesStore } from '../store/notes/useNotesStore';
+import { useThemeStore } from '../store/theme/useThemeStore';
 import { Note, ChecklistItem } from '../types';
-import { COLORS, SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES } from '../constants/theme';
+import { SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES } from '../constants/theme';
 import { StorageService } from '../utils/storage';
 
 export default function NoteDetail() {
   const { noteId } = useLocalSearchParams<{ noteId: string }>();
   const { notes, updateNote, togglePinNote, toggleLockNote } = useNotesStore();
+  const { colors, isDarkMode } = useThemeStore();
   const [note, setNote] = useState<Note | null>(null);
   const [editingElement, setEditingElement] = useState<'title' | 'content' | 'checklist' | null>(null);
   const [editedTitle, setEditedTitle] = useState('');
@@ -518,7 +520,7 @@ export default function NoteDetail() {
     // If neither text nor checklist, show empty state
     if (!hasText && !hasChecklist) {
       return (
-        <Text style={styles.emptyText}>
+        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
           Start writing or add a checklist...
         </Text>
       );
@@ -533,7 +535,7 @@ export default function NoteDetail() {
             onPress={handleStartContentEdit}
             activeOpacity={1}>
             {note.content.split('\n').filter((p) => p.trim()).map((paragraph, index) => (
-              <Text key={index} style={styles.contentText}>
+              <Text key={index} style={[styles.contentText, { color: colors.textPrimary }]}>
                 {paragraph}
               </Text>
             ))}
@@ -546,13 +548,13 @@ export default function NoteDetail() {
             style={styles.textPlaceholder}
             onPress={handleStartContentEdit}
             activeOpacity={1}>
-            <Text style={styles.placeholderText}>Tap to add text...</Text>
+            <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>Tap to add text...</Text>
           </TouchableOpacity>
         )}
 
         {/* Render checklist items if they exist */}
         {hasChecklist && (
-          <View style={[styles.checklistSection, hasText && styles.checklistWithText]}>
+          <View style={[styles.checklistSection, hasText && styles.checklistWithText, hasText && { borderTopWidth: 1, borderTopColor: colors.textSecondary + '33' }]}>
             {note.checklistItems!.map((item) => (
               <View key={item.id} style={styles.checklistItem}>
                 <TouchableOpacity
@@ -562,14 +564,14 @@ export default function NoteDetail() {
                   <MaterialIcons
                     name={item.completed ? "check-box" : "check-box-outline-blank"}
                     size={20}
-                    color={item.completed ? COLORS.accent.green : COLORS.textSecondary}
+                    color={item.completed ? colors.accent.green : colors.textSecondary}
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.checklistTextContainer}
                   onPress={handleStartChecklistEdit}
                   activeOpacity={1}>
-                  <Text style={[styles.checklistText, item.completed && styles.completedText]}>
+                  <Text style={[styles.checklistText, { color: colors.textPrimary }, item.completed && styles.completedText]}>
                     {item.text}
                   </Text>
                 </TouchableOpacity>
@@ -586,7 +588,7 @@ export default function NoteDetail() {
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <StatusBar
           style="dark"
-          backgroundColor={COLORS.background}
+          backgroundColor={colors.background}
           translucent={false}
         />
         <Stack.Screen options={{ headerShown: false }} />
@@ -601,16 +603,16 @@ export default function NoteDetail() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <StatusBar
-        style="dark"
-        backgroundColor={COLORS.background}
+        style={isDarkMode ? "light" : "dark"}
+        backgroundColor={colors.background}
         translucent={false}
       />
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.cardBackground }]}>
         <TouchableOpacity
           style={styles.backIconButton}
           onPress={handleBack}
@@ -618,7 +620,7 @@ export default function NoteDetail() {
           <MaterialIcons
             name={editingElement ? "close" : "arrow-back"}
             size={24}
-            color={COLORS.textPrimary}
+            color={colors.textPrimary}
           />
         </TouchableOpacity>
 
@@ -641,7 +643,7 @@ export default function NoteDetail() {
             <MaterialIcons
               name={note.isPinned ? "star" : "star-border"}
               size={24}
-              color={note.isPinned ? COLORS.accent.orange : COLORS.textPrimary}
+              color={note.isPinned ? colors.accent.orange : colors.textPrimary}
             />
           </TouchableOpacity>
 
@@ -654,7 +656,7 @@ export default function NoteDetail() {
               <MaterialIcons
                 name="camera-alt"
                 size={24}
-                color={COLORS.textPrimary}
+                color={colors.textPrimary}
               />
             </TouchableOpacity>
           )}
@@ -671,7 +673,7 @@ export default function NoteDetail() {
               <MaterialIcons
                 name="mic"
                 size={24}
-                color={COLORS.textPrimary}
+                color={colors.textPrimary}
               />
             </TouchableOpacity>
           )}
@@ -684,7 +686,7 @@ export default function NoteDetail() {
             <MaterialIcons
               name={note.isLocked ? "lock" : "lock-open"}
               size={24}
-              color={note.isLocked ? COLORS.accent.red : COLORS.textPrimary}
+              color={note.isLocked ? colors.accent.red : colors.textPrimary}
             />
           </TouchableOpacity>
 
@@ -698,7 +700,7 @@ export default function NoteDetail() {
               <MaterialIcons
                 name="checklist"
                 size={24}
-                color={note.checklistItems && note.checklistItems.length > 0 ? COLORS.accent.blue : COLORS.textSecondary}
+                color={note.checklistItems && note.checklistItems.length > 0 ? colors.accent.blue : colors.textSecondary}
               />
             </TouchableOpacity>
           )}
@@ -712,7 +714,7 @@ export default function NoteDetail() {
               <MaterialIcons
                 name="check"
                 size={24}
-                color={COLORS.accent.green}
+                color={colors.accent.green}
               />
             </TouchableOpacity>
           )}
@@ -720,23 +722,23 @@ export default function NoteDetail() {
       </View>
 
       {/* Content */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={[styles.content, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
         {/* Date and edit hint */}
         <View style={styles.dateContainer}>
-          <Text style={styles.date}>{formatDate(note.createdAt)}</Text>
+          <Text style={[styles.date, { color: colors.textSecondary }]}>{formatDate(note.createdAt)}</Text>
           {!editingElement && !note.isLocked && (
-            <Text style={styles.editHint}>Tap to edit</Text>
+            <Text style={[styles.editHint, { color: colors.textSecondary }]}>Tap to edit</Text>
           )}
         </View>
 
         {/* Title */}
         {editingElement === 'title' ? (
           <TextInput
-            style={styles.titleInput}
+            style={[styles.titleInput, { color: colors.textPrimary, backgroundColor: colors.cardBackground, borderColor: colors.textPrimary }]}
             value={editedTitle}
             onChangeText={setEditedTitle}
             placeholder="Note title..."
-            placeholderTextColor={COLORS.textSecondary}
+            placeholderTextColor={colors.textSecondary}
             multiline
             maxLength={100}
             autoFocus
@@ -745,7 +747,7 @@ export default function NoteDetail() {
           <TouchableOpacity
             onPress={handleStartTitleEdit}
             activeOpacity={1}>
-            <Text style={styles.title}>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>
               {note.title}
             </Text>
           </TouchableOpacity>
@@ -754,11 +756,11 @@ export default function NoteDetail() {
         {/* Content */}
         {editingElement === 'content' ? (
           <TextInput
-            style={styles.contentInput}
+            style={[styles.contentInput, { color: colors.textPrimary, backgroundColor: colors.cardBackground, borderColor: colors.textSecondary }]}
             value={editedContent}
             onChangeText={setEditedContent}
             placeholder="Start writing..."
-            placeholderTextColor={COLORS.textSecondary}
+            placeholderTextColor={colors.textSecondary}
             multiline
             textAlignVertical="top"
             autoFocus
@@ -773,7 +775,7 @@ export default function NoteDetail() {
                   <MaterialIcons
                     name={item.completed ? "check-box" : "check-box-outline-blank"}
                     size={20}
-                    color={item.completed ? COLORS.accent.green : COLORS.textSecondary}
+                    color={item.completed ? colors.accent.green : colors.textSecondary}
                   />
                 </TouchableOpacity>
                 <TextInput
@@ -787,7 +789,7 @@ export default function NoteDetail() {
                   value={item.text}
                   onChangeText={(text) => updateChecklistItem(item.id, { text })}
                   placeholder="Add item..."
-                  placeholderTextColor={COLORS.textSecondary}
+                  placeholderTextColor={colors.textSecondary}
                   onSubmitEditing={() => handleChecklistItemSubmit(item.id)}
                   returnKeyType="next"
                   autoFocus={index === editedChecklistItems.length - 1 && !item.text}
@@ -796,14 +798,14 @@ export default function NoteDetail() {
                 <TouchableOpacity
                   style={styles.deleteItemButton}
                   onPress={() => removeChecklistItem(item.id)}>
-                  <MaterialIcons name="close" size={16} color={COLORS.textSecondary} />
+                  <MaterialIcons name="close" size={16} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
             ))}
             <TouchableOpacity
               style={styles.addItemButton}
               onPress={() => addChecklistItem()}>
-              <MaterialIcons name="add" size={20} color={COLORS.accent.blue} />
+              <MaterialIcons name="add" size={20} color={colors.accent.blue} />
               <Text style={styles.addItemText}>Add item</Text>
             </TouchableOpacity>
           </View>
@@ -854,7 +856,7 @@ export default function NoteDetail() {
               <MaterialIcons
                 name="camera-alt"
                 size={48}
-                color={isProcessingImage ? COLORS.accent.orange : COLORS.textPrimary}
+                color={isProcessingImage ? colors.accent.orange : colors.textPrimary}
               />
               <Text style={styles.recordingText}>
                 {isProcessingImage ? 'Processing Image...' : 'Scan Text from Image'}
@@ -866,7 +868,7 @@ export default function NoteDetail() {
                 style={[styles.recordingButton, styles.cancelButton]}
                 onPress={() => setShowCameraModal(false)}
                 disabled={isProcessingImage}>
-                <MaterialIcons name="close" size={16} color={COLORS.cardBackground} />
+                <MaterialIcons name="close" size={16} color={colors.cardBackground} />
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
 
@@ -874,15 +876,15 @@ export default function NoteDetail() {
                 style={[styles.recordingButton, styles.confirmButton]}
                 onPress={takePhotoAndProcess}
                 disabled={isProcessingImage}>
-                <MaterialIcons name="camera-alt" size={16} color={COLORS.cardBackground} />
+                <MaterialIcons name="camera-alt" size={16} color={colors.cardBackground} />
                 <Text style={styles.buttonText}>Take Photo</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.recordingButton, { backgroundColor: COLORS.accent.purple }]}
+                style={[styles.recordingButton, { backgroundColor: colors.accent.purple }]}
                 onPress={pickImageAndProcess}
                 disabled={isProcessingImage}>
-                <MaterialIcons name="photo" size={16} color={COLORS.cardBackground} />
+                <MaterialIcons name="photo" size={16} color={colors.cardBackground} />
                 <Text style={styles.buttonText}>Choose Image</Text>
               </TouchableOpacity>
             </View>
@@ -898,7 +900,7 @@ export default function NoteDetail() {
               <MaterialIcons
                 name="mic"
                 size={48}
-                color={isRecording ? COLORS.accent.red : COLORS.textSecondary}
+                color={isRecording ? colors.accent.red : colors.textSecondary}
               />
               <Text style={styles.recordingText}>
                 {isRecording ? 'Recording...' : 'Transcribing...'}
@@ -909,7 +911,7 @@ export default function NoteDetail() {
               <TouchableOpacity
                 style={[styles.recordingButton, styles.cancelButton]}
                 onPress={cancelRecording}>
-                <MaterialIcons name="close" size={24} color={COLORS.cardBackground} />
+                <MaterialIcons name="close" size={24} color={colors.cardBackground} />
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
 
@@ -917,7 +919,7 @@ export default function NoteDetail() {
                 <TouchableOpacity
                   style={[styles.recordingButton, styles.confirmButton]}
                   onPress={stopRecording}>
-                  <MaterialIcons name="check" size={24} color={COLORS.cardBackground} />
+                  <MaterialIcons name="check" size={24} color={colors.cardBackground} />
                   <Text style={styles.buttonText}>Stop & Transcribe</Text>
                 </TouchableOpacity>
               )}
@@ -932,7 +934,6 @@ export default function NoteDetail() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
@@ -970,19 +971,16 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: TYPOGRAPHY.dateSize,
-    color: COLORS.textSecondary,
     opacity: 0.5,
   },
   editHint: {
     fontSize: TYPOGRAPHY.dateSize - 1,
-    color: COLORS.textSecondary,
     opacity: 0.4,
     fontStyle: 'italic',
   },
   title: {
     fontSize: 28, // Large title as shown in design
     fontWeight: 'bold',
-    color: COLORS.textPrimary,
     lineHeight: 34,
     marginBottom: SPACING.xl,
     padding: SPACING.xs, // Add padding for better touch area
@@ -995,7 +993,6 @@ const styles = StyleSheet.create({
   },
   contentText: {
     fontSize: TYPOGRAPHY.bodySize + 2, // Slightly larger for reading
-    color: COLORS.textPrimary,
     lineHeight: TYPOGRAPHY.bodySize * 1.6,
     marginBottom: SPACING.md,
   },
@@ -1007,24 +1004,20 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: TYPOGRAPHY.titleSize,
-    color: COLORS.textSecondary,
     marginBottom: SPACING.lg,
   },
   backButton: {
-    backgroundColor: COLORS.accent.blue,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderRadius: 8,
   },
   backButtonText: {
-    color: COLORS.cardBackground,
     fontSize: TYPOGRAPHY.bodySize,
     fontWeight: '600',
   },
   titleInput: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: COLORS.textPrimary,
     lineHeight: 34,
     marginBottom: SPACING.xl,
     padding: SPACING.xs,
@@ -1032,7 +1025,6 @@ const styles = StyleSheet.create({
   },
   contentInput: {
     fontSize: TYPOGRAPHY.bodySize + 2,
-    color: COLORS.textPrimary,
     lineHeight: TYPOGRAPHY.bodySize * 1.6,
     paddingBottom: SPACING.xl * 2,
     padding: SPACING.xs,
@@ -1050,7 +1042,6 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   categoryModal: {
-    backgroundColor: COLORS.cardBackground,
     borderRadius: 16,
     padding: SPACING.xl,
     margin: SPACING.lg,
@@ -1060,7 +1051,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: TYPOGRAPHY.titleSize,
     fontWeight: 'bold',
-    color: COLORS.textPrimary,
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
@@ -1079,21 +1069,17 @@ const styles = StyleSheet.create({
   },
   selectedCategoryOption: {
     borderWidth: 3,
-    borderColor: COLORS.textPrimary,
   },
   categoryOptionText: {
-    color: COLORS.cardBackground,
     fontSize: TYPOGRAPHY.bodySize,
     fontWeight: '600',
   },
   cancelButton: {
-    backgroundColor: COLORS.textSecondary,
     padding: SPACING.md,
     borderRadius: 8,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: COLORS.cardBackground,
     fontSize: TYPOGRAPHY.bodySize,
     fontWeight: '600',
   },
@@ -1112,7 +1098,6 @@ const styles = StyleSheet.create({
   },
   checklistText: {
     fontSize: TYPOGRAPHY.bodySize + 2,
-    color: COLORS.textPrimary,
     lineHeight: TYPOGRAPHY.bodySize * 1.6,
   },
   completedText: {
@@ -1121,7 +1106,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.textSecondary,
     opacity: 0.7,
     fontStyle: 'italic',
   },
@@ -1141,7 +1125,6 @@ const styles = StyleSheet.create({
   checklistInput: {
     flex: 1,
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.textPrimary,
     paddingVertical: SPACING.xs,
     paddingHorizontal: SPACING.xs,
     marginRight: SPACING.sm,
@@ -1159,7 +1142,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.accent.blue,
     borderRadius: 8,
     borderStyle: 'dashed',
     marginTop: SPACING.sm,
@@ -1167,11 +1149,9 @@ const styles = StyleSheet.create({
   addItemText: {
     marginLeft: SPACING.xs,
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.accent.blue,
     fontWeight: '500',
   },
   recordingModal: {
-    backgroundColor: COLORS.cardBackground,
     borderRadius: 16,
     padding: SPACING.xl,
     marginHorizontal: SPACING.lg,
@@ -1186,7 +1166,6 @@ const styles = StyleSheet.create({
   recordingText: {
     fontSize: TYPOGRAPHY.titleSize,
     fontWeight: '600',
-    color: COLORS.textPrimary,
     marginTop: SPACING.md,
   },
   recordingActions: {
@@ -1209,10 +1188,8 @@ const styles = StyleSheet.create({
     maxWidth: 140,
   },
   confirmButton: {
-    backgroundColor: COLORS.accent.green,
   },
   buttonText: {
-    color: COLORS.cardBackground,
     fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
@@ -1226,8 +1203,7 @@ const styles = StyleSheet.create({
   checklistWithText: {
     marginTop: SPACING.lg,
     paddingTop: SPACING.lg,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.textSecondary + '33', // Adding transparency to color instead of opacity
+    borderTopWidth: 0, // Will be set dynamically
   },
   textPlaceholder: {
     paddingVertical: SPACING.md,
@@ -1236,7 +1212,6 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.textSecondary,
     opacity: 0.6,
     fontStyle: 'italic',
   },

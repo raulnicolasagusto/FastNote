@@ -8,12 +8,16 @@ import { Audio } from 'expo-av';
 import { MainScreen } from '../components/layout/MainScreen';
 import { Note, ChecklistItem } from '../types';
 import { useNotesStore } from '../store/notes/useNotesStore';
+import { useThemeStore } from '../store/theme/useThemeStore';
 import { StorageService } from '../utils/storage';
-import { COLORS, SPACING, TYPOGRAPHY, DEFAULT_CATEGORIES } from '../constants/theme';
+import { SPACING, TYPOGRAPHY, DEFAULT_CATEGORIES } from '../constants/theme';
+import Sidebar from '../components/ui/Sidebar';
 
 export default function Home() {
   const { addNote } = useNotesStore();
+  const { colors } = useThemeStore();
   const [showRecordingModal, setShowRecordingModal] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
 
@@ -61,8 +65,7 @@ export default function Home() {
   };
 
   const handleMenuPress = () => {
-    // Navigate to settings/menu screen (route not implemented yet)
-    // router.push('/settings');
+    setShowSidebar(true);
   };
 
   // Recording functions (copied from note-detail.tsx)
@@ -308,37 +311,42 @@ export default function Home() {
         onMenuPress={handleMenuPress}
       />
 
+      <Sidebar
+        visible={showSidebar}
+        onClose={() => setShowSidebar(false)}
+      />
+
       {/* Recording Modal */}
       {showRecordingModal && (
         <View style={styles.modalOverlay}>
           <StatusBar style="dark" backgroundColor="rgba(0, 0, 0, 0.5)" />
           <SafeAreaView style={styles.modalContainer}>
-            <View style={styles.recordingModal}>
+            <View style={[styles.recordingModal, { backgroundColor: colors.cardBackground }]}>
               <View style={styles.recordingIndicator}>
                 <MaterialIcons
                   name="mic"
                   size={48}
-                  color={isRecording ? COLORS.accent.red : COLORS.textSecondary}
+                  color={isRecording ? colors.accent.red : colors.textSecondary}
                 />
-                <Text style={styles.recordingText}>
+                <Text style={[styles.recordingText, { color: colors.textPrimary }]}>
                   {isRecording ? 'Recording...' : 'Transcribing...'}
                 </Text>
               </View>
 
               <View style={styles.recordingActions}>
                 <TouchableOpacity
-                  style={[styles.recordingButton, styles.cancelButton]}
+                  style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
                   onPress={cancelRecording}>
-                  <MaterialIcons name="close" size={24} color={COLORS.cardBackground} />
-                  <Text style={styles.buttonText}>Cancel</Text>
+                  <MaterialIcons name="close" size={24} color={colors.cardBackground} />
+                  <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Cancel</Text>
                 </TouchableOpacity>
 
                 {isRecording && (
                   <TouchableOpacity
-                    style={[styles.recordingButton, styles.confirmButton]}
+                    style={[styles.recordingButton, styles.confirmButton, { backgroundColor: colors.accent.green }]}
                     onPress={stopRecording}>
-                    <MaterialIcons name="check" size={24} color={COLORS.cardBackground} />
-                    <Text style={styles.buttonText}>Stop & Create Note</Text>
+                    <MaterialIcons name="check" size={24} color={colors.cardBackground} />
+                    <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Stop & Create Note</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -368,7 +376,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   recordingModal: {
-    backgroundColor: COLORS.cardBackground,
     borderRadius: 16,
     padding: SPACING.xl,
     margin: SPACING.lg,
@@ -382,7 +389,6 @@ const styles = StyleSheet.create({
   recordingText: {
     fontSize: TYPOGRAPHY.titleSize,
     fontWeight: '600',
-    color: COLORS.textPrimary,
     marginTop: SPACING.md,
   },
   recordingActions: {
@@ -398,13 +404,12 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   cancelButton: {
-    backgroundColor: COLORS.textSecondary,
+    backgroundColor: '#7F8C8D',
   },
   confirmButton: {
-    backgroundColor: COLORS.accent.green,
+    backgroundColor: '#27AE60',
   },
   buttonText: {
-    color: COLORS.cardBackground,
     fontSize: TYPOGRAPHY.bodySize,
     fontWeight: '600',
   },

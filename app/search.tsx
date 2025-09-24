@@ -14,12 +14,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { NotesGrid } from '../components/notes/NotesGrid';
 import { Note } from '../types';
-import { COLORS, SPACING, TYPOGRAPHY, LAYOUT } from '../constants/theme';
+import { SPACING, TYPOGRAPHY, LAYOUT } from '../constants/theme';
+import { useThemeStore } from '../store/theme/useThemeStore';
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const { notes } = useNotesStore();
+  const { colors, isDarkMode } = useThemeStore();
 
   // Helper function to format date for search
   const formatDateForSearch = (date: Date) => {
@@ -131,9 +133,9 @@ export default function Search() {
     if (searchQuery.trim() === '') {
       return (
         <View style={styles.emptyState}>
-          <MaterialIcons name="search" size={64} color={COLORS.textSecondary} />
-          <Text style={styles.emptyTitle}>Search Notes</Text>
-          <Text style={styles.emptyDescription}>
+          <MaterialIcons name="search" size={64} color={colors.textSecondary} />
+          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>Search Notes</Text>
+          <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
             Search by title, content, checklist items, or dates (e.g., &quot;22/9&quot;, &quot;22/09/2024&quot;)
           </Text>
         </View>
@@ -143,9 +145,9 @@ export default function Search() {
     if (filteredNotes.length === 0) {
       return (
         <View style={styles.emptyState}>
-          <MaterialIcons name="search-off" size={64} color={COLORS.textSecondary} />
-          <Text style={styles.emptyTitle}>No Results</Text>
-          <Text style={styles.emptyDescription}>
+          <MaterialIcons name="search-off" size={64} color={colors.textSecondary} />
+          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Results</Text>
+          <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
             No notes found for &quot;{searchQuery}&quot;. Try a different search term.
           </Text>
         </View>
@@ -156,34 +158,34 @@ export default function Search() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <StatusBar
         style="dark"
-        backgroundColor={COLORS.background}
+        backgroundColor={colors.background}
         translucent={false}
       />
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Search Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.background }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={handleBack}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <MaterialIcons name="arrow-back" size={24} color={COLORS.textPrimary} />
+          <MaterialIcons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
 
-        <View style={styles.searchContainer}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.cardBackground }]}>
           <MaterialIcons
             name="search"
             size={20}
-            color={COLORS.textSecondary}
+            color={colors.textSecondary}
             style={styles.searchIcon}
           />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.textPrimary }]}
             placeholder="Search notes..."
-            placeholderTextColor={COLORS.textSecondary}
+            placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
             autoFocus
@@ -194,7 +196,7 @@ export default function Search() {
               style={styles.clearButton}
               onPress={handleClear}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <MaterialIcons name="clear" size={20} color={COLORS.textSecondary} />
+              <MaterialIcons name="clear" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
         </View>
@@ -203,8 +205,8 @@ export default function Search() {
       {/* Results or Empty State */}
       <View style={styles.content}>
         {filteredNotes.length > 0 && (
-          <View style={styles.resultsHeader}>
-            <Text style={styles.resultsCount}>
+          <View style={[styles.resultsHeader, { borderBottomColor: colors.cardBackground }]}>
+            <Text style={[styles.resultsCount, { color: colors.textSecondary }]}>
               {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''} found
             </Text>
           </View>
@@ -226,7 +228,6 @@ export default function Search() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
@@ -234,7 +235,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     height: LAYOUT.headerHeight,
-    backgroundColor: COLORS.background,
   },
   backButton: {
     padding: SPACING.xs,
@@ -244,7 +244,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.cardBackground,
     borderRadius: 12,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
@@ -263,7 +262,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.textPrimary,
     paddingVertical: 0, // Remove default padding on Android
   },
   clearButton: {
@@ -277,11 +275,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.cardBackground,
   },
   resultsCount: {
     fontSize: TYPOGRAPHY.bodySize - 1,
-    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   emptyState: {
@@ -293,13 +289,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: TYPOGRAPHY.titleSize,
     fontWeight: 'bold',
-    color: COLORS.textPrimary,
     marginTop: SPACING.lg,
     marginBottom: SPACING.sm,
   },
   emptyDescription: {
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: TYPOGRAPHY.bodySize * 1.4,
   },

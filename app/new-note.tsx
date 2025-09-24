@@ -14,18 +14,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import {
   DEFAULT_CATEGORIES,
-  COLORS,
   SPACING,
   TYPOGRAPHY,
   BORDER_RADIUS,
   SHADOWS,
 } from '../constants/theme';
+import { useThemeStore } from '../store/theme/useThemeStore';
 
 export default function NewNote() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORIES[0]);
   const { addNote } = useNotesStore();
+  const { colors, isDarkMode } = useThemeStore();
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -59,10 +60,10 @@ export default function NewNote() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <StatusBar
-        style="dark"
-        backgroundColor={COLORS.background}
+        style={isDarkMode ? "light" : "dark"}
+        backgroundColor={colors.background}
         translucent={false}
       />
       <Stack.Screen options={{ headerShown: false }} />
@@ -70,10 +71,10 @@ export default function NewNote() {
       {/* Background overlay */}
       <View style={styles.overlay}>
         {/* Modal content */}
-        <View style={styles.modal}>
+        <View style={[styles.modal, { backgroundColor: colors.cardBackground }]}>
           {/* Category selector */}
           <View style={styles.categorySection}>
-            <Text style={styles.sectionLabel}>Add Label</Text>
+            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Add Label</Text>
             <View style={styles.categoryRow}>
               {DEFAULT_CATEGORIES.slice(0, 2).map((category) => (
                 <TouchableOpacity
@@ -91,8 +92,9 @@ export default function NewNote() {
 
           {/* Title input */}
           <TextInput
-            style={styles.titleInput}
+            style={[styles.titleInput, { borderColor: colors.textPrimary, color: colors.textPrimary }]}
             placeholder="Add Title"
+            placeholderTextColor={colors.textSecondary}
             value={title}
             onChangeText={setTitle}
             maxLength={100}
@@ -101,8 +103,9 @@ export default function NewNote() {
 
           {/* Content input */}
           <TextInput
-            style={styles.contentInput}
+            style={[styles.contentInput, { borderColor: colors.textSecondary, color: colors.textPrimary }]}
             placeholder="Add note details..."
+            placeholderTextColor={colors.textSecondary}
             value={content}
             onChangeText={setContent}
             multiline
@@ -111,11 +114,11 @@ export default function NewNote() {
 
           {/* Action buttons */}
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-              <Text style={styles.cancelText}>Cancel</Text>
+            <TouchableOpacity style={[styles.cancelButton, { borderColor: colors.textSecondary }]} onPress={handleCancel}>
+              <Text style={[styles.cancelText, { color: colors.textSecondary }]}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveText}>Save</Text>
+            <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.accent.blue }]} onPress={handleSave}>
+              <Text style={[styles.saveText, { color: colors.cardBackground }]}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -136,7 +139,6 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
   },
   modal: {
-    backgroundColor: COLORS.cardBackground,
     borderRadius: BORDER_RADIUS.card,
     padding: SPACING.lg,
     width: '100%',
@@ -149,7 +151,6 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.textSecondary,
     marginBottom: SPACING.sm,
   },
   categoryRow: {
@@ -164,22 +165,17 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   selectedCategory: {
-    borderColor: COLORS.textPrimary,
   },
   titleInput: {
     fontSize: TYPOGRAPHY.titleSize,
-    color: COLORS.textPrimary,
     borderWidth: 1,
-    borderColor: COLORS.textSecondary,
     borderRadius: BORDER_RADIUS.input,
     padding: SPACING.md,
     marginBottom: SPACING.md,
   },
   contentInput: {
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.textPrimary,
     borderWidth: 1,
-    borderColor: COLORS.textSecondary,
     borderRadius: BORDER_RADIUS.input,
     padding: SPACING.md,
     flex: 1,
@@ -196,7 +192,6 @@ const styles = StyleSheet.create({
     marginRight: SPACING.sm,
     borderRadius: BORDER_RADIUS.button,
     borderWidth: 1,
-    borderColor: COLORS.textSecondary,
     alignItems: 'center',
   },
   saveButton: {
@@ -204,17 +199,14 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     marginLeft: SPACING.sm,
     borderRadius: BORDER_RADIUS.button,
-    backgroundColor: COLORS.accent.blue,
     alignItems: 'center',
   },
   cancelText: {
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.textSecondary,
     fontWeight: '600',
   },
   saveText: {
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.cardBackground,
     fontWeight: '600',
   },
 });

@@ -7,8 +7,8 @@ import { TabBar } from './TabBar';
 import { NotesGrid } from '../notes/NotesGrid';
 import { FloatingActionButton } from '../ui/FloatingActionButton';
 import { useNotesStore, useFilteredNotes } from '../../store/notes/useNotesStore';
+import { useThemeStore } from '../../store/theme/useThemeStore';
 import { Note } from '../../types';
-import { COLORS } from '../../constants/theme';
 
 interface MainScreenProps {
   onNotePress: (note: Note) => void;
@@ -27,6 +27,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState('notes');
   const { loadNotes, setCurrentCategory } = useNotesStore();
+  const { colors, isDarkMode } = useThemeStore();
   const filteredNotes = useFilteredNotes();
 
   useEffect(() => {
@@ -45,10 +46,10 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <StatusBar
-        style="dark"
-        backgroundColor={COLORS.background}
+        style={isDarkMode ? "light" : "dark"}
+        backgroundColor={colors.background}
         translucent={false}
       />
 
@@ -63,7 +64,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
       </View>
 
       {/* Add bottom safe area for Android navigation */}
-      <SafeAreaView style={styles.bottomSafeArea} edges={['bottom']} />
+      <SafeAreaView style={[styles.bottomSafeArea, { backgroundColor: colors.background }]} edges={['bottom']} />
     </SafeAreaView>
   );
 };
@@ -71,13 +72,11 @@ export const MainScreen: React.FC<MainScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   content: {
     flex: 1,
     position: 'relative',
   },
   bottomSafeArea: {
-    backgroundColor: COLORS.background,
   },
 });

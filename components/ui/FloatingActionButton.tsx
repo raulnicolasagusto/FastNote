@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { TouchableOpacity, StyleSheet, Platform, View, Text, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, LAYOUT, SHADOWS, SPACING, TYPOGRAPHY } from '../../constants/theme';
+import { LAYOUT, SHADOWS, SPACING, TYPOGRAPHY } from '../../constants/theme';
+import { useThemeStore } from '../../store/theme/useThemeStore';
 
 interface FloatingActionButtonProps {
   onNewNotePress: () => void;
@@ -13,6 +14,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   onNewNotePress,
   onVoiceNotePress
 }) => {
+  const { colors } = useThemeStore();
   const insets = useSafeAreaInsets();
   const [showMenu, setShowMenu] = useState(false);
 
@@ -42,19 +44,19 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       {showMenu && (
         <View style={[styles.menuContainer, { bottom: fabBottom + LAYOUT.fabSize + SPACING.md }]}>
           <TouchableOpacity
-            style={styles.menuItem}
+            style={[styles.menuItem, { backgroundColor: colors.accent.blue }]}
             onPress={() => handleMenuItemPress(onVoiceNotePress)}
             activeOpacity={0.8}>
-            <MaterialIcons name="mic" size={20} color={COLORS.cardBackground} />
-            <Text style={styles.menuText}>Nota de voz rápida</Text>
+            <MaterialIcons name="mic" size={20} color={colors.cardBackground} />
+            <Text style={[styles.menuText, { color: colors.cardBackground }]}>Nota de voz rápida</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.menuItem}
+            style={[styles.menuItem, { backgroundColor: colors.accent.blue }]}
             onPress={() => handleMenuItemPress(onNewNotePress)}
             activeOpacity={0.8}>
-            <MaterialIcons name="edit" size={20} color={COLORS.cardBackground} />
-            <Text style={styles.menuText}>Nueva Nota</Text>
+            <MaterialIcons name="edit" size={20} color={colors.cardBackground} />
+            <Text style={[styles.menuText, { color: colors.cardBackground }]}>Nueva Nota</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -65,6 +67,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
           styles.fab,
           {
             bottom: fabBottom,
+            backgroundColor: colors.accent.blue,
           },
           showMenu && styles.fabRotated
         ]}
@@ -74,7 +77,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
         <MaterialIcons
           name={showMenu ? "close" : "add"}
           size={24}
-          color={COLORS.cardBackground}
+          color={colors.cardBackground}
         />
       </TouchableOpacity>
     </>
@@ -88,7 +91,6 @@ const styles = StyleSheet.create({
     width: LAYOUT.fabSize,
     height: LAYOUT.fabSize,
     borderRadius: LAYOUT.fabSize / 2,
-    backgroundColor: COLORS.accent.blue,
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOWS.fab,
@@ -113,7 +115,6 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.accent.blue,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderRadius: 25,
@@ -121,7 +122,6 @@ const styles = StyleSheet.create({
     ...SHADOWS.fab,
   },
   menuText: {
-    color: COLORS.cardBackground,
     fontSize: TYPOGRAPHY.bodySize,
     fontWeight: '600',
   },

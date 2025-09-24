@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { COLORS, SPACING, TYPOGRAPHY, LAYOUT, TAB_CATEGORIES } from '../../constants/theme';
+import { SPACING, TYPOGRAPHY, LAYOUT, TAB_CATEGORIES } from '../../constants/theme';
+import { useThemeStore } from '../../store/theme/useThemeStore';
 
 interface TabBarProps {
   activeTab: string;
@@ -8,8 +9,10 @@ interface TabBarProps {
 }
 
 export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabPress }) => {
+  const { colors } = useThemeStore();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background, borderBottomColor: colors.cardBackground }]}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -19,10 +22,10 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabPress }) => {
             key={tab.id}
             style={[styles.tab, activeTab === tab.id && styles.activeTab]}
             onPress={() => onTabPress(tab.id)}>
-            <Text style={[styles.tabText, activeTab === tab.id && styles.activeTabText]}>
+            <Text style={[styles.tabText, { color: colors.textSecondary }, activeTab === tab.id && { color: colors.textPrimary }]}>
               {tab.name}
             </Text>
-            {activeTab === tab.id && <View style={styles.indicator} />}
+            {activeTab === tab.id && <View style={[styles.indicator, { backgroundColor: colors.accent.blue }]} />}
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -33,9 +36,7 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabPress }) => {
 const styles = StyleSheet.create({
   container: {
     height: LAYOUT.tabHeight,
-    backgroundColor: COLORS.background,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.cardBackground,
   },
   scrollContent: {
     paddingHorizontal: SPACING.md,
@@ -55,11 +56,9 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: TYPOGRAPHY.bodySize,
-    color: COLORS.textSecondary,
     fontWeight: '500',
   },
   activeTabText: {
-    color: COLORS.textPrimary,
     fontWeight: '600',
   },
   indicator: {
@@ -68,7 +67,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: COLORS.accent.blue,
     borderRadius: 1,
   },
 });

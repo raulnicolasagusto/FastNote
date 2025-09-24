@@ -1,6 +1,6 @@
 import { ColorScheme, Spacing, Typography } from '../types';
 
-export const COLORS: ColorScheme = {
+export const LIGHT_COLORS: ColorScheme = {
   background: '#E5E9ED', // Soft gray-blue background from design
   cardBackground: '#FFFFFF',
   textPrimary: '#2C3E50', // Dark blue-gray
@@ -13,6 +13,23 @@ export const COLORS: ColorScheme = {
     red: '#E74C3C',
   },
 };
+
+export const DARK_COLORS: ColorScheme = {
+  background: '#1A1A1A', // Dark background
+  cardBackground: '#2D2D2D', // Dark card background
+  textPrimary: '#FFFFFF', // White text
+  textSecondary: '#A0A0A0', // Light gray secondary text
+  accent: {
+    orange: '#FF6B35',
+    blue: '#4A90E2',
+    green: '#27AE60',
+    purple: '#9B59B6',
+    red: '#E74C3C',
+  },
+};
+
+// Default to light theme
+export const COLORS = LIGHT_COLORS;
 
 export const SPACING: Spacing = {
   xs: 4,
@@ -64,32 +81,32 @@ export const DEFAULT_CATEGORIES = [
   {
     id: 'grocery',
     name: 'Grocery',
-    color: COLORS.accent.green,
+    color: '#27AE60',
   },
   {
     id: 'projects',
     name: 'Projects',
-    color: COLORS.accent.blue,
+    color: '#4A90E2',
   },
   {
     id: 'goals',
     name: 'Goals',
-    color: COLORS.accent.orange,
+    color: '#FF6B35',
   },
   {
     id: 'shopping',
     name: 'Shopping',
-    color: COLORS.accent.purple,
+    color: '#9B59B6',
   },
   {
     id: 'tennis',
     name: 'Tennis',
-    color: COLORS.accent.blue,
+    color: '#4A90E2',
   },
   {
     id: 'todo',
     name: 'To do list',
-    color: COLORS.accent.red,
+    color: '#E74C3C',
   },
 ];
 
