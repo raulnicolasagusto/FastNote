@@ -92,7 +92,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar
         style={isDarkMode ? "light" : "dark"}
         backgroundColor={colors.background}
@@ -126,8 +126,6 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         onDelete={handleDelete}
       />
 
-      {/* Add bottom safe area for Android navigation */}
-      <SafeAreaView style={[styles.bottomSafeArea, { backgroundColor: colors.background }]} edges={['bottom']} />
     </SafeAreaView>
   );
 };
@@ -139,7 +137,5 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     position: 'relative',
-  },
-  bottomSafeArea: {
   },
 });

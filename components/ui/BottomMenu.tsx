@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { Note } from '../../types';
@@ -44,6 +45,7 @@ export default function BottomMenu({
   onDelete,
 }: BottomMenuProps) {
   const { colors } = useThemeStore();
+  const insets = useSafeAreaInsets();
   const slideAnim = React.useState(new Animated.Value(0))[0];
 
   useEffect(() => {
@@ -113,7 +115,7 @@ export default function BottomMenu({
       transparent={true}
       visible={visible}
       onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <Animated.View style={[styles.overlay, { opacity }]}>
         {/* Backdrop */}
         <TouchableOpacity
           style={styles.backdrop}
@@ -129,7 +131,7 @@ export default function BottomMenu({
               backgroundColor: colors.cardBackground,
               borderTopColor: colors.textSecondary + '20',
               transform: [{ translateY }],
-              opacity,
+              paddingBottom: insets.bottom + SPACING.md, // Respetar la barra de navegación
             },
           ]}>
           {/* Handle bar */}
@@ -181,7 +183,7 @@ export default function BottomMenu({
             ))}
           </View>
         </Animated.View>
-      </View>
+      </Animated.View>
     </Modal>
   );
 }
@@ -190,16 +192,24 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   menuContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: SPACING.sm,
-    paddingBottom: SPACING.xl,
+    paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.lg,
     borderTopWidth: 1,
     shadowColor: '#000',
