@@ -134,7 +134,7 @@ export default function Search() {
           <MaterialIcons name="search" size={64} color={COLORS.textSecondary} />
           <Text style={styles.emptyTitle}>Search Notes</Text>
           <Text style={styles.emptyDescription}>
-            Search by title, content, checklist items, or dates (e.g., "22/9", "22/09/2024")
+            Search by title, content, checklist items, or dates (e.g., &quot;22/9&quot;, &quot;22/09/2024&quot;)
           </Text>
         </View>
       );
@@ -146,7 +146,7 @@ export default function Search() {
           <MaterialIcons name="search-off" size={64} color={COLORS.textSecondary} />
           <Text style={styles.emptyTitle}>No Results</Text>
           <Text style={styles.emptyDescription}>
-            No notes found for "{searchQuery}". Try a different search term.
+            No notes found for &quot;{searchQuery}&quot;. Try a different search term.
           </Text>
         </View>
       );

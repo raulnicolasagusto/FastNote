@@ -13,6 +13,9 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
+import { Camera } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import { File } from 'expo-file-system';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { Note, ChecklistItem } from '../types';
 import { COLORS, SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES } from '../constants/theme';
@@ -27,10 +30,12 @@ export default function NoteDetail() {
   const [editedContent, setEditedContent] = useState('');
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showRecordingModal, setShowRecordingModal] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
   const [editedChecklistItems, setEditedChecklistItems] = useState<ChecklistItem[]>([]);
   const inputRefs = useRef<{ [key: string]: TextInput | null }>({});
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
   useEffect(() => {
     if (noteId) {
@@ -357,6 +362,92 @@ export default function NoteDetail() {
     return items;
   };
 
+  const processImageForOCR = async (imageUri: string) => {
+    try {
+      setIsProcessingImage(true);
+
+      // Convert image to base64 using new File API
+      const file = new File(imageUri);
+      const base64Image = await file.base64();
+
+      // Use OCR.space free API (25,000 requests/month)
+      const formData = new FormData();
+      formData.append('base64Image', `data:image/jpeg;base64,${base64Image}`);
+      formData.append('language', 'spa'); // Spanish
+      formData.append('isOverlayRequired', 'false');
+      formData.append('apikey', 'helloworld'); // Free API key
+
+      const response = await fetch('https://api.ocr.space/parse/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.ParsedResults?.[0]?.ParsedText) {
+        const detectedText = result.ParsedResults[0].ParsedText.trim();
+
+        if (detectedText) {
+          insertTranscribedText(detectedText);
+          Alert.alert('Texto Reconocido', 'Texto extraído exitosamente de la imagen!');
+        } else {
+          Alert.alert('Sin Texto', 'No se detectó texto en la imagen. Intenta con una imagen más clara.');
+        }
+      } else {
+        Alert.alert('Sin Texto', 'No se detectó texto en la imagen. Intenta con una imagen más clara.');
+      }
+
+    } catch (error) {
+      console.error('OCR Error:', error);
+      Alert.alert('Error', 'Error al procesar la imagen. Verifica tu conexión a internet.');
+    } finally {
+      setIsProcessingImage(false);
+      setShowCameraModal(false);
+    }
+  };
+
+  const takePhotoAndProcess = async () => {
+    try {
+      const permission = await Camera.requestCameraPermissionsAsync();
+      if (permission.status !== 'granted') {
+        Alert.alert('Permission Required', 'Camera permission is required to scan text.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        await processImageForOCR(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Camera Error:', error);
+      Alert.alert('Error', 'Failed to access camera. Please try again.');
+    }
+  };
+
+  const pickImageAndProcess = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        await processImageForOCR(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Image Picker Error:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
+    }
+  };
+
   const insertTranscribedText = (transcribedText: string) => {
     if (!note) return;
 
@@ -554,6 +645,20 @@ export default function NoteDetail() {
             />
           </TouchableOpacity>
 
+          {/* Camera icon - only show when not editing */}
+          {!editingElement && !note.isLocked && (
+            <TouchableOpacity
+              style={styles.actionIcon}
+              onPress={() => setShowCameraModal(true)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <MaterialIcons
+                name="camera-alt"
+                size={24}
+                color={COLORS.textPrimary}
+              />
+            </TouchableOpacity>
+          )}
+
           {/* Microphone icon - only show when not editing */}
           {!editingElement && !note.isLocked && (
             <TouchableOpacity
@@ -737,6 +842,50 @@ export default function NoteDetail() {
               onPress={() => setShowCategoryPicker(false)}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* Camera Modal */}
+      {showCameraModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.recordingModal}>
+            <View style={styles.recordingIndicator}>
+              <MaterialIcons
+                name="camera-alt"
+                size={48}
+                color={isProcessingImage ? COLORS.accent.orange : COLORS.textPrimary}
+              />
+              <Text style={styles.recordingText}>
+                {isProcessingImage ? 'Processing Image...' : 'Scan Text from Image'}
+              </Text>
+            </View>
+
+            <View style={styles.recordingActions}>
+              <TouchableOpacity
+                style={[styles.recordingButton, styles.cancelButton]}
+                onPress={() => setShowCameraModal(false)}
+                disabled={isProcessingImage}>
+                <MaterialIcons name="close" size={24} color={COLORS.cardBackground} />
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.recordingButton, styles.confirmButton]}
+                onPress={takePhotoAndProcess}
+                disabled={isProcessingImage}>
+                <MaterialIcons name="camera-alt" size={24} color={COLORS.cardBackground} />
+                <Text style={styles.buttonText}>Take Photo</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.recordingButton, { backgroundColor: COLORS.accent.purple }]}
+                onPress={pickImageAndProcess}
+                disabled={isProcessingImage}>
+                <MaterialIcons name="photo" size={24} color={COLORS.cardBackground} />
+                <Text style={styles.buttonText}>Choose Image</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       )}
