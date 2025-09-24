@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { SPACING, TYPOGRAPHY, LAYOUT, TAB_CATEGORIES } from '../../constants/theme';
+import { SPACING, TYPOGRAPHY, LAYOUT } from '../../constants/theme';
 import { useThemeStore } from '../../store/theme/useThemeStore';
+import { useFoldersStore } from '../../store/folders/useFoldersStore';
 
 interface TabBarProps {
   activeTab: string;
@@ -10,6 +11,16 @@ interface TabBarProps {
 
 export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabPress }) => {
   const { colors } = useThemeStore();
+  const { folders } = useFoldersStore();
+
+  // Create tabs from folders, including "Todas" as the first option
+  const tabs = [
+    { id: 'all', name: 'Todas' },
+    ...folders.map((folder) => ({
+      id: folder.id,
+      name: folder.name,
+    })),
+  ];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, borderBottomColor: colors.cardBackground }]}>
@@ -17,7 +28,7 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabPress }) => {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
-        {TAB_CATEGORIES.map((tab) => (
+        {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.id}
             style={[styles.tab, activeTab === tab.id && styles.activeTab]}

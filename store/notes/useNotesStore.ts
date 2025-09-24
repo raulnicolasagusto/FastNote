@@ -7,6 +7,7 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   notes: [],
   categories: [],
   currentCategory: null,
+  currentFolder: null,
   searchQuery: '',
   isLoading: false,
 
@@ -69,6 +70,10 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     set({ currentCategory: categoryId });
   },
 
+  setCurrentFolder: (folderId) => {
+    set({ currentFolder: folderId });
+  },
+
   setSearchQuery: (query) => {
     set({ searchQuery: query });
   },
@@ -117,6 +122,13 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
 export const useFilteredNotes = () => {
   return useNotesStore((state) => {
     let filtered = state.notes.filter((note) => !note.isArchived);
+
+    // Filter by folder
+    if (state.currentFolder && state.currentFolder !== 'all') {
+      filtered = filtered.filter((note) => note.folderId === state.currentFolder);
+    } else if (state.currentFolder === 'all') {
+      // Show all notes (no folder filtering)
+    }
 
     // Filter by category
     if (state.currentCategory) {

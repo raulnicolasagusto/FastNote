@@ -27,19 +27,22 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   onMenuPress,
   onFoldersPress,
 }) => {
-  const [activeTab, setActiveTab] = useState('notes');
-  const { loadNotes, setCurrentCategory } = useNotesStore();
+  const [activeTab, setActiveTab] = useState('all');
+  const { loadNotes, setCurrentCategory, setCurrentFolder } = useNotesStore();
   const { colors, isDarkMode } = useThemeStore();
   const filteredNotes = useFilteredNotes();
 
   useEffect(() => {
     loadNotes();
-  }, [loadNotes]);
+    // Set default folder to "all"
+    setCurrentFolder('all');
+  }, [loadNotes, setCurrentFolder]);
 
   const handleTabPress = (tabId: string) => {
     setActiveTab(tabId);
-    // For now, we'll show all notes regardless of tab
-    // In a full implementation, you'd filter by category
+    // Filter by folder
+    setCurrentFolder(tabId);
+    // Clear category filter when switching folders
     setCurrentCategory(null);
   };
 

@@ -39,6 +39,7 @@ export interface NotesState {
   notes: Note[];
   categories: Category[];
   currentCategory: string | null;
+  currentFolder: string | null;
   searchQuery: string;
   isLoading: boolean;
 }
@@ -51,6 +52,7 @@ export interface NotesActions {
   togglePinNote: (id: string) => void;
   toggleLockNote: (id: string) => void;
   setCurrentCategory: (categoryId: string | null) => void;
+  setCurrentFolder: (folderId: string | null) => void;
   setSearchQuery: (query: string) => void;
   loadNotes: () => Promise<void>;
   addCategory: (category: Omit<Category, 'id'>) => void;
