@@ -823,8 +823,8 @@ export default function NoteDetail() {
       {/* Category Picker Modal */}
       {showCategoryPicker && (
         <View style={styles.modalOverlay}>
-          <View style={styles.categoryModal}>
-            <Text style={styles.modalTitle}>Choose Category</Text>
+          <View style={[styles.categoryModal, { backgroundColor: colors.cardBackground }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Choose Category</Text>
             <View style={styles.categoryGrid}>
               {DEFAULT_CATEGORIES.map((category) => (
                 <TouchableOpacity
@@ -851,33 +851,33 @@ export default function NoteDetail() {
       {/* Camera Modal */}
       {showCameraModal && (
         <View style={styles.modalOverlay}>
-          <View style={styles.recordingModal}>
+          <View style={[styles.recordingModal, { backgroundColor: colors.cardBackground }]}>
             <View style={styles.recordingIndicator}>
               <MaterialIcons
                 name="camera-alt"
                 size={48}
                 color={isProcessingImage ? colors.accent.orange : colors.textPrimary}
               />
-              <Text style={styles.recordingText}>
+              <Text style={[styles.recordingText, { color: colors.textPrimary }]}>
                 {isProcessingImage ? 'Processing Image...' : 'Scan Text from Image'}
               </Text>
             </View>
 
             <View style={styles.recordingActions}>
               <TouchableOpacity
-                style={[styles.recordingButton, styles.cancelButton]}
+                style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
                 onPress={() => setShowCameraModal(false)}
                 disabled={isProcessingImage}>
                 <MaterialIcons name="close" size={16} color={colors.cardBackground} />
-                <Text style={styles.buttonText}>Cancel</Text>
+                <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.recordingButton, styles.confirmButton]}
+                style={[styles.recordingButton, styles.confirmButton, { backgroundColor: colors.accent.green }]}
                 onPress={takePhotoAndProcess}
                 disabled={isProcessingImage}>
                 <MaterialIcons name="camera-alt" size={16} color={colors.cardBackground} />
-                <Text style={styles.buttonText}>Take Photo</Text>
+                <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Take Photo</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -885,7 +885,7 @@ export default function NoteDetail() {
                 onPress={pickImageAndProcess}
                 disabled={isProcessingImage}>
                 <MaterialIcons name="photo" size={16} color={colors.cardBackground} />
-                <Text style={styles.buttonText}>Choose Image</Text>
+                <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Choose Image</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -895,32 +895,32 @@ export default function NoteDetail() {
       {/* Recording Modal */}
       {showRecordingModal && (
         <View style={styles.modalOverlay}>
-          <View style={styles.recordingModal}>
+          <View style={[styles.recordingModal, { backgroundColor: colors.cardBackground }]}>
             <View style={styles.recordingIndicator}>
               <MaterialIcons
                 name="mic"
                 size={48}
                 color={isRecording ? colors.accent.red : colors.textSecondary}
               />
-              <Text style={styles.recordingText}>
+              <Text style={[styles.recordingText, { color: colors.textPrimary }]}>
                 {isRecording ? 'Recording...' : 'Transcribing...'}
               </Text>
             </View>
 
             <View style={styles.recordingActions}>
               <TouchableOpacity
-                style={[styles.recordingButton, styles.cancelButton]}
+                style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
                 onPress={cancelRecording}>
                 <MaterialIcons name="close" size={24} color={colors.cardBackground} />
-                <Text style={styles.buttonText}>Cancel</Text>
+                <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Cancel</Text>
               </TouchableOpacity>
 
               {isRecording && (
                 <TouchableOpacity
-                  style={[styles.recordingButton, styles.confirmButton]}
+                  style={[styles.recordingButton, styles.confirmButton, { backgroundColor: colors.accent.green }]}
                   onPress={stopRecording}>
                   <MaterialIcons name="check" size={24} color={colors.cardBackground} />
-                  <Text style={styles.buttonText}>Stop & Transcribe</Text>
+                  <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Stop & Transcribe</Text>
                 </TouchableOpacity>
               )}
             </View>
