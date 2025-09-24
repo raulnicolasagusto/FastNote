@@ -85,6 +85,13 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
           <MaterialIcons name="lock" size={14} color={colors.accent.red} />
         </View>
       )}
+
+      {/* Reminder indicator */}
+      {note.reminderDate && (
+        <View style={[styles.reminderIndicator, { backgroundColor: colors.accent.blue + '15' }]}>
+          <MaterialIcons name="schedule" size={14} color={colors.accent.blue} />
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -165,6 +172,18 @@ const styles = StyleSheet.create({
   lockIndicator: {
     position: 'absolute',
     top: SPACING.xs,
+    left: SPACING.xs,
+    borderRadius: 8,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  reminderIndicator: {
+    position: 'absolute',
+    bottom: SPACING.xs,
     left: SPACING.xs,
     borderRadius: 8,
     padding: 2,

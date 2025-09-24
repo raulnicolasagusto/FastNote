@@ -14,7 +14,9 @@
       "mcp__Ref__ref_read_url",
       "WebSearch",
       "Bash(npm start)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []

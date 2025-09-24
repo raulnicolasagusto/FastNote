@@ -12,6 +12,8 @@ export interface Note {
   isPinned: boolean; // For star functionality
   isLocked: boolean; // For lock functionality
   folderId?: string; // Optional folder assignment
+  reminderDate?: Date; // Reminder date and time
+  notificationId?: string; // ID for scheduled notification
 }
 
 export interface ChecklistItem {
@@ -52,6 +54,7 @@ export interface NotesActions {
   togglePinNote: (id: string) => void;
   toggleLockNote: (id: string) => void;
   moveNoteToFolder: (noteId: string, folderId: string) => void;
+  setNoteReminder: (noteId: string, reminderDate: Date | null) => void;
   setCurrentCategory: (categoryId: string | null) => void;
   setCurrentFolder: (folderId: string | null) => void;
   setSearchQuery: (query: string) => void;

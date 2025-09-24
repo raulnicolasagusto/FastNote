@@ -85,8 +85,8 @@ export default function BottomMenu({
     },
     {
       id: 'reminder',
-      icon: 'schedule',
-      label: 'Recordatorio',
+      icon: note?.reminderDate ? 'edit-notifications' : 'schedule',
+      label: note?.reminderDate ? 'Editar' : 'Recordatorio',
       action: onReminder,
     },
     {
