@@ -866,7 +866,7 @@ export default function NoteDetail() {
                 style={[styles.recordingButton, styles.cancelButton]}
                 onPress={() => setShowCameraModal(false)}
                 disabled={isProcessingImage}>
-                <MaterialIcons name="close" size={24} color={COLORS.cardBackground} />
+                <MaterialIcons name="close" size={16} color={COLORS.cardBackground} />
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
 
@@ -874,7 +874,7 @@ export default function NoteDetail() {
                 style={[styles.recordingButton, styles.confirmButton]}
                 onPress={takePhotoAndProcess}
                 disabled={isProcessingImage}>
-                <MaterialIcons name="camera-alt" size={24} color={COLORS.cardBackground} />
+                <MaterialIcons name="camera-alt" size={16} color={COLORS.cardBackground} />
                 <Text style={styles.buttonText}>Take Photo</Text>
               </TouchableOpacity>
 
@@ -882,7 +882,7 @@ export default function NoteDetail() {
                 style={[styles.recordingButton, { backgroundColor: COLORS.accent.purple }]}
                 onPress={pickImageAndProcess}
                 disabled={isProcessingImage}>
-                <MaterialIcons name="photo" size={24} color={COLORS.cardBackground} />
+                <MaterialIcons name="photo" size={16} color={COLORS.cardBackground} />
                 <Text style={styles.buttonText}>Choose Image</Text>
               </TouchableOpacity>
             </View>
@@ -1174,9 +1174,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardBackground,
     borderRadius: 16,
     padding: SPACING.xl,
-    margin: SPACING.lg,
+    marginHorizontal: SPACING.lg,
     alignItems: 'center',
-    minWidth: 280,
+    maxWidth: '90%',
+    width: '100%',
   },
   recordingIndicator: {
     alignItems: 'center',
@@ -1190,23 +1191,31 @@ const styles = StyleSheet.create({
   },
   recordingActions: {
     flexDirection: 'row',
-    gap: SPACING.md,
+    gap: SPACING.sm,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    width: '100%',
   },
   recordingButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: SPACING.sm,
     borderRadius: 8,
-    gap: SPACING.xs,
+    gap: 4,
+    flex: 1,
+    minWidth: 90,
+    maxWidth: 140,
   },
   confirmButton: {
     backgroundColor: COLORS.accent.green,
   },
   buttonText: {
     color: COLORS.cardBackground,
-    fontSize: TYPOGRAPHY.bodySize,
+    fontSize: 11,
     fontWeight: '600',
+    textAlign: 'center',
   },
   textSection: {
     marginBottom: SPACING.lg,
