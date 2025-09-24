@@ -9,9 +9,10 @@ interface NoteCardProps {
   note: Note;
   onPress: () => void;
   onEdit?: () => void;
+  onLongPress?: () => void;
 }
 
-export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit }) => {
+export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLongPress }) => {
   const { colors } = useThemeStore();
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-GB', {
@@ -47,7 +48,11 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit }) => 
   };
 
   return (
-    <TouchableOpacity style={[styles.card, { backgroundColor: colors.cardBackground }]} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={[styles.card, { backgroundColor: colors.cardBackground }]}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      activeOpacity={0.7}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>

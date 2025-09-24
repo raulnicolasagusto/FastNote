@@ -6,6 +6,7 @@ import { Header } from './Header';
 import { TabBar } from './TabBar';
 import { NotesGrid } from '../notes/NotesGrid';
 import { FloatingActionButton } from '../ui/FloatingActionButton';
+import BottomMenu from '../ui/BottomMenu';
 import { useNotesStore, useFilteredNotes } from '../../store/notes/useNotesStore';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { Note } from '../../types';
@@ -28,7 +29,9 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   onFoldersPress,
 }) => {
   const [activeTab, setActiveTab] = useState('all');
-  const { loadNotes, setCurrentCategory, setCurrentFolder } = useNotesStore();
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [showBottomMenu, setShowBottomMenu] = useState(false);
+  const { loadNotes, setCurrentCategory, setCurrentFolder, togglePinNote, archiveNote, deleteNote } = useNotesStore();
   const { colors, isDarkMode } = useThemeStore();
   const filteredNotes = useFilteredNotes();
 
@@ -50,6 +53,44 @@ export const MainScreen: React.FC<MainScreenProps> = ({
     onNotePress(note); // For now, edit and view are the same action
   };
 
+  const handleNoteLongPress = (note: Note) => {
+    setSelectedNote(note);
+    setShowBottomMenu(true);
+  };
+
+  const handleCloseBottomMenu = () => {
+    setShowBottomMenu(false);
+    setSelectedNote(null);
+  };
+
+  const handlePin = () => {
+    if (selectedNote) {
+      togglePinNote(selectedNote.id);
+    }
+  };
+
+  const handleMoveTo = () => {
+    // TODO: Implement move to folder functionality
+    console.log('Move to folder:', selectedNote?.title);
+  };
+
+  const handleHide = () => {
+    if (selectedNote) {
+      archiveNote(selectedNote.id);
+    }
+  };
+
+  const handleReminder = () => {
+    // TODO: Implement reminder functionality
+    console.log('Set reminder for:', selectedNote?.title);
+  };
+
+  const handleDelete = () => {
+    if (selectedNote) {
+      deleteNote(selectedNote.id);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <StatusBar
@@ -63,10 +104,27 @@ export const MainScreen: React.FC<MainScreenProps> = ({
       <TabBar activeTab={activeTab} onTabPress={handleTabPress} />
 
       <View style={styles.content}>
-        <NotesGrid notes={filteredNotes} onNotePress={onNotePress} onNoteEdit={handleNoteEdit} />
+        <NotesGrid
+          notes={filteredNotes}
+          onNotePress={onNotePress}
+          onNoteEdit={handleNoteEdit}
+          onNoteLongPress={handleNoteLongPress}
+        />
 
         <FloatingActionButton onNewNotePress={onNewNotePress} onVoiceNotePress={onVoiceNotePress} />
       </View>
+
+      {/* Bottom Menu */}
+      <BottomMenu
+        visible={showBottomMenu}
+        note={selectedNote}
+        onClose={handleCloseBottomMenu}
+        onPin={handlePin}
+        onMoveTo={handleMoveTo}
+        onHide={handleHide}
+        onReminder={handleReminder}
+        onDelete={handleDelete}
+      />
 
       {/* Add bottom safe area for Android navigation */}
       <SafeAreaView style={[styles.bottomSafeArea, { backgroundColor: colors.background }]} edges={['bottom']} />
