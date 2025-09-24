@@ -21,11 +21,14 @@ import { useThemeStore } from '../store/theme/useThemeStore';
 import { Note, ChecklistItem } from '../types';
 import { SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES } from '../constants/theme';
 import { StorageService } from '../utils/storage';
+import Callout from '../components/ui/Callout';
+import { useCalloutRotation } from '../utils/useCalloutRotation';
 
 export default function NoteDetail() {
   const { noteId } = useLocalSearchParams<{ noteId: string }>();
   const { notes, updateNote, togglePinNote, toggleLockNote } = useNotesStore();
   const { colors, isDarkMode } = useThemeStore();
+  const { currentCallout, isVisible } = useCalloutRotation();
   const [note, setNote] = useState<Note | null>(null);
   const [editingElement, setEditingElement] = useState<'title' | 'content' | 'checklist' | null>(null);
   const [editedTitle, setEditedTitle] = useState('');
@@ -720,6 +723,16 @@ export default function NoteDetail() {
           )}
         </View>
       </View>
+
+      {/* Callouts */}
+      {currentCallout && (
+        <Callout
+          visible={isVisible}
+          message={currentCallout.message}
+          iconName={currentCallout.iconName}
+          keywords={currentCallout.keywords}
+        />
+      )}
 
       {/* Content */}
       <ScrollView style={[styles.content, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
