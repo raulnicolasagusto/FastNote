@@ -8,15 +8,24 @@ interface HeaderProps {
   title: string;
   onSearchPress?: () => void;
   onMenuPress?: () => void;
+  onFoldersPress?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ title, onSearchPress, onMenuPress }) => {
+export const Header: React.FC<HeaderProps> = ({ title, onSearchPress, onMenuPress, onFoldersPress }) => {
   const { colors } = useThemeStore();
 
   return (
     <View style={[styles.header, { backgroundColor: colors.cardBackground }]}>
       <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
       <View style={styles.actions}>
+        {onFoldersPress && (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={onFoldersPress}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <MaterialIcons name="folder" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+        )}
         {onSearchPress && (
           <TouchableOpacity
             style={styles.actionButton}

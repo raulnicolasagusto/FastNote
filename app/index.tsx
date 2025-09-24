@@ -64,6 +64,11 @@ export default function Home() {
     router.push('/search');
   };
 
+  const handleFoldersPress = () => {
+    // Navigate to folders screen
+    router.push('/folders');
+  };
+
   const handleMenuPress = () => {
     setShowSidebar(true);
   };
@@ -308,6 +313,7 @@ export default function Home() {
         onNewNotePress={handleNewNotePress}
         onVoiceNotePress={handleVoiceNotePress}
         onSearchPress={handleSearchPress}
+        onFoldersPress={handleFoldersPress}
         onMenuPress={handleMenuPress}
       />
 

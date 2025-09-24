@@ -11,6 +11,7 @@ export interface Note {
   isArchived: boolean;
   isPinned: boolean; // For star functionality
   isLocked: boolean; // For lock functionality
+  folderId?: string; // Optional folder assignment
 }
 
 export interface ChecklistItem {
@@ -25,6 +26,13 @@ export interface Category {
   name: string;
   color: string;
   icon?: string;
+}
+
+export interface Folder {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface NotesState {

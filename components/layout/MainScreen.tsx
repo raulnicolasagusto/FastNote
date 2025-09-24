@@ -16,6 +16,7 @@ interface MainScreenProps {
   onVoiceNotePress: () => void;
   onSearchPress?: () => void;
   onMenuPress?: () => void;
+  onFoldersPress?: () => void;
 }
 
 export const MainScreen: React.FC<MainScreenProps> = ({
@@ -24,6 +25,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   onVoiceNotePress,
   onSearchPress,
   onMenuPress,
+  onFoldersPress,
 }) => {
   const [activeTab, setActiveTab] = useState('notes');
   const { loadNotes, setCurrentCategory } = useNotesStore();
@@ -53,7 +55,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         translucent={false}
       />
 
-      <Header title="Notes" onSearchPress={onSearchPress} onMenuPress={onMenuPress} />
+      <Header title="Notes" onSearchPress={onSearchPress} onMenuPress={onMenuPress} onFoldersPress={onFoldersPress} />
 
       <TabBar activeTab={activeTab} onTabPress={handleTabPress} />
 
