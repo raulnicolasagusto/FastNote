@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { SPACING, TYPOGRAPHY } from '../../constants/theme';
@@ -9,9 +9,10 @@ interface CalloutProps {
   message: string;
   iconName: string;
   keywords?: string[];
+  onClose?: () => void;
 }
 
-export default function Callout({ visible, message, iconName, keywords }: CalloutProps) {
+export default function Callout({ visible, message, iconName, keywords, onClose }: CalloutProps) {
   const { colors } = useThemeStore();
   const [fadeAnim] = React.useState(new Animated.Value(0));
 
@@ -51,6 +52,19 @@ export default function Callout({ visible, message, iconName, keywords }: Callou
               </Text>
             )}
           </Text>
+          {onClose && (
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <MaterialIcons
+                name="close"
+                size={18}
+                color="#8B6914"
+              />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </Animated.View>
@@ -59,8 +73,12 @@ export default function Callout({ visible, message, iconName, keywords }: Callou
 
 const styles = StyleSheet.create({
   container: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: SPACING.md,
-    marginVertical: SPACING.sm,
+    zIndex: 1000,
   },
   callout: {
     backgroundColor: '#FFF8DC',
@@ -92,5 +110,18 @@ const styles = StyleSheet.create({
   keywords: {
     fontStyle: 'italic',
     fontWeight: '400',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#FFF8DC',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#DAA520',
   },
 });

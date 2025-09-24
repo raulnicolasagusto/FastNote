@@ -28,7 +28,7 @@ export default function NoteDetail() {
   const { noteId } = useLocalSearchParams<{ noteId: string }>();
   const { notes, updateNote, togglePinNote, toggleLockNote } = useNotesStore();
   const { colors, isDarkMode } = useThemeStore();
-  const { currentCallout, isVisible } = useCalloutRotation();
+  const { currentCallout, isVisible, onCloseCallout, resetCallouts } = useCalloutRotation();
   const [note, setNote] = useState<Note | null>(null);
   const [editingElement, setEditingElement] = useState<'title' | 'content' | 'checklist' | null>(null);
   const [editedTitle, setEditedTitle] = useState('');
@@ -50,9 +50,11 @@ export default function NoteDetail() {
         setEditedTitle(foundNote.title);
         setEditedContent(foundNote.content);
         setEditedChecklistItems(foundNote.checklistItems || []);
+        // Reset callouts when opening a note
+        resetCallouts();
       }
     }
-  }, [noteId, notes]);
+  }, [noteId, notes, resetCallouts]);
 
   const handleBack = () => {
     if (editingElement) {
@@ -731,6 +733,7 @@ export default function NoteDetail() {
           message={currentCallout.message}
           iconName={currentCallout.iconName}
           keywords={currentCallout.keywords}
+          onClose={onCloseCallout}
         />
       )}
 
