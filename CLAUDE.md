@@ -87,3 +87,40 @@ utils/           # Utilidades y servicios
 - Integración completa con OpenAI Whisper API
 - Detección automática de listas vs texto normal
 - Creación automática de checklists desde comandos de voz
+
+### Efectos de Interacción
+- **Vibración Táctil**: Feedback háptico al mantener presionada una nota
+- **Efecto Visual**: La nota se "hunde" visualmente cuando está seleccionada
+- **Duración**: Los efectos permanecen hasta salir del bottomMenu
+
+### Migración a Development Build (EAS)
+**COMPLETADO - Septiembre 2024**
+
+**Cambio de Entorno:**
+- Migrado de Expo Go a Development Build usando EAS
+- Permite uso de cualquier dependencia nativa
+- Preparación para funcionalidades avanzadas de recordatorios
+
+**Proceso Realizado:**
+1. Instalación de `expo-dev-client`
+2. Configuración de EAS CLI y login
+3. Inicialización del proyecto EAS (`eas init`)
+4. Configuración de build profiles (`eas build:configure`)
+5. Creación de development build para Android
+6. Configuración de Android package: `com.raulnicolasagusto.fastnote`
+
+**Comandos EAS:**
+- `eas build --platform android --profile development` - Crear build development
+- `eas build --platform android --profile preview` - Crear build preview
+- `eas build --platform android --profile production` - Crear build producción
+
+**Flujo de Desarrollo Post-Migración:**
+- `npx expo start` (igual que antes, pero ahora detecta development build)
+- La app se ejecuta en tu development build personalizado en lugar de Expo Go
+- Todas las funcionalidades existentes mantienen compatibilidad total
+
+**Ventajas Obtenidas:**
+- ✅ Acceso a librerías nativas para recordatorios avanzados
+- ✅ Mayor control sobre configuraciones nativas
+- ✅ Base sólida para builds de producción
+- ✅ Mismo workflow de desarrollo diario
