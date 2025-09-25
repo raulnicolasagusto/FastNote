@@ -17,6 +17,14 @@
         {
           "cameraPermission": "Allow FastNote to access your camera to scan text from images."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default"
+        }
       ]
     ],
     "experiments": {

@@ -16,7 +16,9 @@
       "Bash(npm start)",
       "Bash(npm uninstall:*)",
       "Bash(npm run typecheck:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(copy:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []

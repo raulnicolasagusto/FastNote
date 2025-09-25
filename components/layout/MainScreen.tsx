@@ -136,12 +136,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
       }
 
       // Update note with new reminder and notification ID
-      setNoteReminder(selectedNote.id, reminderDate);
-      if (newNotificationId) {
-        // We need to update the notification ID separately since setNoteReminder resets it
-        const { updateNote } = useNotesStore.getState();
-        updateNote(selectedNote.id, { notificationId: newNotificationId });
-      }
+      setNoteReminder(selectedNote.id, reminderDate, newNotificationId);
     }
     setShowBottomMenu(false);
     setSelectedNote(null);

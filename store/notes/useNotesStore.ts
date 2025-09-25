@@ -77,13 +77,13 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     StorageService.saveNotes(notes);
   },
 
-  setNoteReminder: (noteId, reminderDate) => {
+  setNoteReminder: (noteId, reminderDate, notificationId) => {
     const notes = get().notes.map((note) => {
       if (note.id === noteId) {
         return {
           ...note,
           reminderDate,
-          notificationId: undefined, // Reset notification ID when changing reminder
+          notificationId: reminderDate ? notificationId : undefined, // Keep ID if setting reminder, clear if removing
           updatedAt: new Date()
         };
       }
