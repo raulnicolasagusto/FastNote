@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -20,6 +20,17 @@ export default function Home() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const { voiceNote } = useLocalSearchParams();
+
+  // Handle quick action for voice note
+  useEffect(() => {
+    if (voiceNote === 'true') {
+      // Activar grabación de voz automáticamente
+      setTimeout(() => {
+        handleVoiceNotePress();
+      }, 500); // Small delay to ensure UI is ready
+    }
+  }, [voiceNote]);
 
   const handleNotePress = (note: Note) => {
     // Navigate to note detail/edit screen
