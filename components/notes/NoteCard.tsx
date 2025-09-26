@@ -94,8 +94,8 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
 
       {/* Reminder indicator */}
       {note.reminderDate && (
-        <View style={[styles.reminderIndicator, { backgroundColor: colors.accent.blue + '15' }]}>
-          <MaterialIcons name="schedule" size={14} color={colors.accent.blue} />
+        <View style={styles.reminderIndicator}>
+          <MaterialIcons name="schedule" size={16} color={colors.accent.blue} />
         </View>
       )}
     </TouchableOpacity>
@@ -198,12 +198,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: SPACING.xs,
     left: SPACING.xs,
-    borderRadius: 8,
-    padding: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowOpacity: 0.3,
+    shadowRadius: 1,
     elevation: 2,
   },
 });

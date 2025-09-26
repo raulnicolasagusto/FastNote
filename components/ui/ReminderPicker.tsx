@@ -31,17 +31,34 @@ export default function ReminderPicker({
   const insets = useSafeAreaInsets();
   const slideAnim = React.useState(new Animated.Value(0))[0];
 
-  const [selectedDate, setSelectedDate] = useState<Date>(currentDate || new Date());
-  const [selectedTime, setSelectedTime] = useState<Date>(currentDate || new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    if (currentDate) {
+      return currentDate instanceof Date ? currentDate : new Date(currentDate);
+    }
+    return new Date();
+  });
+  const [selectedTime, setSelectedTime] = useState<Date>(() => {
+    if (currentDate) {
+      return currentDate instanceof Date ? currentDate : new Date(currentDate);
+    }
+    return new Date();
+  });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
+    console.log('📅 REMINDER PICKER DEBUG - Opening with:', { visible, currentDate });
+    
     if (visible) {
       if (currentDate) {
-        setSelectedDate(currentDate);
-        setSelectedTime(currentDate);
+        console.log('📅 REMINDER PICKER DEBUG - Editing existing reminder:', currentDate);
+        // Convert string to Date if needed
+        const dateObj = currentDate instanceof Date ? currentDate : new Date(currentDate);
+        console.log('📅 REMINDER PICKER DEBUG - Date object created:', dateObj);
+        setSelectedDate(dateObj);
+        setSelectedTime(dateObj);
       } else {
+        console.log('📅 REMINDER PICKER DEBUG - Creating new reminder');
         const now = new Date();
         now.setHours(now.getHours() + 1); // Default to 1 hour from now
         now.setMinutes(0);
@@ -64,25 +81,41 @@ export default function ReminderPicker({
   }, [visible, slideAnim, currentDate]);
 
   const formatDate = (date: Date): string => {
+    // Ensure we have a valid Date object
+    const dateObj = date instanceof Date ? date : new Date(date);
+    
+    if (isNaN(dateObj.getTime())) {
+      console.error('Invalid date passed to formatDate:', date);
+      return 'Fecha inválida';
+    }
+    
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
 
-    if (date.toDateString() === today.toDateString()) {
+    if (dateObj.toDateString() === today.toDateString()) {
       return 'Hoy';
-    } else if (date.toDateString() === tomorrow.toDateString()) {
+    } else if (dateObj.toDateString() === tomorrow.toDateString()) {
       return 'Mañana';
     } else {
-      return date.toLocaleDateString('es-ES', {
+      return dateObj.toLocaleDateString('es-ES', {
         day: 'numeric',
         month: 'short',
-        year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+        year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
       });
     }
   };
 
   const formatTime = (date: Date): string => {
-    return date.toLocaleTimeString('es-ES', {
+    // Ensure we have a valid Date object
+    const dateObj = date instanceof Date ? date : new Date(date);
+    
+    if (isNaN(dateObj.getTime())) {
+      console.error('Invalid date passed to formatTime:', date);
+      return '00:00';
+    }
+    
+    return dateObj.toLocaleTimeString('es-ES', {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -103,6 +136,8 @@ export default function ReminderPicker({
   };
 
   const handleConfirm = () => {
+    console.log('📅 REMINDER PICKER DEBUG - Confirming with dates:', { selectedDate, selectedTime });
+    
     const finalDate = new Date(
       selectedDate.getFullYear(),
       selectedDate.getMonth(),
@@ -110,11 +145,14 @@ export default function ReminderPicker({
       selectedTime.getHours(),
       selectedTime.getMinutes()
     );
+    
+    console.log('📅 REMINDER PICKER DEBUG - Final date created:', finalDate);
     onConfirm(finalDate);
     onClose();
   };
 
   const handleRemove = () => {
+    console.log('📅 REMINDER PICKER DEBUG - Removing reminder');
     onConfirm(null);
     onClose();
   };
