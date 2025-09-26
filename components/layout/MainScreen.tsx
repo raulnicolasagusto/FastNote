@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, Modal, Text, TouchableOpacity } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -12,6 +13,7 @@ import MoveFolderModal from '../ui/MoveFolderModal';
 import ReminderPicker from '../ui/ReminderPicker';
 import { useNotesStore, useFilteredNotes } from '../../store/notes/useNotesStore';
 import { useThemeStore } from '../../store/theme/useThemeStore';
+import { SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { NotificationService } from '../../utils/notifications';
 import { useNotificationHandlers } from '../../utils/useNotificationHandlers';
 import { Note } from '../../types';
@@ -40,6 +42,8 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   const [showBottomMenu, setShowBottomMenu] = useState(false);
   const [showMoveFolderModal, setShowMoveFolderModal] = useState(false);
   const [showReminderPicker, setShowReminderPicker] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const { loadNotes, setCurrentCategory, setCurrentFolder, togglePinNote, archiveNote, deleteNote, moveNoteToFolder, setNoteReminder } = useNotesStore();
   const { colors, isDarkMode } = useThemeStore();
   const filteredNotes = useFilteredNotes();
@@ -175,8 +179,25 @@ export const MainScreen: React.FC<MainScreenProps> = ({
 
   const handleDelete = () => {
     if (selectedNote) {
-      deleteNote(selectedNote.id);
+      setNoteToDelete(selectedNote);
+      setShowDeleteConfirmModal(true);
     }
+  };
+
+  const confirmDelete = () => {
+    if (noteToDelete) {
+      deleteNote(noteToDelete.id);
+      setShowDeleteConfirmModal(false);
+      setShowBottomMenu(false);
+      setSelectedNote(null);
+      setPressedNoteId(null);
+      setNoteToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirmModal(false);
+    setNoteToDelete(null);
   };
 
   return (
@@ -230,6 +251,46 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         onConfirm={handleReminderConfirm}
       />
 
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmModal && (
+        <Modal
+          transparent
+          visible={showDeleteConfirmModal}
+          animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={[styles.deleteConfirmModal, { backgroundColor: colors.cardBackground }]}>
+              <MaterialIcons
+                name="warning"
+                size={48}
+                color={colors.accent.red}
+                style={styles.warningIcon}
+              />
+              <Text style={[styles.deleteTitle, { color: colors.textPrimary }]}>
+                ¿Seguro que quieres eliminar la nota {noteToDelete?.title}?
+              </Text>
+              <View style={styles.deleteActions}>
+                <TouchableOpacity
+                  style={[styles.deleteButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
+                  onPress={cancelDelete}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                  <Text style={[styles.buttonText, { color: colors.cardBackground }]}>
+                    Cancelar
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.deleteButton, styles.confirmButton, { backgroundColor: colors.accent.red }]}
+                  onPress={confirmDelete}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                  <Text style={[styles.buttonText, { color: colors.cardBackground }]}>
+                    Eliminar
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+
     </SafeAreaView>
   );
 };
@@ -241,5 +302,60 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     position: 'relative',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+  },
+  deleteConfirmModal: {
+    borderRadius: 16,
+    padding: SPACING.xl,
+    margin: SPACING.lg,
+    alignItems: 'center',
+    minWidth: 280,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  warningIcon: {
+    marginBottom: SPACING.md,
+  },
+  deleteTitle: {
+    fontSize: TYPOGRAPHY.titleSize,
+    fontWeight: '600',
+    marginBottom: SPACING.sm,
+    textAlign: 'center',
+  },
+  deleteMessage: {
+    fontSize: TYPOGRAPHY.bodySize,
+    textAlign: 'center',
+    marginBottom: SPACING.xl,
+    lineHeight: TYPOGRAPHY.bodySize * 1.4,
+  },
+  deleteActions: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+  },
+  deleteButton: {
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: 8,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    // backgroundColor set dynamically
+  },
+  confirmButton: {
+    // backgroundColor set dynamically
+  },
+  buttonText: {
+    fontSize: TYPOGRAPHY.bodySize,
+    fontWeight: '600',
   },
 });

@@ -385,7 +385,7 @@ export default function NoteDetail() {
       if (trimmedItem) {
         const checklistItem: ChecklistItem = {
           id: StorageService.generateId(),
-          text: trimmedItem,
+          text: trimmedItem.charAt(0).toUpperCase() + trimmedItem.slice(1),
           completed: false,
           order: index,
         };
@@ -844,7 +844,10 @@ export default function NoteDetail() {
                     item.completed && styles.completedChecklistInput,
                   ]}
                   value={item.text}
-                  onChangeText={(text) => updateChecklistItem(item.id, { text })}
+                  onChangeText={(text) => {
+                    const capitalizedText = text.charAt(0).toUpperCase() + text.slice(1);
+                    updateChecklistItem(item.id, { text: capitalizedText });
+                  }}
                   placeholder="Add item..."
                   placeholderTextColor={colors.textSecondary}
                   onSubmitEditing={() => handleChecklistItemSubmit(item.id)}
