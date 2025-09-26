@@ -22,6 +22,7 @@ import { Note, ChecklistItem } from '../types';
 import { SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES } from '../constants/theme';
 import { StorageService } from '../utils/storage';
 import Callout from '../components/ui/Callout';
+import ShareMenu from '../components/ui/ShareMenu';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
 
 export default function NoteDetail() {
@@ -36,6 +37,7 @@ export default function NoteDetail() {
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showRecordingModal, setShowRecordingModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [editedChecklistItems, setEditedChecklistItems] = useState<ChecklistItem[]>([]);
   const inputRefs = useRef<{ [key: string]: TextInput | null }>({});
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -201,6 +203,31 @@ export default function NoteDetail() {
       addChecklistItem();
     }
     setEditingElement('checklist');
+  };
+
+  // Share functions (placeholder implementations)
+  const handleShareAsText = () => {
+    console.log('Compartir como texto:', note?.title);
+    // TODO: Implementar funcionalidad de compartir como texto
+    Alert.alert('Compartir', 'Compartir como texto - Próximamente');
+  };
+
+  const handleShareAsImage = () => {
+    console.log('Compartir como imagen:', note?.title);
+    // TODO: Implementar funcionalidad de compartir como imagen
+    Alert.alert('Compartir', 'Compartir como imagen - Próximamente');
+  };
+
+  const handleExportAsMarkdown = () => {
+    console.log('Exportar como Markdown:', note?.title);
+    // TODO: Implementar funcionalidad de exportar como Markdown
+    Alert.alert('Exportar', 'Exportar como Markdown - Próximamente');
+  };
+
+  const handleShareWithSomeone = () => {
+    console.log('Compartir con alguien:', note?.title);
+    // TODO: Implementar funcionalidad de compartir con alguien
+    Alert.alert('Compartir', 'Compartir con alguien - Próximamente');
   };
 
   const startRecording = async () => {
@@ -710,6 +737,20 @@ export default function NoteDetail() {
             </TouchableOpacity>
           )}
 
+          {/* Share icon - only show when not editing */}
+          {!editingElement && (
+            <TouchableOpacity
+              style={styles.actionIcon}
+              onPress={() => setShowShareMenu(true)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <MaterialIcons
+                name="share"
+                size={24}
+                color={colors.textPrimary}
+              />
+            </TouchableOpacity>
+          )}
+
           {/* Save icon - only show when editing */}
           {editingElement && (
             <TouchableOpacity
@@ -943,6 +984,17 @@ export default function NoteDetail() {
           </View>
         </View>
       )}
+
+      {/* Share Menu */}
+      <ShareMenu
+        visible={showShareMenu}
+        note={note}
+        onClose={() => setShowShareMenu(false)}
+        onShareAsText={handleShareAsText}
+        onShareAsImage={handleShareAsImage}
+        onExportAsMarkdown={handleExportAsMarkdown}
+        onShareWithSomeone={handleShareWithSomeone}
+      />
     </SafeAreaView>
   );
 }
