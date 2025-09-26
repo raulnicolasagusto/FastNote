@@ -69,12 +69,14 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   };
 
   const handleNoteLongPress = (note: Note) => {
+    console.log('👆 LONG PRESS DEBUG - Note selected:', note.title, note.id);
     // Trigger haptic feedback
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     setSelectedNote(note);
     setPressedNoteId(note.id);
     setShowBottomMenu(true);
+    console.log('👆 LONG PRESS DEBUG - State updated, showBottomMenu:', true);
   };
 
   const handleCloseBottomMenu = () => {
@@ -116,10 +118,14 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   };
 
   const handleReminder = () => {
+    console.log('⏰ REMINDER DEBUG - handleReminder called, selectedNote:', selectedNote?.title, selectedNote?.id);
     setShowReminderPicker(true);
   };
 
   const handleReminderConfirm = async (reminderDate: Date | null) => {
+    console.log('🔔 REMINDER DEBUG - handleReminderConfirm called with:', reminderDate);
+    console.log('🔔 REMINDER DEBUG - selectedNote:', selectedNote?.title, selectedNote?.id);
+    
     if (selectedNote) {
       // Cancel existing notification if any
       if (selectedNote.notificationId) {
@@ -129,21 +135,34 @@ export const MainScreen: React.FC<MainScreenProps> = ({
       // Schedule new notification if date is provided
       let newNotificationId: string | undefined;
       if (reminderDate) {
+        console.log('🔔 REMINDER DEBUG - Scheduling notification for:', reminderDate);
         const notificationId = await NotificationService.scheduleNoteReminder(selectedNote, reminderDate);
+        console.log('🔔 REMINDER DEBUG - Notification ID returned:', notificationId);
         if (notificationId) {
           newNotificationId = notificationId;
         }
       }
 
       // Update note with new reminder and notification ID
-      setNoteReminder(selectedNote.id, reminderDate, newNotificationId);
+      console.log('🔔 REMINDER DEBUG - Calling setNoteReminder with:', {
+        noteId: selectedNote.id,
+        reminderDate: reminderDate || undefined,
+        notificationId: newNotificationId
+      });
+      setNoteReminder(selectedNote.id, reminderDate || undefined, newNotificationId);
+      console.log('🔔 REMINDER DEBUG - setNoteReminder completed');
     }
+    // Cerrar tanto el ReminderPicker como el BottomMenu
+    setShowReminderPicker(false);
     setShowBottomMenu(false);
     setSelectedNote(null);
   };
 
   const handleReminderClose = () => {
+    // Cuando se cancela el ReminderPicker, también cerrar el BottomMenu
     setShowReminderPicker(false);
+    setShowBottomMenu(false);
+    setSelectedNote(null);
   };
 
   const handleDelete = () => {

@@ -58,6 +58,17 @@ export class NotificationService {
       const bodyPreview = bodyLines.slice(0, 2).join('\n');
       const displayBody = bodyPreview.length > 0 ? `${note.title}\n\n${bodyPreview}` : note.title;
 
+      // Debug: Check timing before scheduling
+      const now = new Date();
+      const timeUntilReminder = reminderDate.getTime() - now.getTime();
+      const minutesUntil = Math.round(timeUntilReminder / (1000 * 60));
+      
+      console.log('⏰ NOTIFICATION TIMING DEBUG:');
+      console.log('  Current time:', now.toISOString());
+      console.log('  Reminder time:', reminderDate.toISOString());
+      console.log('  Minutes until reminder:', minutesUntil);
+      console.log('  Is in future?', timeUntilReminder > 0);
+
       // Schedule the notification
       const notificationId = await Notifications.scheduleNotificationAsync({
         content: {
@@ -72,17 +83,26 @@ export class NotificationService {
           sound: true,
         },
         trigger: {
+          type: 'date',
           date: reminderDate,
-        },
+        } as any,
       });
 
       Alert.alert(
         '✅ Recordatorio programado',
-        `Recibirás una notificación el ${reminderDate.toLocaleDateString()} a las ${reminderDate.toLocaleTimeString().substring(0, 5)}.`,
+        `Recibirás una notificación el ${reminderDate.toLocaleDateString()} a las ${reminderDate.toLocaleTimeString().substring(0, 5)}.\n\nDebug: En ${minutesUntil} minutos`,
         [{ text: 'Perfecto' }]
       );
 
       console.log('✅ Notification scheduled:', notificationId, 'for:', reminderDate);
+      
+      // Debug: Verificar notificaciones programadas
+      const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
+      console.log('📋 All scheduled notifications:', scheduledNotifications.length);
+      scheduledNotifications.forEach((notif, index) => {
+        console.log(`  ${index + 1}. ID: ${notif.identifier}, Trigger:`, notif.trigger);
+      });
+      
       return notificationId;
 
     } catch (error) {

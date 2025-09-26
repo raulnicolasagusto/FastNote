@@ -78,19 +78,26 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   },
 
   setNoteReminder: (noteId, reminderDate, notificationId) => {
+    console.log('🏪 STORE DEBUG - setNoteReminder called with:', { noteId, reminderDate, notificationId });
+    
     const notes = get().notes.map((note) => {
       if (note.id === noteId) {
-        return {
+        const updatedNote = {
           ...note,
-          reminderDate,
+          reminderDate: reminderDate || undefined, // Convert null to undefined
           notificationId: reminderDate ? notificationId : undefined, // Keep ID if setting reminder, clear if removing
           updatedAt: new Date()
         };
+        console.log('🏪 STORE DEBUG - Note updated:', updatedNote.title, 'reminderDate:', updatedNote.reminderDate);
+        return updatedNote;
       }
       return note;
     });
+    
+    console.log('🏪 STORE DEBUG - Setting new notes state');
     set({ notes });
     StorageService.saveNotes(notes);
+    console.log('🏪 STORE DEBUG - Notes saved to storage');
   },
 
   setCurrentCategory: (categoryId) => {

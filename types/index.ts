@@ -54,7 +54,7 @@ export interface NotesActions {
   togglePinNote: (id: string) => void;
   toggleLockNote: (id: string) => void;
   moveNoteToFolder: (noteId: string, folderId: string) => void;
-  setNoteReminder: (noteId: string, reminderDate: Date | null, notificationId?: string) => void;
+  setNoteReminder: (noteId: string, reminderDate: Date | undefined, notificationId?: string) => void;
   setCurrentCategory: (categoryId: string | null) => void;
   setCurrentFolder: (folderId: string | null) => void;
   setSearchQuery: (query: string) => void;

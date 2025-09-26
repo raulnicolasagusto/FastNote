@@ -152,7 +152,10 @@ export default function BottomMenu({
                 style={styles.menuButton}
                 onPress={() => {
                   button.action();
-                  onClose();
+                  // Solo cerrar si NO es el botón de recordatorio
+                  if (button.id !== 'reminder') {
+                    onClose();
+                  }
                 }}>
                 <View style={[styles.iconContainer, { backgroundColor: colors.background }]}>
                   <MaterialIcons
