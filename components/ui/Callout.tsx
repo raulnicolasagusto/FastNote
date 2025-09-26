@@ -32,7 +32,7 @@ export default function Callout({ visible, message, iconName, keywords, onClose 
     }
   }, [visible, fadeAnim]);
 
-  if (!visible && fadeAnim._value === 0) return null;
+  if (!visible) return null;
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
@@ -56,11 +56,11 @@ export default function Callout({ visible, message, iconName, keywords, onClose 
             <TouchableOpacity
               style={styles.closeButton}
               onPress={onClose}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <MaterialIcons
                 name="close"
-                size={18}
+                size={14}
                 color="#8B6914"
               />
             </TouchableOpacity>
@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    paddingRight: SPACING.sm, // Extra padding for close button
   },
   icon: {
     marginRight: SPACING.sm,
@@ -113,15 +114,20 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: -5,
-    right: -5,
+    top: -8,
+    right: -8,
     backgroundColor: '#FFF8DC',
-    borderRadius: 12,
-    width: 24,
-    height: 24,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#DAA520',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
 });
