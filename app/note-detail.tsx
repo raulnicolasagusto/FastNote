@@ -595,7 +595,7 @@ export default function NoteDetail() {
                   activeOpacity={0.7}>
                   <MaterialIcons
                     name={item.completed ? "check-box" : "check-box-outline-blank"}
-                    size={20}
+                    size={24}
                     color={item.completed ? colors.accent.green : colors.textSecondary}
                   />
                 </TouchableOpacity>
@@ -791,7 +791,7 @@ export default function NoteDetail() {
         {/* Title */}
         {editingElement === 'title' ? (
           <TextInput
-            style={[styles.titleInput, { color: colors.textPrimary, backgroundColor: colors.cardBackground, borderColor: colors.textPrimary }]}
+            style={[styles.titleInput, { color: colors.textPrimary, backgroundColor: colors.background, borderColor: colors.textPrimary }]}
             value={editedTitle}
             onChangeText={setEditedTitle}
             placeholder="Note title..."
@@ -813,7 +813,7 @@ export default function NoteDetail() {
         {/* Content */}
         {editingElement === 'content' ? (
           <TextInput
-            style={[styles.contentInput, { color: colors.textPrimary, backgroundColor: colors.cardBackground, borderColor: colors.textSecondary }]}
+            style={[styles.contentInput, { color: colors.textPrimary, backgroundColor: colors.background, borderColor: colors.textSecondary }]}
             value={editedContent}
             onChangeText={setEditedContent}
             placeholder="Start writing..."
@@ -831,7 +831,7 @@ export default function NoteDetail() {
                   onPress={() => updateChecklistItem(item.id, { completed: !item.completed })}>
                   <MaterialIcons
                     name={item.completed ? "check-box" : "check-box-outline-blank"}
-                    size={20}
+                    size={24}
                     color={item.completed ? colors.accent.green : colors.textSecondary}
                   />
                 </TouchableOpacity>
@@ -1153,7 +1153,7 @@ const styles = StyleSheet.create({
   },
   checklistItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: SPACING.sm,
     paddingVertical: SPACING.xs,
   },
