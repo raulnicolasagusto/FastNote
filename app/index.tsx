@@ -33,11 +33,13 @@ export default function Home() {
   }, [voiceNote]);
 
   const handleNotePress = (note: Note) => {
+    console.log('🎯 NAVIGATION DEBUG - handleNotePress called with note:', note.title, note.id);
     // Navigate to note detail/edit screen
     router.push({
       pathname: '/note-detail',
       params: { noteId: note.id },
     });
+    console.log('🎯 NAVIGATION DEBUG - router.push called to /note-detail with noteId:', note.id);
   };
 
   const handleNewNotePress = () => {

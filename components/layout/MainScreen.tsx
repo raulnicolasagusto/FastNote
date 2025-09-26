@@ -45,7 +45,15 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   const filteredNotes = useFilteredNotes();
 
   // Setup notification handlers
-  useNotificationHandlers({ onNotePress });
+  useNotificationHandlers({ 
+    onNotePress: (note: Note) => {
+      console.log('🔔 NOTIFICATION DEBUG - onNotePress received in MainScreen:', note.title);
+      // Add a small delay to ensure navigation is ready
+      setTimeout(() => {
+        onNotePress(note);
+      }, 200);
+    }
+  });
 
   useEffect(() => {
     loadNotes();

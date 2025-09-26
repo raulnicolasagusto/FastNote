@@ -15,30 +15,47 @@ export const useNotificationHandlers = ({ onNotePress }: NotificationHandlerProp
       // Listen for notification responses (when user interacts with notification)
       responseListener = NotificationService.addNotificationResponseListener(
         async (response: any) => {
-          console.log('Notification response:', response);
+          console.log('🔔 DEEP LINK DEBUG - Notification response received:', response);
+          console.log('🔔 DEEP LINK DEBUG - Response structure:', JSON.stringify(response, null, 2));
 
           const { notification } = response;
-          const { noteId, action } = (notification?.request?.content?.data || {}) as {
-            noteId: string;
-            action: string;
-          };
+          const data = notification?.request?.content?.data || {};
+          const { noteId, action } = data as { noteId: string; action: string; };
+          
+          console.log('🔔 DEEP LINK DEBUG - Extracted data:', { noteId, action, fullData: data });
+          console.log('🔔 DEEP LINK DEBUG - Action identifier from response:', response?.actionIdentifier);
 
-          if (action === 'reminder' && noteId) {
-            console.log('Opening note from notification:', noteId);
+          // Handle both the notification tap and the "Abrir Nota" button
+          const shouldOpenNote = (action === 'reminder' && noteId) || 
+                                (response?.actionIdentifier === 'open' && noteId);
+
+          if (shouldOpenNote) {
+            const interactionType = response?.actionIdentifier === 'open' ? 'Abrir Nota button' : 'notification tap';
+            console.log('🔔 DEEP LINK DEBUG - Opening note via:', interactionType, 'noteId:', noteId);
             try {
               // Import useNotesStore dynamically to avoid circular dependencies
               const { useNotesStore } = await import('../store/notes/useNotesStore');
               const { notes } = useNotesStore.getState();
               const note = notes.find(n => n.id === noteId);
 
+              console.log('🔔 DEEP LINK DEBUG - Note found:', note ? note.title : 'NOT FOUND');
+
               if (note && !note.isArchived) {
+                console.log('🔔 DEEP LINK DEBUG - Calling onNotePress with note:', note.title);
                 onNotePress(note);
               } else {
-                console.warn('Note not found or archived:', noteId);
+                console.warn('🔔 DEEP LINK DEBUG - Note not found or archived:', noteId);
               }
             } catch (error) {
-              console.error('Error opening note from notification:', error);
+              console.error('🔔 DEEP LINK DEBUG - Error opening note from notification:', error);
             }
+          } else {
+            console.log('🔔 DEEP LINK DEBUG - Not a valid interaction:', { 
+              action, 
+              noteId, 
+              actionIdentifier: response?.actionIdentifier,
+              shouldOpen: shouldOpenNote 
+            });
           }
         }
       );
