@@ -31,6 +31,24 @@ export default function NoteDetail() {
   const { colors, isDarkMode } = useThemeStore();
   const { currentCallout, isVisible, onCloseCallout, resetCallouts } = useCalloutRotation();
   const [note, setNote] = useState<Note | null>(null);
+
+  // Helper function to get text colors for notes with custom backgrounds
+  const getTextColors = () => {
+    if (note?.backgroundColor) {
+      // If note has custom background, use dark text colors for readability
+      return {
+        primary: '#1a1a1a',    // Dark gray for primary text
+        secondary: '#666666',  // Medium gray for secondary text
+      };
+    }
+    // Otherwise use theme colors
+    return {
+      primary: colors.textPrimary,
+      secondary: colors.textSecondary,
+    };
+  };
+
+  const textColors = getTextColors();
   const [editingElement, setEditingElement] = useState<'title' | 'content' | 'checklist' | null>(null);
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
@@ -552,7 +570,7 @@ export default function NoteDetail() {
     // If neither text nor checklist, show empty state
     if (!hasText && !hasChecklist) {
       return (
-        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+        <Text style={[styles.emptyText, { color: textColors.secondary }]}>
           Start writing or add a checklist...
         </Text>
       );
@@ -567,7 +585,7 @@ export default function NoteDetail() {
             onPress={handleStartContentEdit}
             activeOpacity={1}>
             {note.content.split('\n').filter((p) => p.trim()).map((paragraph, index) => (
-              <Text key={index} style={[styles.contentText, { color: colors.textPrimary }]}>
+              <Text key={index} style={[styles.contentText, { color: textColors.primary }]}>
                 {paragraph}
               </Text>
             ))}
@@ -580,13 +598,13 @@ export default function NoteDetail() {
             style={styles.textPlaceholder}
             onPress={handleStartContentEdit}
             activeOpacity={1}>
-            <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>Tap to add text...</Text>
+            <Text style={[styles.placeholderText, { color: textColors.secondary }]}>Tap to add text...</Text>
           </TouchableOpacity>
         )}
 
         {/* Render checklist items if they exist */}
         {hasChecklist && (
-          <View style={[styles.checklistSection, hasText && styles.checklistWithText, hasText && { borderTopWidth: 1, borderTopColor: colors.textSecondary + '33' }]}>
+          <View style={[styles.checklistSection, hasText && styles.checklistWithText, hasText && { borderTopWidth: 1, borderTopColor: textColors.secondary + '33' }]}>
             {note.checklistItems!.map((item) => (
               <View key={item.id} style={styles.checklistItem}>
                 <TouchableOpacity
@@ -596,14 +614,14 @@ export default function NoteDetail() {
                   <MaterialIcons
                     name={item.completed ? "check-box" : "check-box-outline-blank"}
                     size={24}
-                    color={item.completed ? colors.accent.green : colors.textSecondary}
+                    color={item.completed ? colors.accent.green : textColors.secondary}
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.checklistTextContainer}
                   onPress={handleStartChecklistEdit}
                   activeOpacity={1}>
-                  <Text style={[styles.checklistText, { color: colors.textPrimary }, item.completed && styles.completedText]}>
+                  <Text style={[styles.checklistText, { color: textColors.primary }, item.completed && styles.completedText]}>
                     {item.text}
                   </Text>
                 </TouchableOpacity>
@@ -785,20 +803,20 @@ export default function NoteDetail() {
       <ScrollView style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]} showsVerticalScrollIndicator={false}>
         {/* Date and edit hint */}
         <View style={styles.dateContainer}>
-          <Text style={[styles.date, { color: colors.textSecondary }]}>{formatDate(note.createdAt)}</Text>
+          <Text style={[styles.date, { color: textColors.secondary }]}>{formatDate(note.createdAt)}</Text>
           {!editingElement && !note.isLocked && (
-            <Text style={[styles.editHint, { color: colors.textSecondary }]}>Tap to edit</Text>
+            <Text style={[styles.editHint, { color: textColors.secondary }]}>Tap to edit</Text>
           )}
         </View>
 
         {/* Title */}
         {editingElement === 'title' ? (
           <TextInput
-            style={[styles.titleInput, { color: colors.textPrimary, backgroundColor: colors.background, borderColor: colors.textPrimary }]}
+            style={[styles.titleInput, { color: textColors.primary, backgroundColor: note.backgroundColor || colors.background, borderColor: textColors.primary }]}
             value={editedTitle}
             onChangeText={setEditedTitle}
             placeholder="Note title..."
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={textColors.secondary}
             multiline
             maxLength={100}
             autoFocus
@@ -807,7 +825,7 @@ export default function NoteDetail() {
           <TouchableOpacity
             onPress={handleStartTitleEdit}
             activeOpacity={1}>
-            <Text style={[styles.title, { color: colors.textPrimary }]}>
+            <Text style={[styles.title, { color: textColors.primary }]}>
               {note.title}
             </Text>
           </TouchableOpacity>
@@ -816,11 +834,11 @@ export default function NoteDetail() {
         {/* Content */}
         {editingElement === 'content' ? (
           <TextInput
-            style={[styles.contentInput, { color: colors.textPrimary, backgroundColor: colors.background, borderColor: colors.textSecondary }]}
+            style={[styles.contentInput, { color: textColors.primary, backgroundColor: note.backgroundColor || colors.background, borderColor: textColors.secondary }]}
             value={editedContent}
             onChangeText={setEditedContent}
             placeholder="Start writing..."
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={textColors.secondary}
             multiline
             textAlignVertical="top"
             autoFocus

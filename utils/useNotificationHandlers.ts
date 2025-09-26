@@ -15,13 +15,16 @@ export const useNotificationHandlers = ({ onNotePress }: NotificationHandlerProp
       // Listen for notification responses (when user interacts with notification)
       responseListener = NotificationService.addNotificationResponseListener(
         async (response: any) => {
-          console.log('🔔 DEEP LINK DEBUG - Notification response received:', response);
-          console.log('🔔 DEEP LINK DEBUG - Response structure:', JSON.stringify(response, null, 2));
-
           const { notification } = response;
           const data = notification?.request?.content?.data || {};
           const { noteId, action } = data as { noteId: string; action: string; };
           
+          // Skip processing if this is not one of our app's notifications
+          if (!data || Object.keys(data).length === 0) {
+            return;
+          }
+          
+          console.log('🔔 DEEP LINK DEBUG - Notification response received:', response);
           console.log('🔔 DEEP LINK DEBUG - Extracted data:', { noteId, action, fullData: data });
           console.log('🔔 DEEP LINK DEBUG - Action identifier from response:', response?.actionIdentifier);
 
@@ -50,12 +53,15 @@ export const useNotificationHandlers = ({ onNotePress }: NotificationHandlerProp
               console.error('🔔 DEEP LINK DEBUG - Error opening note from notification:', error);
             }
           } else {
-            console.log('🔔 DEEP LINK DEBUG - Not a valid interaction:', { 
-              action, 
-              noteId, 
-              actionIdentifier: response?.actionIdentifier,
-              shouldOpen: shouldOpenNote 
-            });
+            // Only log if it's not the default expo action (to reduce noise)
+            if (response?.actionIdentifier !== 'expo.modules.notifications.actions.DEFAULT') {
+              console.log('🔔 DEEP LINK DEBUG - Not a valid interaction:', { 
+                action, 
+                noteId, 
+                actionIdentifier: response?.actionIdentifier,
+                shouldOpen: shouldOpenNote 
+              });
+            }
           }
         }
       );

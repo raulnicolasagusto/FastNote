@@ -15,6 +15,25 @@ interface NoteCardProps {
 
 export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLongPress, isPressed }) => {
   const { colors } = useThemeStore();
+  
+  // Helper function to get text colors for notes with custom backgrounds
+  const getTextColors = () => {
+    if (note.backgroundColor) {
+      // If note has custom background, use dark text colors for readability
+      return {
+        primary: '#1a1a1a',    // Dark gray for primary text
+        secondary: '#666666',  // Medium gray for secondary text
+      };
+    }
+    // Otherwise use theme colors
+    return {
+      primary: colors.textPrimary,
+      secondary: colors.textSecondary,
+    };
+  };
+
+  const textColors = getTextColors();
+  
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-GB', {
       day: '2-digit',
@@ -28,8 +47,8 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
       // Show first 3 checklist items
       return note.checklistItems.slice(0, 3).map((item, index) => (
         <View key={item.id} style={styles.checklistItem}>
-          <Text style={[styles.bullet, { color: colors.textSecondary }]}>•</Text>
-          <Text style={[styles.checklistText, { color: colors.textSecondary }]} numberOfLines={1}>
+          <Text style={[styles.bullet, { color: textColors.secondary }]}>•</Text>
+          <Text style={[styles.checklistText, { color: textColors.secondary }]} numberOfLines={1}>
             {item.text}
           </Text>
         </View>
@@ -39,7 +58,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
     // Show text content preview
     if (note.content.trim()) {
       return (
-        <Text style={[styles.contentText, { color: colors.textSecondary }]} numberOfLines={3}>
+        <Text style={[styles.contentText, { color: textColors.secondary }]} numberOfLines={3}>
           {note.content}
         </Text>
       );
@@ -61,16 +80,16 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
       activeOpacity={0.7}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
-          <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
+          <Text style={[styles.title, { color: textColors.primary }]} numberOfLines={2}>
             {note.title}
           </Text>
           {onEdit && (
             <TouchableOpacity onPress={onEdit} style={styles.editButton}>
-              <MaterialIcons name="edit" size={16} color={colors.textSecondary} />
+              <MaterialIcons name="edit" size={16} color={textColors.secondary} />
             </TouchableOpacity>
           )}
         </View>
-        <Text style={[styles.date, { color: colors.textSecondary }]}>{formatDate(note.createdAt)}</Text>
+        <Text style={[styles.date, { color: textColors.secondary }]}>{formatDate(note.createdAt)}</Text>
       </View>
 
       <View style={styles.content}>{renderContent()}</View>

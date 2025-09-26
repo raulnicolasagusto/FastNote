@@ -23,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({ title, onSearchPress, onMenuPres
             style={styles.actionButton}
             onPress={onFoldersPress}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <MaterialIcons name="folder" size={24} color={colors.textPrimary} />
+            <MaterialIcons name="create-new-folder" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
         )}
         {onSearchPress && (
