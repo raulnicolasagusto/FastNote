@@ -21,7 +21,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
+          "icon": "./assets/icons/notification-icon.png",
           "color": "#ffffff",
           "defaultChannel": "default"
         }
@@ -32,12 +32,12 @@
         {
           "androidIcons": {
             "voice_note": {
-              "foregroundImage": "./assets/icon.png",
+              "foregroundImage": "./assets/icons/adaptive-icon.png",
               "backgroundColor": "#4F46E5"
             }
           },
           "iosIcons": {
-            "voice_note": "./assets/icon.png"
+            "voice_note": "./assets/icons/adaptive-icon.png"
           }
         }
       ]
@@ -47,10 +47,10 @@
       "tsconfigPaths": true
     },
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icons/adaptive-icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/icons/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -63,7 +63,7 @@
     "android": {
       "package": "com.raulnicolasagusto.fastnote",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icons/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
