@@ -110,6 +110,18 @@ export const DEFAULT_CATEGORIES = [
   },
 ];
 
+// Note background colors (light/pastel colors)
+export const NOTE_BACKGROUND_COLORS = [
+  { id: 'default', name: 'Default', color: null }, // No custom background
+  { id: 'yellow', name: 'Yellow', color: '#FFF9C4' }, // Light yellow
+  { id: 'cream', name: 'Cream', color: '#FFF8E1' }, // Light cream
+  { id: 'peach', name: 'Peach', color: '#FFE0B2' }, // Light peach
+  { id: 'pink', name: 'Pink', color: '#FCE4EC' }, // Light pink
+  { id: 'lavender', name: 'Lavender', color: '#F3E5F5' }, // Light lavender
+  { id: 'mint', name: 'Mint', color: '#E8F5E8' }, // Light mint
+  { id: 'sky', name: 'Sky', color: '#E3F2FD' }, // Light sky blue
+];
+
 // Tab categories from design
 export const TAB_CATEGORIES = [
   { id: 'notes', name: 'Notes' },

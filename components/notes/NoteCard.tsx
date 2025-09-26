@@ -52,9 +52,9 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
     <TouchableOpacity
       style={[
         styles.card,
-        { backgroundColor: colors.cardBackground },
+        { backgroundColor: note.backgroundColor || colors.cardBackground },
         isPressed && styles.pressedCard,
-        isPressed && { backgroundColor: colors.cardBackground + 'E0' }
+        isPressed && { backgroundColor: (note.backgroundColor || colors.cardBackground) + 'E0' }
       ]}
       onPress={onPress}
       onLongPress={onLongPress}
@@ -74,9 +74,6 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
       </View>
 
       <View style={styles.content}>{renderContent()}</View>
-
-      {/* Category indicator dot */}
-      <View style={[styles.categoryDot, { backgroundColor: note.category.color }]} />
 
       {/* Pin indicator */}
       {note.isPinned && (
@@ -162,14 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: TYPOGRAPHY.bodySize * 1.4,
   },
-  categoryDot: {
-    position: 'absolute',
-    bottom: SPACING.md,
-    right: SPACING.md,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
+
   pinIndicator: {
     position: 'absolute',
     top: SPACING.xs,

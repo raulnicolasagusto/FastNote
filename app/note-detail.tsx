@@ -19,7 +19,7 @@ import { File } from 'expo-file-system';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { useThemeStore } from '../store/theme/useThemeStore';
 import { Note, ChecklistItem } from '../types';
-import { SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES } from '../constants/theme';
+import { SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES, NOTE_BACKGROUND_COLORS } from '../constants/theme';
 import { StorageService } from '../utils/storage';
 import Callout from '../components/ui/Callout';
 import ShareMenu from '../components/ui/ShareMenu';
@@ -34,10 +34,10 @@ export default function NoteDetail() {
   const [editingElement, setEditingElement] = useState<'title' | 'content' | 'checklist' | null>(null);
   const [editedTitle, setEditedTitle] = useState('');
   const [editedContent, setEditedContent] = useState('');
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showRecordingModal, setShowRecordingModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const [editedChecklistItems, setEditedChecklistItems] = useState<ChecklistItem[]>([]);
   const inputRefs = useRef<{ [key: string]: TextInput | null }>({});
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -144,10 +144,10 @@ export default function NoteDetail() {
     toggleLockNote(note.id);
   };
 
-  const handleCategoryChange = (category: any) => {
+  const handleBackgroundColorChange = (colorOption: any) => {
     if (!note) return;
-    updateNote(note.id, { category });
-    setShowCategoryPicker(false);
+    updateNote(note.id, { backgroundColor: colorOption.color });
+    setShowColorPicker(false);
   };
 
   const addChecklistItem = (text: string = '') => {
@@ -657,15 +657,18 @@ export default function NoteDetail() {
         </TouchableOpacity>
 
         <View style={styles.headerActions}>
-          {/* Category indicator - clickable to change */}
+          {/* Background color picker */}
           <TouchableOpacity
-            onPress={() => setShowCategoryPicker(true)}
-            style={[
-              styles.categoryIndicator,
-              { backgroundColor: note.category.color },
-            ]}
+            onPress={() => setShowColorPicker(true)}
+            style={styles.actionIcon}
             disabled={note.isLocked && !editingElement}
-          />
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <MaterialIcons
+              name="palette"
+              size={24}
+              color={colors.textPrimary}
+            />
+          </TouchableOpacity>
 
           {/* Star/Pin icon */}
           <TouchableOpacity
@@ -779,7 +782,7 @@ export default function NoteDetail() {
       )}
 
       {/* Content */}
-      <ScrollView style={[styles.content, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+      <ScrollView style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]} showsVerticalScrollIndicator={false}>
         {/* Date and edit hint */}
         <View style={styles.dateContainer}>
           <Text style={[styles.date, { color: colors.textSecondary }]}>{formatDate(note.createdAt)}</Text>
@@ -880,34 +883,6 @@ export default function NoteDetail() {
         )}
       </ScrollView>
 
-      {/* Category Picker Modal */}
-      {showCategoryPicker && (
-        <View style={styles.modalOverlay}>
-          <View style={[styles.categoryModal, { backgroundColor: colors.cardBackground }]}>
-            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Choose Category</Text>
-            <View style={styles.categoryGrid}>
-              {DEFAULT_CATEGORIES.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  style={[
-                    styles.categoryOption,
-                    { backgroundColor: category.color },
-                    note.category.id === category.id && styles.selectedCategoryOption,
-                  ]}
-                  onPress={() => handleCategoryChange(category)}>
-                  <Text style={styles.categoryOptionText}>{category.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setShowCategoryPicker(false)}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
       {/* Camera Modal */}
       {showCameraModal && (
         <View style={styles.modalOverlay}>
@@ -948,6 +923,37 @@ export default function NoteDetail() {
                 <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Choose Image</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      )}
+
+      {/* Color Picker Modal */}
+      {showColorPicker && (
+        <View style={styles.modalOverlay}>
+          <View style={[styles.colorModal, { backgroundColor: colors.cardBackground }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Choose Background Color</Text>
+            <View style={styles.colorGrid}>
+              {NOTE_BACKGROUND_COLORS.map((colorOption) => (
+                <TouchableOpacity
+                  key={colorOption.id}
+                  style={[
+                    styles.colorOption,
+                    { backgroundColor: colorOption.color || colors.cardBackground },
+                    note.backgroundColor === colorOption.color && styles.selectedColorOption,
+                    !colorOption.color && { borderWidth: 2, borderColor: colors.textSecondary },
+                  ]}
+                  onPress={() => handleBackgroundColorChange(colorOption)}>
+                  <Text style={[styles.colorOptionText, { color: colorOption.color ? '#333' : colors.textPrimary }]}>
+                    {colorOption.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setShowColorPicker(false)}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -1022,11 +1028,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.md,
   },
-  categoryIndicator: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-  },
+
   actionIcon: {
     padding: SPACING.xs,
   },
@@ -1112,7 +1114,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
   },
-  categoryModal: {
+  colorModal: {
     borderRadius: 16,
     padding: SPACING.xl,
     margin: SPACING.lg,
@@ -1125,26 +1127,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
-  categoryGrid: {
+  colorGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginBottom: SPACING.lg,
   },
-  categoryOption: {
-    width: '45%',
-    padding: SPACING.md,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  selectedCategoryOption: {
-    borderWidth: 3,
-  },
-  categoryOptionText: {
-    fontSize: TYPOGRAPHY.bodySize,
-    fontWeight: '600',
-  },
+
   cancelButton: {
     padding: SPACING.md,
     borderRadius: 8,
@@ -1285,5 +1274,27 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.bodySize,
     opacity: 0.6,
     fontStyle: 'italic',
+  },
+  colorOption: {
+    width: 80,
+    height: 60,
+    borderRadius: 8,
+    margin: SPACING.xs,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  selectedColorOption: {
+    borderWidth: 3,
+    borderColor: '#4A90E2',
+  },
+  colorOptionText: {
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

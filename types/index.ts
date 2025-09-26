@@ -14,6 +14,7 @@ export interface Note {
   folderId?: string; // Optional folder assignment
   reminderDate?: Date; // Reminder date and time
   notificationId?: string; // ID for scheduled notification
+  backgroundColor?: string; // Custom background color for the note
 }
 
 export interface ChecklistItem {
