@@ -12,6 +12,8 @@ import { useThemeStore } from '../store/theme/useThemeStore';
 import { StorageService } from '../utils/storage';
 import { SPACING, TYPOGRAPHY, DEFAULT_CATEGORIES } from '../constants/theme';
 import Sidebar from '../components/ui/Sidebar';
+import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
+import { NotificationService } from '../utils/notifications';
 
 export default function Home() {
   const { addNote } = useNotesStore();
@@ -246,7 +248,7 @@ export default function Home() {
       const result = await response.json();
 
       if (response.ok && result.text) {
-        createVoiceNote(result.text);
+        await createVoiceNote(result.text);
       } else {
         Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
       }
@@ -281,47 +283,133 @@ export default function Home() {
     return `Nueva Nota ${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
-  const createVoiceNote = (transcribedText: string) => {
+  const createVoiceNote = async (transcribedText: string) => {
     const noteTitle = generateVoiceNoteTitle();
 
-    // Check if the transcribed text indicates a list
-    if (detectListKeywords(transcribedText)) {
-      // Convert to checklist
-      const checklistItems = parseTextToChecklistItems(transcribedText);
+    console.log('🎤 VOICE NOTE CREATION - Starting analysis for:', transcribedText);
 
-      if (checklistItems.length > 0) {
-        // Create note with checklist
-        const newNote: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> = {
-          title: noteTitle,
-          content: '',
-          type: 'checklist',
-          category: DEFAULT_CATEGORIES[0], // Default category
-          checklistItems,
-          images: [],
-          isArchived: false,
-          isPinned: false,
-          isLocked: false,
-        };
+    try {
+      // First, analyze for reminder commands
+      const reminderAnalysis = await extractReminderDetails(transcribedText);
+      console.log('🎤 VOICE NOTE CREATION - Reminder analysis result:', JSON.stringify(reminderAnalysis, null, 2));
 
-        addNote(newNote);
-        return;
+      // Use the cleaned text (without reminder commands) for note content
+      const noteContent = reminderAnalysis.cleanText;
+
+      // Check if the cleaned text indicates a list
+      if (detectListKeywords(noteContent)) {
+        // Convert to checklist
+        const checklistItems = parseTextToChecklistItems(noteContent);
+
+        if (checklistItems.length > 0) {
+          // Create note with checklist
+          const newNote: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> = {
+            title: noteTitle,
+            content: '',
+            type: 'checklist',
+            category: DEFAULT_CATEGORIES[0], // Default category
+            checklistItems,
+            images: [],
+            isArchived: false,
+            isPinned: false,
+            isLocked: false,
+            reminderDate: reminderAnalysis.hasReminder ? reminderAnalysis.reminderTime : undefined,
+          };
+
+          const createdNoteId = addNote(newNote);
+          
+          // Schedule reminder if detected
+          if (reminderAnalysis.hasReminder && reminderAnalysis.reminderTime && createdNoteId) {
+            console.log('🎤 VOICE NOTE CREATION - Scheduling reminder for checklist note...');
+            
+            // Create complete note object for notification
+            const completeNote: Note = {
+              ...newNote,
+              id: createdNoteId,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+            
+            const notificationId = await NotificationService.scheduleNoteReminder(completeNote, reminderAnalysis.reminderTime);
+            
+            if (notificationId) {
+              // Update note with notification ID
+              // TODO: Add method to update note with notification ID
+              console.log('🎤 VOICE NOTE CREATION - Reminder scheduled with ID:', notificationId);
+              
+              Alert.alert(
+                '📝 Nota creada con recordatorio',
+                `Nota guardada y recordatorio programado para ${reminderAnalysis.reminderTime.toLocaleDateString('es-ES')} a las ${reminderAnalysis.reminderTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.`,
+                [{ text: 'Perfecto' }]
+              );
+            }
+          }
+          
+          return;
+        }
       }
+
+      // Create regular text note
+      const newNote: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> = {
+        title: noteTitle,
+        content: noteContent,
+        type: 'text',
+        category: DEFAULT_CATEGORIES[0], // Default category
+        checklistItems: [],
+        images: [],
+        isArchived: false,
+        isPinned: false,
+        isLocked: false,
+        reminderDate: reminderAnalysis.hasReminder ? reminderAnalysis.reminderTime : undefined,
+      };
+
+      const createdNoteId = addNote(newNote);
+      
+      // Schedule reminder if detected
+      if (reminderAnalysis.hasReminder && reminderAnalysis.reminderTime && createdNoteId) {
+        console.log('🎤 VOICE NOTE CREATION - Scheduling reminder for text note...');
+        
+        // Create complete note object for notification
+        const completeNote: Note = {
+          ...newNote,
+          id: createdNoteId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        
+        const notificationId = await NotificationService.scheduleNoteReminder(completeNote, reminderAnalysis.reminderTime);
+        
+        if (notificationId) {
+          console.log('🎤 VOICE NOTE CREATION - Reminder scheduled with ID:', notificationId);
+          
+          Alert.alert(
+            '📝 Nota creada con recordatorio',
+            `Nota guardada y recordatorio programado para ${reminderAnalysis.reminderTime.toLocaleDateString('es-ES')} a las ${reminderAnalysis.reminderTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.`,
+            [{ text: 'Perfecto' }]
+          );
+        }
+      } else if (!reminderAnalysis.hasReminder) {
+        console.log('🎤 VOICE NOTE CREATION - No reminder detected, just created note');
+      }
+
+    } catch (error) {
+      console.error('🎤 VOICE NOTE CREATION - Error analyzing reminder:', error);
+      
+      // Fallback: create note normally without reminder analysis
+      const newNote: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> = {
+        title: noteTitle,
+        content: transcribedText,
+        type: 'text',
+        category: DEFAULT_CATEGORIES[0],
+        checklistItems: [],
+        images: [],
+        isArchived: false,
+        isPinned: false,
+        isLocked: false,
+      };
+
+      addNote(newNote);
     }
-
-    // Create regular text note
-    const newNote: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> = {
-      title: noteTitle,
-      content: transcribedText,
-      type: 'text',
-      category: DEFAULT_CATEGORIES[0], // Default category
-      checklistItems: [],
-      images: [],
-      isArchived: false,
-      isPinned: false,
-      isLocked: false,
-    };
-
-    addNote(newNote);
   };
 
   return (
