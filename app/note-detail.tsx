@@ -23,9 +23,11 @@ import { SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES, NOTE_BACKGROUND_COLORS
 import { StorageService } from '../utils/storage';
 import Callout from '../components/ui/Callout';
 import ShareMenu from '../components/ui/ShareMenu';
+import ImagePreviewModal from '../components/ImagePreviewModal';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
+import { loadSVGTemplate } from '../utils/svgLoader';
 
 /* 
   VOICE REMINDER FEATURE:
@@ -78,6 +80,8 @@ export default function NoteDetail() {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [svgTemplate, setSvgTemplate] = useState<string>('');
 
   useEffect(() => {
     if (noteId) {
@@ -92,6 +96,20 @@ export default function NoteDetail() {
       }
     }
   }, [noteId, notes, resetCallouts]);
+
+  // Load SVG template on mount
+  useEffect(() => {
+    const loadTemplate = async () => {
+      try {
+        const template = await loadSVGTemplate();
+        setSvgTemplate(template);
+      } catch (error) {
+        console.error('Error loading SVG template:', error);
+      }
+    };
+    
+    loadTemplate();
+  }, []);
 
   const handleBack = () => {
     if (editingElement) {
@@ -248,9 +266,14 @@ export default function NoteDetail() {
   };
 
   const handleShareAsImage = () => {
-    console.log('Compartir como imagen:', note?.title);
-    // TODO: Implementar funcionalidad de compartir como imagen
-    Alert.alert('Compartir', 'Compartir como imagen - Próximamente');
+    if (!note) return;
+    
+    if (!svgTemplate) {
+      Alert.alert('Error', 'Plantilla de imagen no disponible');
+      return;
+    }
+    
+    setShowImagePreview(true);
   };
 
   const handleExportAsMarkdown = () => {
@@ -1212,6 +1235,14 @@ export default function NoteDetail() {
         onShareAsImage={handleShareAsImage}
         onExportAsMarkdown={handleExportAsMarkdown}
         onShareWithSomeone={handleShareWithSomeone}
+      />
+
+      {/* Image Preview Modal */}
+      <ImagePreviewModal
+        visible={showImagePreview}
+        note={note}
+        templateSVG={svgTemplate}
+        onClose={() => setShowImagePreview(false)}
       />
     </SafeAreaView>
   );
