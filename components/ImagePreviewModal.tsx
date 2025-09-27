@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Note } from '../types';
 import { generateNoteSVG } from '../utils/imageGenerator';
 import { shareNote, shareToWhatsApp, shareWithImage, showShareOptions } from '../utils/shareUtils';
-// import SVGImageConverter from './SVGImageConverter'; // Temporalmente comentado para prebuild
+import ImageConverter from './ImageConverter';
 
 interface ImagePreviewModalProps {
   visible: boolean;
@@ -184,16 +184,16 @@ export default function ImagePreviewModal({
           </TouchableOpacity>
         </View>
 
-        {/* Hidden SVG to Image Converter - Deshabilitado temporalmente */}
-        {/* {svgContent && (
-          <SVGImageConverter
+        {/* Hidden Image Converter */}
+        {svgContent && (
+          <ImageConverter
             svgString={svgContent}
             options={{ width: 400, height: 600, format: 'png' }}
-            onConversionComplete={handleImageConversion}
-            onConversionError={handleConversionError}
-            visible={false}
+            onSuccess={handleImageConversion}
+            onError={handleConversionError}
+            autoConvert={true}
           />
-        )} */}
+        )}
       </SafeAreaView>
     </Modal>
   );

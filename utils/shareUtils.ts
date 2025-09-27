@@ -1,5 +1,6 @@
 import { Platform, Alert, Linking } from 'react-native';
 import { Note } from '../types';
+import { generateImageFilename } from './imageConverter';
 
 /**
  * Creates a formatted text version of the note for sharing
@@ -122,28 +123,62 @@ export async function shareToWhatsApp(note: Note, svgContent?: string): Promise<
 }
 
 /**
- * Share image data - simplified version for now
- * TODO: Implement proper file sharing once expo modules are configured
+ * Share image data - Implementación completa
  */
 export async function shareImageData(
   imageData: string, 
   note: Note
 ): Promise<void> {
   try {
-    // For now, show a success message
-    // The actual image sharing will be implemented in the next phase
+    console.log('🚀 Iniciando compartir imagen...');
+    
+    // Importación con require para evitar problemas de tipos
+    const FileSystem = require('expo-file-system');
+    const Sharing = require('expo-sharing');
+    
+    // Remove data URL prefix
+    const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+    
+    // Generate filename
+    const filename = generateImageFilename(note.title);
+    const fileUri = FileSystem.documentDirectory + filename;
+    
+    console.log('💾 Guardando imagen temporal...', fileUri);
+    
+    // Write base64 to file - usando string directo para encoding
+    await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+      encoding: 'base64',
+    });
+    
+    console.log('✅ Imagen guardada');
+    
+    // Check if sharing is available
+    const isAvailable = await Sharing.isAvailableAsync();
+    if (isAvailable) {
+      console.log('📱 Abriendo selector de compartir...');
+      
+      await Sharing.shareAsync(fileUri, {
+        mimeType: 'image/png',
+        dialogTitle: `Compartir: ${note.title}`,
+      });
+      
+      console.log('✅ Compartido exitosamente');
+    } else {
+      throw new Error('Sharing no disponible en este dispositivo');
+    }
+    
+  } catch (error: any) {
+    console.error('❌ Error compartiendo imagen:', error);
+    
+    // Fallback a compartir texto
     Alert.alert(
-      'Imagen generada',
-      `La imagen de "${note.title}" se ha generado correctamente. La funcionalidad de compartir imagen estará disponible próximamente.`,
+      'Error al compartir imagen',
+      `Error: ${error.message}. ¿Compartir como texto?`,
       [
-        { text: 'OK' },
+        { text: 'Cancelar', style: 'cancel' },
         { text: 'Compartir texto', onPress: () => shareNote(note) }
       ]
     );
-    
-  } catch (error) {
-    console.error('Error with image:', error);
-    throw error;
   }
 }
 
