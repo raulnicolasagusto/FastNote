@@ -380,6 +380,25 @@ export default function NoteDetail() {
     return listKeywords.some(keyword => lowerText.startsWith(keyword));
   };
 
+  const detectAddToListKeywords = (text: string): boolean => {
+    const lowerText = text.toLowerCase().trim();
+    const addToListKeywords = [
+      'agregar a la lista',
+      'añadir a la lista',
+      'agregar también',
+      'añadir también',
+      'agregar tambien',
+      'añadir tambien',
+      'add to list',
+      'add also',
+      'también',
+      'tambien',
+      'agregar'
+    ];
+
+    return addToListKeywords.some(keyword => lowerText.includes(keyword));
+  };
+
   const parseTextToChecklistItems = (text: string): ChecklistItem[] => {
     const items: ChecklistItem[] = [];
 
@@ -556,14 +575,53 @@ export default function NoteDetail() {
       }
 
       // Continue with normal text processing using the cleaned text
-      if (detectListKeywords(textToProcess)) {
-      // Convert to checklist
-      const newChecklistItems = parseTextToChecklistItems(transcribedText);
+      // Check if it's a command to add to existing list
+      if (detectAddToListKeywords(textToProcess)) {
+        console.log('🎤 VOICE PROCESSING - Detected "add to list" command');
+        
+        // Parse the new items (remove the add command keywords first)
+        let cleanTextForParsing = textToProcess;
+        const addKeywords = ['agregar a la lista', 'añadir a la lista', 'agregar también', 'añadir también', 'agregar tambien', 'añadir tambien', 'add to list', 'add also', 'también', 'tambien', 'agregar'];
+        
+        for (const keyword of addKeywords) {
+          cleanTextForParsing = cleanTextForParsing.toLowerCase().replace(keyword, '').trim();
+        }
+        
+        // Remove common separators
+        cleanTextForParsing = cleanTextForParsing.replace(/^[,:;-]\s*/, '');
+        
+        const newChecklistItems = parseTextToChecklistItems(cleanTextForParsing);
+        
+        if (newChecklistItems.length > 0) {
+          // Add to existing checklist (or create new one if none exists)
+          const existingItems = note.checklistItems || [];
+          const combinedItems = [...existingItems, ...newChecklistItems];
+          
+          const noteType = note.content && note.content.trim() ? 'mixed' : 'checklist';
+          
+          const updates: Partial<Note> = {
+            type: noteType,
+            checklistItems: combinedItems,
+            content: note.content || '',
+          };
 
-      if (newChecklistItems.length > 0) {
-        // Combine existing checklist items with new ones
-        const existingItems = note.checklistItems || [];
-        const combinedItems = [...existingItems, ...newChecklistItems];
+          updateNote(note.id, updates);
+          setEditedChecklistItems(combinedItems);
+          setEditingElement('checklist');
+          return;
+        }
+      }
+      // Regular list creation
+      else if (detectListKeywords(textToProcess)) {
+        console.log('🎤 VOICE PROCESSING - Detected new list creation command');
+        
+        // Convert to checklist
+        const newChecklistItems = parseTextToChecklistItems(textToProcess);
+
+        if (newChecklistItems.length > 0) {
+          // Combine existing checklist items with new ones
+          const existingItems = note.checklistItems || [];
+          const combinedItems = [...existingItems, ...newChecklistItems];
 
         // Determine note type based on content
         const hasText = note.content && note.content.trim();
@@ -608,7 +666,45 @@ export default function NoteDetail() {
       // Fallback: process text normally without reminder analysis
       console.log('🎤 VOICE PROCESSING - Fallback: processing text normally');
       
-      if (detectListKeywords(transcribedText)) {
+      // Check if it's a command to add to existing list (fallback)
+      if (detectAddToListKeywords(transcribedText)) {
+        console.log('🎤 VOICE PROCESSING - Fallback: Detected "add to list" command');
+        
+        // Parse the new items (remove the add command keywords first)
+        let cleanTextForParsing = transcribedText;
+        const addKeywords = ['agregar a la lista', 'añadir a la lista', 'agregar también', 'añadir también', 'agregar tambien', 'añadir tambien', 'add to list', 'add also', 'también', 'tambien', 'agregar'];
+        
+        for (const keyword of addKeywords) {
+          cleanTextForParsing = cleanTextForParsing.toLowerCase().replace(keyword, '').trim();
+        }
+        
+        // Remove common separators
+        cleanTextForParsing = cleanTextForParsing.replace(/^[,:;-]\s*/, '');
+        
+        const newChecklistItems = parseTextToChecklistItems(cleanTextForParsing);
+        
+        if (newChecklistItems.length > 0) {
+          const existingItems = note.checklistItems || [];
+          const combinedItems = [...existingItems, ...newChecklistItems];
+          const hasText = note.content && note.content.trim();
+          const noteType = hasText ? 'mixed' : 'checklist';
+
+          const updates: Partial<Note> = {
+            type: noteType,
+            checklistItems: combinedItems,
+            content: note.content || '',
+          };
+
+          updateNote(note.id, updates);
+          setEditedChecklistItems(combinedItems);
+          setEditingElement('checklist');
+          return;
+        }
+      }
+      // Regular list creation (fallback)
+      else if (detectListKeywords(transcribedText)) {
+        console.log('🎤 VOICE PROCESSING - Fallback: Detected new list creation command');
+        
         // Convert to checklist (fallback)
         const newChecklistItems = parseTextToChecklistItems(transcribedText);
 
