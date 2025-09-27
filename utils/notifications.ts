@@ -8,6 +8,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -186,5 +188,25 @@ export class NotificationService {
     listener: (notification: Notifications.Notification) => void
   ): Notifications.Subscription {
     return Notifications.addNotificationReceivedListener(listener);
+  }
+
+  // Clear all presented notifications (those already shown to user)
+  static async clearAllPresentedNotifications(): Promise<void> {
+    try {
+      await Notifications.dismissAllNotificationsAsync();
+      console.log('🧹 All presented notifications cleared');
+    } catch (error) {
+      console.error('❌ Error clearing presented notifications:', error);
+    }
+  }
+
+  // Clear specific notification by identifier
+  static async clearNotificationById(identifier: string): Promise<void> {
+    try {
+      await Notifications.dismissNotificationAsync(identifier);
+      console.log('🧹 Notification cleared:', identifier);
+    } catch (error) {
+      console.error('❌ Error clearing notification:', identifier, error);
+    }
   }
 }

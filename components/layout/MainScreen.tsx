@@ -52,8 +52,11 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   useNotificationHandlers({ 
     onNotePress: (note: Note) => {
       console.log('🔔 NOTIFICATION DEBUG - onNotePress received in MainScreen:', note.title);
+      console.log('🔔 NOTIFICATION DEBUG - About to call onNotePress prop with note:', note.id);
+      
       // Add a small delay to ensure navigation is ready
       setTimeout(() => {
+        console.log('🔔 NOTIFICATION DEBUG - Executing onNotePress after delay');
         onNotePress(note);
       }, 200);
     }

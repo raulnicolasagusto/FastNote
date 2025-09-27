@@ -34,12 +34,18 @@ export default function Home() {
 
   const handleNotePress = (note: Note) => {
     console.log('🎯 NAVIGATION DEBUG - handleNotePress called with note:', note.title, note.id);
-    // Navigate to note detail/edit screen
-    router.push({
-      pathname: '/note-detail',
-      params: { noteId: note.id },
-    });
-    console.log('🎯 NAVIGATION DEBUG - router.push called to /note-detail with noteId:', note.id);
+    console.log('🎯 NAVIGATION DEBUG - Current router state before navigation');
+    
+    try {
+      // Navigate to note detail/edit screen
+      router.push({
+        pathname: '/note-detail',
+        params: { noteId: note.id },
+      });
+      console.log('🎯 NAVIGATION DEBUG - router.push completed successfully for noteId:', note.id);
+    } catch (error) {
+      console.error('🎯 NAVIGATION ERROR - Failed to navigate:', error);
+    }
   };
 
   const handleNewNotePress = () => {

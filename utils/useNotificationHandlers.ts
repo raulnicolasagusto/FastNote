@@ -28,12 +28,23 @@ export const useNotificationHandlers = ({ onNotePress }: NotificationHandlerProp
           console.log('🔔 DEEP LINK DEBUG - Extracted data:', { noteId, action, fullData: data });
           console.log('🔔 DEEP LINK DEBUG - Action identifier from response:', response?.actionIdentifier);
 
-          // Handle both the notification tap and the "Abrir Nota" button
-          const shouldOpenNote = (action === 'reminder' && noteId) || 
-                                (response?.actionIdentifier === 'open' && noteId);
+          // Handle notification interactions more permissively
+          const isReminderNotification = action === 'reminder';
+          const isOpenAction = response?.actionIdentifier === 'open';
+          const isDefaultTap = response?.actionIdentifier === 'expo.modules.notifications.actions.DEFAULT' || !response?.actionIdentifier;
+          
+          const shouldOpenNote = isReminderNotification && noteId && (isOpenAction || isDefaultTap);
+
+          console.log('🔔 DEEP LINK DEBUG - Interaction analysis:', {
+            isReminderNotification,
+            isOpenAction,
+            isDefaultTap,
+            shouldOpenNote,
+            noteId
+          });
 
           if (shouldOpenNote) {
-            const interactionType = response?.actionIdentifier === 'open' ? 'Abrir Nota button' : 'notification tap';
+            const interactionType = isOpenAction ? 'Abrir Nota button' : 'notification tap';
             console.log('🔔 DEEP LINK DEBUG - Opening note via:', interactionType, 'noteId:', noteId);
             try {
               // Import useNotesStore dynamically to avoid circular dependencies
@@ -45,12 +56,27 @@ export const useNotificationHandlers = ({ onNotePress }: NotificationHandlerProp
 
               if (note && !note.isArchived) {
                 console.log('🔔 DEEP LINK DEBUG - Calling onNotePress with note:', note.title);
+                
+                // Clear the notification since user is opening the note
+                console.log('🧹 NOTIFICATION CLEANUP - Clearing presented notifications');
+                const { NotificationService } = await import('./notifications');
+                await NotificationService.clearAllPresentedNotifications();
+                
                 onNotePress(note);
               } else {
                 console.warn('🔔 DEEP LINK DEBUG - Note not found or archived:', noteId);
               }
             } catch (error) {
               console.error('🔔 DEEP LINK DEBUG - Error opening note from notification:', error);
+            }
+          } else if (response?.actionIdentifier === 'dismiss') {
+            // User pressed "Descartar" button
+            console.log('🧹 NOTIFICATION CLEANUP - User dismissed notification, clearing all');
+            try {
+              const { NotificationService } = await import('./notifications');
+              await NotificationService.clearAllPresentedNotifications();
+            } catch (error) {
+              console.error('❌ Error clearing notifications on dismiss:', error);
             }
           } else {
             // Only log if it's not the default expo action (to reduce noise)
