@@ -265,15 +265,21 @@ export default function NoteDetail() {
     Alert.alert('Compartir', 'Compartir como texto - Próximamente');
   };
 
-  const handleShareAsImage = () => {
+  const handleShareAsImage = async () => {
     if (!note) return;
     
-    if (!svgTemplate) {
-      Alert.alert('Error', 'Plantilla de imagen no disponible');
-      return;
+    try {
+      // Import the sharing utility dynamically to avoid import issues
+      const { shareNoteAsImage } = await import('../utils/shareImageUtils');
+      await shareNoteAsImage(note);
+    } catch (error) {
+      console.error('Error sharing note as image:', error);
+      Alert.alert(
+        'Error',
+        'Failed to share note as image. This feature requires a native build.',
+        [{ text: 'OK' }]
+      );
     }
-    
-    setShowImagePreview(true);
   };
 
   const handleExportAsMarkdown = () => {
