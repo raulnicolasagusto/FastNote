@@ -24,6 +24,23 @@ import { StorageService } from '../utils/storage';
 import Callout from '../components/ui/Callout';
 import ShareMenu from '../components/ui/ShareMenu';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
+import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
+import { NotificationService } from '../utils/notifications';
+
+/* 
+  VOICE REMINDER FEATURE:
+  Ejemplos de comandos de voz que ahora activan recordatorios automáticamente:
+  
+  ✅ "Lista de compras: azúcar, tomate, huevo. Agregar recordatorio para las 15:30 de hoy"
+  ✅ "Reunión con cliente mañana. Recordar a las 9:00"
+  ✅ "Llamar al doctor. Avisar hoy a las 16:00"
+  ✅ "Comprar regalo para mamá. Recordatorio para mañana a las 10:00"
+  
+  La IA extrae automáticamente:
+  - El contenido principal de la nota (sin el comando de recordatorio)
+  - La fecha y hora del recordatorio
+  - Programa la notificación automáticamente
+*/
 
 export default function NoteDetail() {
   const { noteId } = useLocalSearchParams<{ noteId: string }>();
@@ -329,7 +346,7 @@ export default function NoteDetail() {
       const result = await response.json();
 
       if (response.ok && result.text) {
-        insertTranscribedText(result.text);
+        await insertTranscribedText(result.text);
       } else {
         Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
       }
@@ -440,7 +457,7 @@ export default function NoteDetail() {
         const detectedText = result.ParsedResults[0].ParsedText.trim();
 
         if (detectedText) {
-          insertTranscribedText(detectedText);
+          await insertTranscribedText(detectedText);
           Alert.alert('Texto Reconocido', 'Texto extraído exitosamente de la imagen!');
         } else {
           Alert.alert('Sin Texto', 'No se detectó texto en la imagen. Intenta con una imagen más clara.');
@@ -500,11 +517,46 @@ export default function NoteDetail() {
     }
   };
 
-  const insertTranscribedText = (transcribedText: string) => {
+  const insertTranscribedText = async (transcribedText: string) => {
     if (!note) return;
 
-    // Check if the transcribed text indicates a list
-    if (detectListKeywords(transcribedText)) {
+    console.log('🎤 VOICE PROCESSING - Starting analysis of transcribed text:', transcribedText);
+    console.log('🎤 VOICE PROCESSING - Note context:', { noteId: note.id, title: note.title });
+
+    // First, analyze for reminder commands using AI
+    try {
+      console.log('🎤 VOICE PROCESSING - Calling extractReminderDetails...');
+      const reminderAnalysis = await extractReminderDetails(transcribedText);
+      console.log('🎤 VOICE PROCESSING - Reminder analysis result:', JSON.stringify(reminderAnalysis, null, 2));
+
+      // Use the cleaned text (without reminder commands) for further processing
+      const textToProcess = reminderAnalysis.cleanText;
+
+      // If a reminder was detected, schedule it
+      if (reminderAnalysis.hasReminder && reminderAnalysis.reminderTime) {
+        console.log('🎤 VOICE PROCESSING - Scheduling reminder for:', reminderAnalysis.reminderTime);
+        
+        // Schedule the notification
+        const notificationId = await NotificationService.scheduleNoteReminder(note, reminderAnalysis.reminderTime);
+        
+        if (notificationId) {
+          // Update note with reminder
+          updateNote(note.id, { 
+            reminderDate: reminderAnalysis.reminderTime,
+            notificationId: notificationId 
+          });
+
+          // Show confirmation to user
+          Alert.alert(
+            '⏰ Recordatorio programado por voz',
+            `Se programó un recordatorio para el ${reminderAnalysis.reminderTime.toLocaleDateString('es-ES')} a las ${reminderAnalysis.reminderTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.\n\nFrase detectada: "${reminderAnalysis.originalReminderPhrase || 'comando de recordatorio'}"`,
+            [{ text: 'Perfecto' }]
+          );
+        }
+      }
+
+      // Continue with normal text processing using the cleaned text
+      if (detectListKeywords(textToProcess)) {
       // Convert to checklist
       const newChecklistItems = parseTextToChecklistItems(transcribedText);
 
@@ -534,22 +586,65 @@ export default function NoteDetail() {
       }
     }
 
-    // If not a list, insert as regular text
-    const updatedContent = editedContent ? `${editedContent}\n\n${transcribedText}` : transcribedText;
-    setEditedContent(updatedContent);
+      // If not a list, insert as regular text
+      const updatedContent = editedContent ? `${editedContent}\n\n${textToProcess}` : textToProcess;
+      setEditedContent(updatedContent);
 
-    // Determine note type based on content
-    const hasChecklist = note.checklistItems && note.checklistItems.length > 0;
-    const noteType = hasChecklist ? 'mixed' : 'text';
+      // Determine note type based on content
+      const hasChecklist = note.checklistItems && note.checklistItems.length > 0;
+      const noteType = hasChecklist ? 'mixed' : 'text';
 
-    // Auto-save the transcribed text, preserving existing checklist
-    const updates: Partial<Note> = {
-      type: noteType,
-      content: updatedContent.trim(),
-      // Preserve existing checklist items
-      checklistItems: note.checklistItems || [],
-    };
-    updateNote(note.id, updates);
+      // Auto-save the transcribed text, preserving existing checklist
+      const updates: Partial<Note> = {
+        type: noteType,
+        content: updatedContent.trim(),
+        // Preserve existing checklist items
+        checklistItems: note.checklistItems || [],
+      };
+      updateNote(note.id, updates);
+    } catch (error) {
+      console.error('🎤 VOICE PROCESSING - Error analyzing voice for reminders:', error);
+      
+      // Fallback: process text normally without reminder analysis
+      console.log('🎤 VOICE PROCESSING - Fallback: processing text normally');
+      
+      if (detectListKeywords(transcribedText)) {
+        // Convert to checklist (fallback)
+        const newChecklistItems = parseTextToChecklistItems(transcribedText);
+
+        if (newChecklistItems.length > 0) {
+          const existingItems = note.checklistItems || [];
+          const combinedItems = [...existingItems, ...newChecklistItems];
+          const hasText = note.content && note.content.trim();
+          const noteType = hasText ? 'mixed' : 'checklist';
+
+          const updates: Partial<Note> = {
+            type: noteType,
+            checklistItems: combinedItems,
+            content: note.content || '',
+          };
+
+          updateNote(note.id, updates);
+          setEditedChecklistItems(combinedItems);
+          setEditingElement('checklist');
+          return;
+        }
+      }
+
+      // If not a list, insert as regular text (fallback)
+      const updatedContent = editedContent ? `${editedContent}\n\n${transcribedText}` : transcribedText;
+      setEditedContent(updatedContent);
+
+      const hasChecklist = note.checklistItems && note.checklistItems.length > 0;
+      const noteType = hasChecklist ? 'mixed' : 'text';
+
+      const updates: Partial<Note> = {
+        type: noteType,
+        content: updatedContent.trim(),
+        checklistItems: note.checklistItems || [],
+      };
+      updateNote(note.id, updates);
+    }
   };
 
 
