@@ -752,6 +752,46 @@ export default function NoteDetail() {
     });
   };
 
+  // Function to count characters excluding spaces
+  const countCharacters = (text: string) => {
+    return text.replace(/\s/g, '').length;
+  };
+
+  // Function to format reminder date for display
+  const formatReminderDate = (date: Date | undefined) => {
+    if (!date) return '';
+    
+    // Ensure we have a valid Date object
+    const reminderDate = new Date(date);
+    if (isNaN(reminderDate.getTime())) return '';
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const reminderDay = new Date(reminderDate.getFullYear(), reminderDate.getMonth(), reminderDate.getDate());
+    
+    const daysDiff = Math.floor((reminderDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    let dayText = '';
+    if (daysDiff === 0) {
+      dayText = 'Hoy';
+    } else if (daysDiff === 1) {
+      dayText = 'Mañana';
+    } else if (daysDiff === -1) {
+      dayText = 'Ayer';
+    } else if (daysDiff > 1) {
+      dayText = `En ${daysDiff} días`;
+    } else {
+      dayText = `Hace ${Math.abs(daysDiff)} días`;
+    }
+    
+    const timeText = reminderDate.toLocaleTimeString('es-ES', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    
+    return `${dayText} ${timeText}`;
+  };
+
   const renderContent = () => {
     if (!note) return null;
 
@@ -992,9 +1032,35 @@ export default function NoteDetail() {
 
       {/* Content */}
       <ScrollView style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]} showsVerticalScrollIndicator={false}>
-        {/* Date and edit hint */}
+        {/* Date, reminder and character count */}
         <View style={styles.dateContainer}>
-          <Text style={[styles.date, { color: textColors.secondary }]}>{formatDate(note.createdAt)}</Text>
+          <View style={styles.dateInfoRow}>
+            <Text style={[styles.date, { color: textColors.secondary }]}>{formatDate(note.createdAt)}</Text>
+            
+            {/* Reminder indicator */}
+            {note.reminderDate && formatReminderDate(note.reminderDate) && (
+              <View style={styles.reminderContainer}>
+                <MaterialIcons name="schedule" size={14} color={colors.accent.orange} />
+                <Text style={[styles.reminderText, { color: colors.accent.orange }]}>
+                  {formatReminderDate(note.reminderDate)}
+                </Text>
+              </View>
+            )}
+            
+            {/* Character counter - updates in real time */}
+            <View style={styles.characterCountContainer}>
+              <MaterialIcons name="text-fields" size={14} color={textColors.secondary} />
+              <Text style={[styles.characterCount, { color: textColors.secondary }]}>
+                {editingElement === 'content' 
+                  ? countCharacters(editedContent + (editedChecklistItems?.map(item => item.text).join('') || ''))
+                  : editingElement === 'checklist'
+                  ? countCharacters((note.content || '') + (editedChecklistItems?.map(item => item.text).join('') || ''))
+                  : countCharacters(note.content + (note.checklistItems?.map(item => item.text).join('') || ''))
+                } chars
+              </Text>
+            </View>
+          </View>
+          
           {!editingElement && !note.isLocked && (
             <Text style={[styles.editHint, { color: textColors.secondary }]}>Tap to edit</Text>
           )}
@@ -1251,9 +1317,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.lg,
   },
+  dateInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: SPACING.md,
+  },
   date: {
     fontSize: TYPOGRAPHY.dateSize,
     opacity: 0.5,
+  },
+  reminderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  reminderText: {
+    fontSize: TYPOGRAPHY.dateSize - 1,
+    fontWeight: '500',
+  },
+  characterCountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  characterCount: {
+    fontSize: TYPOGRAPHY.dateSize - 2,
+    opacity: 0.7,
   },
   editHint: {
     fontSize: TYPOGRAPHY.dateSize - 1,
