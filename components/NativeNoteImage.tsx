@@ -76,15 +76,8 @@ export const NativeNoteImage: React.FC<NativeNoteImageProps> = ({
               </View>
             )}
             
-            {/* Footer */}
+            {/* Footer - removed date display */}
             <View style={styles.footer}>
-              <Text style={styles.date}>
-                {new Date(note.createdAt).toLocaleDateString('es-ES', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric'
-                })}
-              </Text>
             </View>
             
           </View>
@@ -92,7 +85,7 @@ export const NativeNoteImage: React.FC<NativeNoteImageProps> = ({
         
         {/* Bottom branding */}
         <View style={styles.brandingContainer}>
-          <Text style={styles.branding}>Creado con FastNote</Text>
+          <Text style={styles.branding}>Created with FastVoiceNote</Text>
         </View>
       </View>
     </View>
