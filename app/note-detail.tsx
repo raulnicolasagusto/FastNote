@@ -28,7 +28,6 @@ import ShareableNoteImage from '../components/ShareableNoteImage';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
-import { loadSVGTemplate } from '../utils/svgLoader';
 
 /* 
   VOICE REMINDER FEATURE:
@@ -83,7 +82,6 @@ export default function NoteDetail() {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
-  const [svgTemplate, setSvgTemplate] = useState<string>('');
 
   useEffect(() => {
     if (noteId) {
@@ -99,19 +97,7 @@ export default function NoteDetail() {
     }
   }, [noteId, notes, resetCallouts]);
 
-  // Load SVG template on mount
-  useEffect(() => {
-    const loadTemplate = async () => {
-      try {
-        const template = await loadSVGTemplate();
-        setSvgTemplate(template);
-      } catch (error) {
-        console.error('Error loading SVG template:', error);
-      }
-    };
-    
-    loadTemplate();
-  }, []);
+
 
   const handleBack = () => {
     if (editingElement) {
@@ -1326,7 +1312,7 @@ export default function NoteDetail() {
       <ImagePreviewModal
         visible={showImagePreview}
         note={note}
-        templateSVG={svgTemplate}
+        templateSVG={''}
         onClose={() => setShowImagePreview(false)}
       />
 

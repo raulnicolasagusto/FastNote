@@ -1,6 +1,4 @@
-import { Alert } from 'react-native';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+import { Alert, Share } from 'react-native';
 import { Note } from '../types';
 
 /**
@@ -45,45 +43,27 @@ export const formatNoteAsText = (note: Note): string => {
 };
 
 /**
- * Share the note as plain text
+ * Share the note as plain text using native Share
  */
 export const shareNoteAsText = async (note: Note): Promise<void> => {
   try {
     console.log('🔄 Starting text share process for note:', note.title);
 
-    // Check if sharing is available
-    const isAvailable = await Sharing.isAvailableAsync();
-    if (!isAvailable) {
-      Alert.alert(
-        'Sharing Not Available',
-        'Sharing is not available on this device.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
-
     // Format note content as text
     const textContent = formatNoteAsText(note);
     
-    // Generate filename
-    const sanitizedTitle = note.title
-      .replace(/[^a-zA-Z0-9\s]/g, '')
-      .trim()
-      .replace(/\s+/g, '_')
-      .slice(0, 50);
-    
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:\-T]/g, '');
-    const filename = `FastVoiceNote_${sanitizedTitle}_${timestamp}.txt`;
-
-    // Share the text content directly
-    await Sharing.shareAsync(textContent, {
-      mimeType: 'text/plain',
-      dialogTitle: `Share "${note.title}"`,
+    // Share the text directly using React Native's Share API
+    const result = await Share.share({
+      message: textContent,
+      title: note.title,
     });
 
-    console.log('📄 Text shared directly as content');
+    if (result.action === Share.sharedAction) {
+      console.log('✅ Note shared as text successfully');
+    } else if (result.action === Share.dismissedAction) {
+      console.log('� Share dialog was dismissed');
+    }
 
-    console.log('✅ Note shared as text successfully');
   } catch (error) {
     console.error('❌ Error in shareNoteAsText:', error);
     
