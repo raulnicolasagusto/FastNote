@@ -260,11 +260,22 @@ export default function NoteDetail() {
     setEditingElement('checklist');
   };
 
-  // Share functions (placeholder implementations)
-  const handleShareAsText = () => {
-    console.log('Compartir como texto:', note?.title);
-    // TODO: Implementar funcionalidad de compartir como texto
-    Alert.alert('Compartir', 'Compartir como texto - Próximamente');
+  // Share functions
+  const handleShareAsText = async () => {
+    if (!note) return;
+    
+    try {
+      // Import the sharing utility dynamically to avoid import issues
+      const { shareNoteAsText } = await import('../utils/shareTextUtils');
+      await shareNoteAsText(note);
+    } catch (error) {
+      console.error('Error sharing note as text:', error);
+      Alert.alert(
+        'Error',
+        `Failed to share note as text: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const handleShareAsImage = async () => {
