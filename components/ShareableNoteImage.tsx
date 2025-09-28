@@ -43,8 +43,10 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#ffffff',
     position: 'absolute',
-    left: -10000, // Hide off-screen during capture
-    top: -10000,
+    left: 0,
+    top: 0,
+    opacity: 0, // Hide visually but keep in layout
+    zIndex: -1000, // Put behind everything
   },
 });
 

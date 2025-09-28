@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Svg, { G, Rect, Path, ForeignObject } from 'react-native-svg';
+import { View, StyleSheet } from 'react-native';
+import Svg, { G, Rect, Path, Text as SvgText } from 'react-native-svg';
 import { Note } from '../types';
 import { TYPOGRAPHY } from '../constants/theme';
 
@@ -103,36 +103,59 @@ export const NoteImageGenerator: React.FC<NoteImageGeneratorProps> = ({
           />
         </G>
 
-        {/* Note content area */}
-        <ForeignObject x="80" y="140" width={width - 160} height={height - 300}>
-          <View style={styles.textContainer}>
-            <Text style={styles.titleText}>{note.title}</Text>
-            {textLines.map((line, index) => (
-              <Text key={index} style={styles.contentText}>
-                {line}
-              </Text>
-            ))}
-            
-            {/* Date and app name at bottom */}
-            <View style={styles.footerContainer}>
-              <Text style={styles.dateText}>
-                {new Date(note.createdAt).toLocaleDateString('es-ES', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric'
-                })}
-              </Text>
-              <Text style={styles.appText}>Creado con FastNote</Text>
-            </View>
-          </View>
-        </ForeignObject>
+        {/* Title */}
+        <SvgText
+          x="80"
+          y="180"
+          fontSize="24"
+          fontWeight="bold"
+          fill="#2c3e50"
+          fontFamily="Arial, sans-serif"
+        >
+          {note.title}
+        </SvgText>
 
-        {/* Bottom decorative text - using ForeignObject instead */}
-        <ForeignObject x={width/2 - 150} y={height - 60} width="300" height="40">
-          <View style={styles.bottomTextContainer}>
-            <Text style={styles.bottomText}>Creado con FastNote</Text>
-          </View>
-        </ForeignObject>
+        {/* Note content */}
+        {textLines.map((line, index) => (
+          <SvgText
+            key={index}
+            x="80"
+            y={220 + (index * 25)}
+            fontSize="16"
+            fill="#34495e"
+            fontFamily="Arial, sans-serif"
+          >
+            {line}
+          </SvgText>
+        ))}
+
+        {/* Date */}
+        <SvgText
+          x="80"
+          y={height - 80}
+          fontSize="12"
+          fill="#7f8c8d"
+          fontFamily="Arial, sans-serif"
+        >
+          {new Date(note.createdAt).toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          })}
+        </SvgText>
+
+        {/* Bottom text */}
+        <SvgText
+          x={width/2}
+          y={height - 40}
+          fontSize="14"
+          fontWeight="600"
+          fill="#95a5a6"
+          textAnchor="middle"
+          fontFamily="Arial, sans-serif"
+        >
+          Creado con FastNote
+        </SvgText>
       </Svg>
     </View>
   );
