@@ -1,5 +1,8 @@
 import React from 'react';
 import { Platform, Alert } from 'react-native';
+import { captureRef } from 'react-native-view-shot';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { Note } from '../types';
 import { NoteImageGenerator } from '../components/NoteImageGenerator';
 
@@ -18,35 +21,62 @@ export const generateImageFilename = (noteTitle: string): string => {
 };
 
 /**
- * Placeholder function for SVG to image conversion
- * This will be implemented after native build with react-native-view-shot
+ * Capture a React Native component as image using react-native-view-shot
  */
-export const svgComponentToBase64 = async (
-  svgComponent: React.ReactElement,
-  width: number = 768,
-  height: number = 768
+export const captureComponentAsImage = async (
+  componentRef: React.RefObject<any>,
+  options: {
+    format?: 'png' | 'jpg';
+    quality?: number;
+    width?: number;
+    height?: number;
+  } = {}
 ): Promise<string> => {
-  console.log('🖼️ SVG conversion requested for:', { width, height });
-  
-  // This is a placeholder that simulates image generation
-  // The actual implementation will use react-native-view-shot after build
-  throw new Error('Image generation requires native build. Please build the app first.');
+  try {
+    console.log('🖼️ Capturing component as image...');
+    
+    const {
+      format = 'png',
+      quality = 1.0,
+      width = 768,
+      height = 768
+    } = options;
+
+    const uri = await captureRef(componentRef.current, {
+      format,
+      quality,
+      width,
+      height,
+      result: 'tmpfile',
+    });
+
+    console.log('✅ Component captured successfully:', uri);
+    return uri;
+  } catch (error) {
+    console.error('❌ Error capturing component:', error);
+    throw new Error(`Failed to capture component: ${error}`);
+  }
 };
 
 /**
- * Generate the note image data
+ * Generate the note image data using component reference
  */
-export const generateNoteImageData = async (note: Note): Promise<string> => {
+export const generateNoteImageData = async (
+  componentRef: React.RefObject<any>,
+  note: Note
+): Promise<string> => {
   try {
     console.log('📝 Generating image for note:', note.title);
     
-    // Create the React component for the note
-    const noteComponent = React.createElement(NoteImageGenerator, { note });
+    // Capture the component as image
+    const imageUri = await captureComponentAsImage(componentRef, {
+      format: 'png',
+      quality: 1.0,
+      width: 768,
+      height: 768
+    });
     
-    // Convert to base64 (placeholder for now)
-    const base64Data = await svgComponentToBase64(noteComponent);
-    
-    return base64Data;
+    return imageUri;
   } catch (error) {
     console.error('❌ Error generating note image:', error);
     throw new Error(`Failed to generate note image: ${error}`);
@@ -55,40 +85,72 @@ export const generateNoteImageData = async (note: Note): Promise<string> => {
 
 /**
  * Save image data to file system
- * This is a placeholder implementation that will work after build
  */
-export const saveImageToFile = async (base64Data: string, filename: string): Promise<string> => {
-  console.log('💾 Saving image to file:', filename);
-  
-  // This is a placeholder - actual implementation after build
-  throw new Error('File saving requires native build. Please build the app first.');
+export const saveImageToFile = async (imageUri: string, filename: string): Promise<string> => {
+  try {
+    console.log('💾 Saving image to file:', filename);
+    
+    // For now, we'll use the temporary file directly
+    // The imageUri from react-native-view-shot is already a valid file path
+    const newPath = imageUri;
+    
+    console.log('📁 Using image path directly:', newPath);
+    
+    console.log('✅ Image saved successfully:', newPath);
+    return newPath;
+  } catch (error) {
+    console.error('❌ Error saving image:', error);
+    throw new Error(`Failed to save image: ${error}`);
+  }
 };
 
 /**
  * Share the note as an image
- * Shows a user-friendly message for now, will work after build
+ * This function needs to be called with a component reference
  */
-export const shareNoteAsImage = async (note: Note): Promise<void> => {
+export const shareNoteAsImage = async (
+  componentRef: React.RefObject<any>,
+  note: Note
+): Promise<void> => {
   try {
     console.log('🔄 Starting share process for note:', note.title);
 
-    // Show info alert for now
-    Alert.alert(
-      '🚧 Feature Coming Soon',
-      'The "Share as Image" feature requires a native build. This functionality will work after you build the app.\n\nFor now, you can:\n• Copy the note text\n• Use the share button for text sharing',
-      [
-        { text: 'Copy Text', onPress: () => copyNoteText(note) },
-        { text: 'OK', style: 'cancel' }
-      ]
-    );
+    // Check if sharing is available
+    const isAvailable = await Sharing.isAvailableAsync();
+    if (!isAvailable) {
+      Alert.alert(
+        'Sharing Not Available',
+        'Sharing is not available on this device.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
 
+    // Generate the image
+    const imageUri = await generateNoteImageData(componentRef, note);
+    
+    // Generate filename
+    const filename = generateImageFilename(note.title);
+    
+    // Save to file (in this case, just use the temp file)
+    const finalPath = await saveImageToFile(imageUri, filename);
+
+    // Share the image
+    await Sharing.shareAsync(finalPath, {
+      mimeType: 'image/png',
+      dialogTitle: `Share "${note.title}"`,
+    });
+
+    console.log('✅ Note shared successfully');
   } catch (error) {
     console.error('❌ Error in shareNoteAsImage:', error);
-    Alert.alert(
-      'Error',
-      'Failed to share note. Please try again.',
-      [{ text: 'OK' }]
-    );
+    
+    let errorMessage = 'Failed to share note. Please try again.';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    Alert.alert('Error', errorMessage, [{ text: 'OK' }]);
   }
 };
 
@@ -117,7 +179,7 @@ export const isImageSharingSupported = (): boolean => {
 
 export default {
   generateImageFilename,
-  svgComponentToBase64,
+  captureComponentAsImage,
   generateNoteImageData,
   saveImageToFile,
   shareNoteAsImage,

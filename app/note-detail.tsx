@@ -24,6 +24,7 @@ import { StorageService } from '../utils/storage';
 import Callout from '../components/ui/Callout';
 import ShareMenu from '../components/ui/ShareMenu';
 import ImagePreviewModal from '../components/ImagePreviewModal';
+import ShareableNoteImage from '../components/ShareableNoteImage';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
@@ -77,6 +78,7 @@ export default function NoteDetail() {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [editedChecklistItems, setEditedChecklistItems] = useState<ChecklistItem[]>([]);
   const inputRefs = useRef<{ [key: string]: TextInput | null }>({});
+  const shareableImageRef = useRef<View>(null);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -271,12 +273,12 @@ export default function NoteDetail() {
     try {
       // Import the sharing utility dynamically to avoid import issues
       const { shareNoteAsImage } = await import('../utils/shareImageUtils');
-      await shareNoteAsImage(note);
+      await shareNoteAsImage(shareableImageRef, note);
     } catch (error) {
       console.error('Error sharing note as image:', error);
       Alert.alert(
         'Error',
-        'Failed to share note as image. This feature requires a native build.',
+        `Failed to share note as image: ${error instanceof Error ? error.message : 'Unknown error'}`,
         [{ text: 'OK' }]
       );
     }
@@ -1316,6 +1318,16 @@ export default function NoteDetail() {
         templateSVG={svgTemplate}
         onClose={() => setShowImagePreview(false)}
       />
+
+      {/* Hidden ShareableNoteImage for capturing */}
+      {note && (
+        <ShareableNoteImage
+          ref={shareableImageRef}
+          note={note}
+          width={768}
+          height={768}
+        />
+      )}
     </SafeAreaView>
   );
 }
