@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { NoteImageGenerator } from './NoteImageGenerator';
+import { NativeNoteImage } from './NativeNoteImage';
 import { Note } from '../types';
 
 interface ShareableNoteImageProps {
@@ -27,7 +27,7 @@ export const ShareableNoteImage = forwardRef<View, ShareableNoteImageProps>(
         ]}
         collapsable={false}
       >
-        <NoteImageGenerator 
+        <NativeNoteImage 
           note={note} 
           width={width} 
           height={height} 
