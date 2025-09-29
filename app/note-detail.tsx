@@ -1463,47 +1463,59 @@ export default function NoteDetail() {
               autoFocus
             />
             
-            {/* Show images during editing - RESTORED */}
+            {/* Show images and audio during editing - RESTORED */}
             {note.images && note.images.length > 0 && (
               <View style={styles.imagesSection}>
-                {note.images.map((imageUri, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.imageContainer}
-                    onPress={() => {
-                      console.log('🖼️ Image tapped in edit mode:', index);
-                      if (selectedImageIndex === index) {
-                        // Deselect if already selected
-                        setSelectedImageIndex(null);
-                      } else {
-                        // Select this image
-                        setSelectedImageIndex(index);
-                        setSelectedBlockIndex(null); // Clear block selection
-                      }
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <Image
-                      source={{ uri: imageUri }}
-                      style={styles.noteImage}
-                      resizeMode="contain"
+                {note.images.map((imageUri, index) => 
+                  isAudioUri(imageUri) ? (
+                    // Render audio player for audio files
+                    <AudioPlayer
+                      key={index}
+                      audioUri={imageUri}
+                      onDelete={() => {
+                        removeImageFromLegacy(index);
+                      }}
                     />
-                    {/* Delete button - only show if selected */}
-                    {selectedImageIndex === index && (
-                      <TouchableOpacity
-                        style={styles.deleteButton}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          removeImageFromLegacy(index);
+                  ) : (
+                    // Render image for image files
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.imageContainer}
+                      onPress={() => {
+                        console.log('🖼️ Image tapped in edit mode:', index);
+                        if (selectedImageIndex === index) {
+                          // Deselect if already selected
                           setSelectedImageIndex(null);
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <MaterialIcons name="delete" size={24} color="white" />
-                      </TouchableOpacity>
-                    )}
-                  </TouchableOpacity>
-                ))}
+                        } else {
+                          // Select this image
+                          setSelectedImageIndex(index);
+                          setSelectedBlockIndex(null); // Clear block selection
+                        }
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Image
+                        source={{ uri: imageUri }}
+                        style={styles.noteImage}
+                        resizeMode="contain"
+                      />
+                      {/* Delete button - only show if selected */}
+                      {selectedImageIndex === index && (
+                        <TouchableOpacity
+                          style={styles.deleteButton}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            removeImageFromLegacy(index);
+                            setSelectedImageIndex(null);
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <MaterialIcons name="delete" size={24} color="white" />
+                        </TouchableOpacity>
+                      )}
+                    </TouchableOpacity>
+                  )
+                )}
               </View>
             )}
           </View>
