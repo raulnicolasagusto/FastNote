@@ -40,8 +40,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
       // Abrir cámara
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
+        allowsEditing: false,
         quality: 0.8, // Reducir calidad para optimizar tamaño
       });
 
@@ -72,8 +71,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
       // Abrir galería
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
+        allowsEditing: false,
         quality: 0.8, // Reducir calidad para optimizar tamaño
       });
 
