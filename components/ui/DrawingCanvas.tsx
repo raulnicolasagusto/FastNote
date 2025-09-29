@@ -42,19 +42,29 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
 
   const brushSizes = [1, 3, 5, 8, 12];
 
+  // Calculate drawing area dimensions
+  const drawingWidth = screenWidth - 32;
+  const drawingHeight = Math.min(screenHeight - 280, drawingWidth * (400/350));
+
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
 
     onPanResponderGrant: (evt) => {
       const { locationX, locationY } = evt.nativeEvent;
-      const newPath = `M${locationX.toFixed(2)},${locationY.toFixed(2)}`;
+      // Convert coordinates to SVG viewBox coordinates (350x400)
+      const svgX = (locationX / drawingWidth) * 350;
+      const svgY = (locationY / drawingHeight) * 400;
+      const newPath = `M${svgX.toFixed(2)},${svgY.toFixed(2)}`;
       setCurrentPath(newPath);
     },
 
     onPanResponderMove: (evt) => {
       const { locationX, locationY } = evt.nativeEvent;
-      setCurrentPath(prev => `${prev} L${locationX.toFixed(2)},${locationY.toFixed(2)}`);
+      // Convert coordinates to SVG viewBox coordinates (350x400)
+      const svgX = (locationX / drawingWidth) * 350;
+      const svgY = (locationY / drawingHeight) * 400;
+      setCurrentPath(prev => `${prev} L${svgX.toFixed(2)},${svgY.toFixed(2)}`);
     },
 
     onPanResponderRelease: () => {
@@ -148,17 +158,24 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         <View style={styles.canvasContainer}>
           <ViewShot 
             ref={viewShotRef}
-            options={{ format: 'png', quality: 0.9 }}
-            style={styles.drawingArea}
+            options={{ 
+              format: 'png', 
+              quality: 0.9, 
+              result: 'data-uri',
+              width: drawingWidth,
+              height: drawingHeight
+            }}
+            style={[styles.drawingArea, { width: drawingWidth, height: drawingHeight }]}
           >
             <View
-              style={{ backgroundColor: 'white', flex: 1 }}
+              style={[{ width: drawingWidth, height: drawingHeight, backgroundColor: 'white', borderRadius: 12 }]}
               {...panResponder.panHandlers}
             >
               <Svg
-                width={screenWidth - 32}
-                height={screenHeight - 280}
-                style={StyleSheet.absoluteFillObject}
+                width={drawingWidth}
+                height={drawingHeight}
+                viewBox="0 0 350 400"
+                preserveAspectRatio="none"
               >
                 {renderPaths()}
               </Svg>
@@ -278,15 +295,19 @@ const styles = StyleSheet.create({
   canvasContainer: {
     flex: 1,
     padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   drawingArea: {
-    flex: 1,
+    width: screenWidth - 32,
+    height: Math.min(screenHeight - 280, (screenWidth - 32) * (400/350)), // Maintain aspect ratio
     borderRadius: 12,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    overflow: 'hidden',
   },
   controlsContainer: {
     padding: 16,
