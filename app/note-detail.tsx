@@ -30,6 +30,8 @@ import ShareableNoteImage from '../components/ShareableNoteImage';
 import KeyboardToolbar from '../components/ui/KeyboardToolbar';
 import ImagePickerModal from '../components/ui/ImagePickerModal';
 import { DrawingCanvas } from '../components/ui/DrawingCanvas';
+import AudioRecorder from '../components/ui/AudioRecorder';
+import AudioPlayer from '../components/ui/AudioPlayer';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
@@ -90,8 +92,10 @@ export default function NoteDetail() {
   const [showKeyboardToolbar, setShowKeyboardToolbar] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [showDrawingCanvas, setShowDrawingCanvas] = useState(false);
+  const [showAudioRecorder, setShowAudioRecorder] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(null);
+  const [selectedAudioIndex, setSelectedAudioIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (noteId) {
@@ -306,6 +310,12 @@ export default function NoteDetail() {
     Alert.alert('Compartir', 'Compartir con alguien - Próximamente');
   };
 
+  // Helper function to detect if URI is audio
+  const isAudioUri = (uri: string): boolean => {
+    const audioExtensions = ['.mp3', '.wav', '.m4a', '.aac', '.ogg'];
+    return audioExtensions.some(ext => uri.toLowerCase().includes(ext));
+  };
+
   // Keyboard Toolbar Functions
   const handleToolbarFormat = () => {
     console.log('🎨 Format toolbar pressed');
@@ -314,9 +324,21 @@ export default function NoteDetail() {
   };
 
   const handleToolbarAudio = () => {
-    console.log('🎤 Audio toolbar pressed');
-    // TODO: Implementar grabación de audio integrada
-    Alert.alert('Audio', 'Grabación de audio - Próximamente');
+    setShowAudioRecorder(true);
+  };
+
+  const handleAudioSaved = async (audioUri: string) => {
+    if (!note) return;
+
+    try {
+      // Add audio to note.images array for simplicity (like we do with drawings)
+      updateNote(note.id, {
+        images: [...(note.images || []), audioUri],
+        updatedAt: new Date(),
+      });
+    } catch (error) {
+      console.error('Error adding audio to note:', error);
+    }
   };
 
   const handleToolbarDraw = () => {
@@ -939,40 +961,52 @@ export default function NoteDetail() {
         <View>
           {hasImages && (
             <View style={styles.imagesSection}>
-              {note.images.map((imageUri, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.imageContainer}
-                  onPress={() => {
-                    if (selectedImageIndex === index) {
-                      setSelectedImageIndex(null);
-                    } else {
-                      setSelectedImageIndex(index);
-                      setSelectedBlockIndex(null);
-                    }
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <Image
-                    source={{ uri: imageUri }}
-                    style={styles.noteImage}
-                    resizeMode="contain"
+              {note.images.map((imageUri, index) => 
+                isAudioUri(imageUri) ? (
+                  // Render audio player for audio files
+                  <AudioPlayer
+                    key={index}
+                    audioUri={imageUri}
+                    onDelete={() => {
+                      removeImageFromLegacy(index);
+                    }}
                   />
-                  {selectedImageIndex === index && (
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        removeImageFromLegacy(index);
+                ) : (
+                  // Render image for image files
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.imageContainer}
+                    onPress={() => {
+                      if (selectedImageIndex === index) {
                         setSelectedImageIndex(null);
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <MaterialIcons name="delete" size={24} color="white" />
-                    </TouchableOpacity>
-                  )}
-                </TouchableOpacity>
-              ))}
+                      } else {
+                        setSelectedImageIndex(index);
+                        setSelectedBlockIndex(null);
+                      }
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Image
+                      source={{ uri: imageUri }}
+                      style={styles.noteImage}
+                      resizeMode="contain"
+                    />
+                    {selectedImageIndex === index && (
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          removeImageFromLegacy(index);
+                          setSelectedImageIndex(null);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <MaterialIcons name="delete" size={24} color="white" />
+                      </TouchableOpacity>
+                    )}
+                  </TouchableOpacity>
+                )
+              )}
             </View>
           )}
           <Text style={[styles.emptyText, { color: textColors.secondary }]}>
@@ -1001,42 +1035,55 @@ export default function NoteDetail() {
                 ))}
               </TouchableOpacity>
             ) : block.type === 'image' && block.uri && block.uri.length > 50 && (block.uri.startsWith('data:') || block.uri.startsWith('file:')) ? (
-              <View key={`view-block-${index}`} style={styles.imageWithTextWrapper}>
-                <TouchableOpacity
-                  style={styles.imageContainer}
-                  onPress={() => {
-                    if (selectedBlockIndex === index) {
-                      // Deselect if already selected
-                      setSelectedBlockIndex(null);
-                    } else {
-                      // Select this image
-                      setSelectedBlockIndex(index);
-                      setSelectedImageIndex(null); // Clear legacy selection
-                    }
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <Image
-                    source={{ uri: block.uri }}
-                    style={styles.noteImage}
-                    resizeMode="contain"
+              isAudioUri(block.uri) ? (
+                // Render audio player for audio files
+                <View key={`view-block-${index}`} style={styles.imageWithTextWrapper}>
+                  <AudioPlayer
+                    audioUri={block.uri}
+                    onDelete={() => {
+                      removeImageFromBlocks(index);
+                    }}
                   />
-                  {/* Delete button - only show if selected */}
-                  {selectedBlockIndex === index && (
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        removeImageFromBlocks(index);
+                </View>
+              ) : (
+                // Render image for image files
+                <View key={`view-block-${index}`} style={styles.imageWithTextWrapper}>
+                  <TouchableOpacity
+                    style={styles.imageContainer}
+                    onPress={() => {
+                      if (selectedBlockIndex === index) {
+                        // Deselect if already selected
                         setSelectedBlockIndex(null);
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <MaterialIcons name="delete" size={24} color="white" />
-                    </TouchableOpacity>
-                  )}
-                </TouchableOpacity>
-              </View>
+                      } else {
+                        // Select this image
+                        setSelectedBlockIndex(index);
+                        setSelectedImageIndex(null); // Clear legacy selection
+                      }
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Image
+                      source={{ uri: block.uri }}
+                      style={styles.noteImage}
+                      resizeMode="contain"
+                    />
+                    {/* Delete button - only show if selected */}
+                    {selectedBlockIndex === index && (
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          removeImageFromBlocks(index);
+                          setSelectedBlockIndex(null);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <MaterialIcons name="delete" size={24} color="white" />
+                      </TouchableOpacity>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )
             ) : null
           )
         ) : (
@@ -1055,46 +1102,58 @@ export default function NoteDetail() {
               </TouchableOpacity>
             )}
 
-            {/* Legacy images display */}
+            {/* Legacy images and audio display */}
             {note.images && note.images.length > 0 && (
               <View style={styles.imagesSection}>
-                {note.images.map((imageUri, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.imageContainer}
-                    onPress={() => {
-                      if (selectedImageIndex === index) {
-                        // Deselect if already selected
-                        setSelectedImageIndex(null);
-                      } else {
-                        // Select this image
-                        setSelectedImageIndex(index);
-                        setSelectedBlockIndex(null); // Clear block selection
-                      }
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <Image
-                      source={{ uri: imageUri }}
-                      style={styles.noteImage}
-                      resizeMode="contain"
+                {note.images.map((imageUri, index) => 
+                  isAudioUri(imageUri) ? (
+                    // Render audio player for audio files
+                    <AudioPlayer
+                      key={index}
+                      audioUri={imageUri}
+                      onDelete={() => {
+                        removeImageFromLegacy(index);
+                      }}
                     />
-                    {/* Delete button - only show if selected */}
-                    {selectedImageIndex === index && (
-                      <TouchableOpacity
-                        style={styles.deleteButton}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          removeImageFromLegacy(index);
+                  ) : (
+                    // Render image for image files
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.imageContainer}
+                      onPress={() => {
+                        if (selectedImageIndex === index) {
+                          // Deselect if already selected
                           setSelectedImageIndex(null);
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <MaterialIcons name="delete" size={24} color="white" />
-                      </TouchableOpacity>
-                    )}
-                  </TouchableOpacity>
-                ))}
+                        } else {
+                          // Select this image
+                          setSelectedImageIndex(index);
+                          setSelectedBlockIndex(null); // Clear block selection
+                        }
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Image
+                        source={{ uri: imageUri }}
+                        style={styles.noteImage}
+                        resizeMode="contain"
+                      />
+                      {/* Delete button - only show if selected */}
+                      {selectedImageIndex === index && (
+                        <TouchableOpacity
+                          style={styles.deleteButton}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            removeImageFromLegacy(index);
+                            setSelectedImageIndex(null);
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <MaterialIcons name="delete" size={24} color="white" />
+                        </TouchableOpacity>
+                      )}
+                    </TouchableOpacity>
+                  )
+                )}
               </View>
             )}
           </>
@@ -1660,6 +1719,13 @@ export default function NoteDetail() {
         visible={showDrawingCanvas}
         onClose={() => setShowDrawingCanvas(false)}
         onSaveDrawing={handleDrawingSaved}
+      />
+
+      {/* Audio Recorder Modal */}
+      <AudioRecorder
+        visible={showAudioRecorder}
+        onClose={() => setShowAudioRecorder(false)}
+        onSaveAudio={handleAudioSaved}
       />
     </SafeAreaView>
   );
