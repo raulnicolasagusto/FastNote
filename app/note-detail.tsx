@@ -1562,8 +1562,8 @@ export default function NoteDetail() {
             <RichEditor
               ref={richTextRef}
               style={{
-                minHeight: 200,
-                flex: 1
+                minHeight: 50,
+                maxHeight: 300,
               }}
               initialContentHTML={editedContent}
               onChange={setEditedContent}
