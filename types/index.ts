@@ -1,3 +1,9 @@
+export interface ContentBlock {
+  type: 'text' | 'image';
+  content?: string; // For text blocks
+  uri?: string; // For image blocks
+}
+
 export interface Note {
   id: string;
   title: string;
@@ -6,7 +12,9 @@ export interface Note {
   type: 'text' | 'checklist' | 'mixed';
   createdAt: Date;
   updatedAt: Date;
-  images: string[]; // Image URIs (Base64 or file URIs)
+  images: string[]; // Image URIs (Base64 or file URIs) - LEGACY, use contentBlocks instead
+  contentBlocks?: ContentBlock[]; // NEW: Blocks system for text/images
+  textSegments?: string[]; // Text content segments between/after images - LEGACY
   checklistItems?: ChecklistItem[];
   isArchived: boolean;
   isPinned: boolean; // For star functionality

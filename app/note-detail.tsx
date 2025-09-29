@@ -5,6 +5,7 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   StyleSheet,
   Alert,
   Image,
@@ -87,6 +88,8 @@ export default function NoteDetail() {
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [showKeyboardToolbar, setShowKeyboardToolbar] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (noteId) {
@@ -329,23 +332,76 @@ export default function NoteDetail() {
     if (!note) return;
 
     try {
-      console.log('🖼️ Adding image to note:', imageUri);
+      console.log('🖼️ Adding image to note blocks:', imageUri);
       
-      // Directamente usar la URI de la imagen (Base64 o file URI)
-      // expo-image-picker ya devuelve URIs que React Native puede manejar
-      const updatedImages = [...(note.images || []), imageUri];
+      // Get current blocks or create initial ones
+      const currentBlocks = note.contentBlocks || [
+        { type: 'text' as const, content: note.content || '' }
+      ];
       
-      // Actualizar la nota
+      // Add image block and a new empty text block after it
+      const newBlocks = [
+        ...currentBlocks,
+        { type: 'image' as const, uri: imageUri },
+        { type: 'text' as const, content: '' } // Always add empty text block after image
+      ];
+      
+      // Update the note with new blocks system
       updateNote(note.id, {
-        images: updatedImages,
+        contentBlocks: newBlocks,
+        images: [...(note.images || []), imageUri], // Keep legacy field for compatibility
         updatedAt: new Date(),
       });
       
-      console.log('✅ Image added to note successfully');
+      console.log('✅ Image added to blocks successfully');
       
     } catch (error) {
       console.error('Error adding image to note:', error);
       Alert.alert('Error', 'No se pudo agregar la imagen a la nota.');
+    }
+  };
+
+  const removeImageFromBlocks = (blockIndex: number) => {
+    if (!note) return;
+
+    try {
+      console.log('🗑️ Removing image from blocks at index:', blockIndex);
+      
+      const currentBlocks = note.contentBlocks || [];
+      const newBlocks = currentBlocks.filter((_, index) => index !== blockIndex);
+      
+      updateNote(note.id, {
+        contentBlocks: newBlocks,
+        updatedAt: new Date(),
+      });
+      
+      console.log('✅ Image removed from blocks successfully');
+      
+    } catch (error) {
+      console.error('Error removing image from blocks:', error);
+      Alert.alert('Error', 'No se pudo eliminar la imagen.');
+    }
+  };
+
+  const removeImageFromLegacy = (imageIndex: number) => {
+    if (!note) return;
+
+    try {
+      console.log('🗑️ Removing legacy image at index:', imageIndex);
+      
+      const currentImages = note.images || [];
+      const newImages = currentImages.filter((_, index) => index !== imageIndex);
+      
+      updateNote(note.id, {
+        images: newImages,
+        updatedAt: new Date(),
+      });
+      
+      console.log('✅ Legacy image removed successfully');
+      
+    } catch (error) {
+      console.error('Error removing legacy image:', error);
+      Alert.alert('Error', 'No se pudo eliminar la imagen.');
     }
   };
 
@@ -893,42 +949,125 @@ export default function NoteDetail() {
 
     return (
       <View>
-        {/* Render text content first if it exists */}
-        {hasText && (
-          <TouchableOpacity
-            style={styles.textSection}
-            onPress={handleStartContentEdit}
-            activeOpacity={1}>
-            {note.content.split('\n').filter((p) => p.trim()).map((paragraph, index) => (
-              <Text key={index} style={[styles.contentText, { color: textColors.primary }]}>
-                {paragraph}
-              </Text>
-            ))}
-          </TouchableOpacity>
+        {/* Render blocks in view mode */}
+        {note.contentBlocks && note.contentBlocks.length > 0 ? (
+          note.contentBlocks.map((block, index) =>
+            block.type === 'text' && block.content && block.content.trim() ? (
+              <TouchableOpacity
+                key={`view-block-${index}`}
+                style={styles.textSection}
+                onPress={handleStartContentEdit}
+                activeOpacity={1}
+              >
+                {block.content.split('\n').filter((p) => p.trim()).map((paragraph, pIndex) => (
+                  <Text key={pIndex} style={[styles.contentText, { color: textColors.primary }]}>
+                    {paragraph}
+                  </Text>
+                ))}
+              </TouchableOpacity>
+            ) : block.type === 'image' && block.uri ? (
+              <View key={`view-block-${index}`} style={styles.imageWithTextWrapper}>
+                <TouchableOpacity
+                  style={styles.imageContainer}
+                  onPress={() => {
+                    console.log('🖼️ Image tapped:', index);
+                    if (selectedBlockIndex === index) {
+                      // Deselect if already selected
+                      setSelectedBlockIndex(null);
+                    } else {
+                      // Select this image
+                      setSelectedBlockIndex(index);
+                      setSelectedImageIndex(null); // Clear legacy selection
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Image
+                    source={{ uri: block.uri }}
+                    style={styles.noteImage}
+                    resizeMode="cover"
+                  />
+                  {/* Delete button - only show if selected */}
+                  {selectedBlockIndex === index && (
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        removeImageFromBlocks(index);
+                        setSelectedBlockIndex(null);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialIcons name="delete" size={24} color="white" />
+                    </TouchableOpacity>
+                  )}
+                </TouchableOpacity>
+              </View>
+            ) : null
+          )
+        ) : (
+          /* Fallback to legacy content display */
+          <>
+            {hasText && (
+              <TouchableOpacity
+                style={styles.textSection}
+                onPress={handleStartContentEdit}
+                activeOpacity={1}>
+                {note.content.split('\n').filter((p) => p.trim()).map((paragraph, index) => (
+                  <Text key={index} style={[styles.contentText, { color: textColors.primary }]}>
+                    {paragraph}
+                  </Text>
+                ))}
+              </TouchableOpacity>
+            )}
+
+            {/* Legacy images display */}
+            {note.images && note.images.length > 0 && (
+              <View style={styles.imagesSection}>
+                {note.images.map((imageUri, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.imageContainer}
+                    onPress={() => {
+                      console.log('🖼️ Legacy image tapped:', index);
+                      if (selectedImageIndex === index) {
+                        // Deselect if already selected
+                        setSelectedImageIndex(null);
+                      } else {
+                        // Select this image
+                        setSelectedImageIndex(index);
+                        setSelectedBlockIndex(null); // Clear block selection
+                      }
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Image
+                      source={{ uri: imageUri }}
+                      style={styles.noteImage}
+                      resizeMode="cover"
+                    />
+                    {/* Delete button - only show if selected */}
+                    {selectedImageIndex === index && (
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          removeImageFromLegacy(index);
+                          setSelectedImageIndex(null);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <MaterialIcons name="delete" size={24} color="white" />
+                      </TouchableOpacity>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </>
         )}
 
-        {/* Render images if they exist */}
-        {note.images && note.images.length > 0 && (
-          <View style={styles.imagesSection}>
-            {note.images.map((imageBase64, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.imageContainer}
-                onPress={() => {
-                  // TODO: Abrir imagen en pantalla completa
-                  console.log('🖼️ Image tapped:', index);
-                }}
-                activeOpacity={0.8}
-              >
-                <Image
-                  source={{ uri: imageBase64 }}
-                  style={styles.noteImage}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+
 
         {/* Text placeholder when no text but has checklist */}
         {!hasText && hasChecklist && (
@@ -1139,8 +1278,14 @@ export default function NoteDetail() {
 
       {/* Content */}
       <ScrollView style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]} showsVerticalScrollIndicator={false}>
-        {/* Date, reminder and character count */}
-        <View style={styles.dateContainer}>
+        <TouchableWithoutFeedback onPress={() => {
+          // Deselect any selected images when touching outside
+          setSelectedImageIndex(null);
+          setSelectedBlockIndex(null);
+        }}>
+          <View style={{ flex: 1 }}>
+            {/* Date, reminder and character count */}
+            <View style={styles.dateContainer}>
           <View style={styles.dateInfoRow}>
             <Text style={[styles.date, { color: textColors.secondary }]}>{formatDate(note.createdAt)}</Text>
             
@@ -1197,16 +1342,67 @@ export default function NoteDetail() {
 
         {/* Content */}
         {editingElement === 'content' ? (
-          <TextInput
-            style={[styles.contentInput, { color: textColors.primary, backgroundColor: note.backgroundColor || colors.background, borderColor: textColors.secondary }]}
-            value={editedContent}
-            onChangeText={setEditedContent}
-            placeholder="Start writing..."
-            placeholderTextColor={textColors.secondary}
-            multiline
-            textAlignVertical="top"
-            autoFocus
-          />
+          <View>
+            <TextInput
+              style={[styles.contentInput, { 
+                color: textColors.primary, 
+                backgroundColor: note.backgroundColor || colors.background, 
+                borderColor: textColors.secondary,
+                flex: 1
+              }]}
+              value={editedContent}
+              onChangeText={setEditedContent}
+              placeholder="Start writing..."
+              placeholderTextColor={textColors.secondary}
+              multiline
+              textAlignVertical="top"
+              autoFocus
+            />
+            
+            {/* Show images during editing - RESTORED */}
+            {note.images && note.images.length > 0 && (
+              <View style={styles.imagesSection}>
+                {note.images.map((imageUri, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.imageContainer}
+                    onPress={() => {
+                      console.log('🖼️ Image tapped in edit mode:', index);
+                      if (selectedImageIndex === index) {
+                        // Deselect if already selected
+                        setSelectedImageIndex(null);
+                      } else {
+                        // Select this image
+                        setSelectedImageIndex(index);
+                        setSelectedBlockIndex(null); // Clear block selection
+                      }
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Image
+                      source={{ uri: imageUri }}
+                      style={styles.noteImage}
+                      resizeMode="cover"
+                    />
+                    {/* Delete button - only show if selected */}
+                    {selectedImageIndex === index && (
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          removeImageFromLegacy(index);
+                          setSelectedImageIndex(null);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <MaterialIcons name="delete" size={24} color="white" />
+                      </TouchableOpacity>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
         ) : editingElement === 'checklist' ? (
           <View style={styles.checklistContainer}>
             {editedChecklistItems.map((item, index) => (
@@ -1263,6 +1459,8 @@ export default function NoteDetail() {
             </View>
           </TouchableOpacity>
         )}
+          </View>
+        </TouchableWithoutFeedback>
       </ScrollView>
 
       {/* Camera Modal */}
@@ -1539,7 +1737,7 @@ const styles = StyleSheet.create({
   contentInput: {
     fontSize: TYPOGRAPHY.bodySize + 2,
     lineHeight: TYPOGRAPHY.bodySize * 1.6,
-    paddingBottom: SPACING.xl * 2,
+    paddingBottom: SPACING.sm,
     padding: SPACING.xs,
     minHeight: 200,
   },
@@ -1738,21 +1936,123 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   imagesSection: {
-    marginTop: 16,
-    gap: 12,
+    marginTop: 8,
+    marginBottom: 16,
+    gap: 8,
   },
   imageContainer: {
     borderRadius: 8,
     overflow: 'hidden',
-    elevation: 2,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    marginBottom: 12,
   },
   noteImage: {
     width: '100%',
     height: 200,
     borderRadius: 8,
+  },
+  contentEditContainer: {
+    flex: 1,
+    gap: 12,
+  },
+  imagesPreviewSection: {
+    backgroundColor: 'rgba(0,0,0,0.02)',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+  },
+  imagesLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  imagesHorizontalScroll: {
+    marginBottom: 8,
+  },
+  imagePreviewContainer: {
+    marginRight: 8,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  imagePreview: {
+    width: 80,
+    height: 80,
+    borderRadius: 6,
+  },
+  continueTypingHint: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  contentEditScroll: {
+    flex: 1,
+  },
+  imagesContentSection: {
+    marginTop: 16,
+  },
+  imageInContentWrapper: {
+    marginBottom: 8,
+  },
+  writeAfterImageArea: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderStyle: 'dashed',
+    borderRadius: 6,
+    marginTop: 4,
+    backgroundColor: 'rgba(0,0,0,0.02)',
+  },
+  writeAfterImageHint: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  textAfterImage: {
+    minHeight: 60,
+    padding: 12,
+    fontSize: 16,
+    lineHeight: 24,
+    borderWidth: 1,
+    borderRadius: 6,
+    marginTop: 8,
+    borderStyle: 'dashed',
+  },
+  imageWithTextWrapper: {
+    marginBottom: 12,
+  },
+  textAfterImageView: {
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  blockTextInput: {
+    minHeight: 50,
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 4,
+    paddingHorizontal: 0,
+    paddingVertical: 8,
+  },
+  imageBlockWrapper: {
+    marginBottom: 8,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(255, 0, 0, 0.8)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
 });
