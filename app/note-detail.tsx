@@ -25,6 +25,7 @@ import Callout from '../components/ui/Callout';
 import ShareMenu from '../components/ui/ShareMenu';
 import ImagePreviewModal from '../components/ImagePreviewModal';
 import ShareableNoteImage from '../components/ShareableNoteImage';
+import KeyboardToolbar from '../components/ui/KeyboardToolbar';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
@@ -82,6 +83,7 @@ export default function NoteDetail() {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
+  const [showKeyboardToolbar, setShowKeyboardToolbar] = useState(false);
 
   useEffect(() => {
     if (noteId) {
@@ -123,6 +125,7 @@ export default function NoteDetail() {
       return;
     }
     setEditingElement('content');
+    setShowKeyboardToolbar(true);
   };
 
   const handleStartChecklistEdit = () => {
@@ -164,6 +167,7 @@ export default function NoteDetail() {
 
     updateNote(note.id, updates);
     setEditingElement(null);
+    setShowKeyboardToolbar(false);
   };
 
   const handleCancelEdit = () => {
@@ -173,6 +177,7 @@ export default function NoteDetail() {
     setEditedContent(note.content);
     setEditedChecklistItems(note.checklistItems || []);
     setEditingElement(null);
+    setShowKeyboardToolbar(false);
   };
 
   const handleTogglePin = () => {
@@ -291,6 +296,31 @@ export default function NoteDetail() {
     console.log('Compartir con alguien:', note?.title);
     // TODO: Implementar funcionalidad de compartir con alguien
     Alert.alert('Compartir', 'Compartir con alguien - Próximamente');
+  };
+
+  // Keyboard Toolbar Functions
+  const handleToolbarFormat = () => {
+    console.log('🎨 Format toolbar pressed');
+    // TODO: Implementar menú de formato (negrita, cursiva, títulos, etc.)
+    Alert.alert('Formato', 'Herramientas de formato - Próximamente');
+  };
+
+  const handleToolbarAudio = () => {
+    console.log('🎤 Audio toolbar pressed');
+    // TODO: Implementar grabación de audio integrada
+    Alert.alert('Audio', 'Grabación de audio - Próximamente');
+  };
+
+  const handleToolbarDraw = () => {
+    console.log('🎨 Draw toolbar pressed');
+    // TODO: Implementar canvas de dibujo
+    Alert.alert('Dibujar', 'Herramientas de dibujo - Próximamente');
+  };
+
+  const handleToolbarImage = () => {
+    console.log('📷 Image toolbar pressed');
+    // TODO: Implementar inserción de imágenes en el texto
+    Alert.alert('Imagen', 'Insertar imagen - Próximamente');
   };
 
   const startRecording = async () => {
@@ -1325,6 +1355,15 @@ export default function NoteDetail() {
           height={768}
         />
       )}
+
+      {/* Keyboard Toolbar */}
+      <KeyboardToolbar
+        visible={showKeyboardToolbar}
+        onFormatPress={handleToolbarFormat}
+        onAudioPress={handleToolbarAudio}
+        onDrawPress={handleToolbarDraw}
+        onImagePress={handleToolbarImage}
+      />
     </SafeAreaView>
   );
 }
