@@ -958,7 +958,7 @@ export default function NoteDetail() {
                   <Image
                     source={{ uri: imageUri }}
                     style={styles.noteImage}
-                    resizeMode="cover"
+                    resizeMode="contain"
                   />
                   {selectedImageIndex === index && (
                     <TouchableOpacity
@@ -1021,7 +1021,7 @@ export default function NoteDetail() {
                   <Image
                     source={{ uri: block.uri }}
                     style={styles.noteImage}
-                    resizeMode="cover"
+                    resizeMode="contain"
                   />
                   {/* Delete button - only show if selected */}
                   {selectedBlockIndex === index && (
@@ -1079,7 +1079,7 @@ export default function NoteDetail() {
                     <Image
                       source={{ uri: imageUri }}
                       style={styles.noteImage}
-                      resizeMode="cover"
+                      resizeMode="contain"
                     />
                     {/* Delete button - only show if selected */}
                     {selectedImageIndex === index && (
@@ -1417,7 +1417,7 @@ export default function NoteDetail() {
                     <Image
                       source={{ uri: imageUri }}
                       style={styles.noteImage}
-                      resizeMode="cover"
+                      resizeMode="contain"
                     />
                     {/* Delete button - only show if selected */}
                     {selectedImageIndex === index && (
@@ -1774,7 +1774,7 @@ const styles = StyleSheet.create({
     lineHeight: 34,
     marginBottom: SPACING.xl,
     padding: SPACING.xs,
-    minHeight: 60,
+    minHeight: 6,
   },
   contentInput: {
     fontSize: TYPOGRAPHY.bodySize + 2,
@@ -1987,9 +1987,8 @@ const styles = StyleSheet.create({
   },
   noteImage: {
     width: '100%',
-    aspectRatio: 350 / 400, // Maintain the drawing canvas aspect ratio
+    height: 250,
     borderRadius: 8,
-    maxHeight: 300, // Prevent overly tall images
   },
   contentEditContainer: {
     flex: 1,
