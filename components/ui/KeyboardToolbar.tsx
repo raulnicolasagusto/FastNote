@@ -32,8 +32,11 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', (e) => {
       console.log('🎹 Keyboard showing, height:', e.endCoordinates.height);
+      // Use minimum height of 270 to ensure toolbar is always visible
+      const effectiveHeight = Math.max(e.endCoordinates.height, 270);
+      console.log('🎹 Using effective height:', effectiveHeight);
       Animated.timing(keyboardHeight, {
-        toValue: e.endCoordinates.height, // altura del teclado
+        toValue: effectiveHeight,
         duration: 250,
         useNativeDriver: false,
       }).start();
@@ -66,7 +69,7 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
         {
           backgroundColor: colors.cardBackground,
           borderTopColor: colors.textSecondary + '20',
-          marginBottom: keyboardHeight, // 👈 Esto empuja el menú hacia arriba
+          marginBottom: keyboardHeight,
         },
       ]}
     >

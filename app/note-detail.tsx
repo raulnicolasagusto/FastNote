@@ -29,6 +29,7 @@ import ImagePreviewModal from '../components/ImagePreviewModal';
 import ShareableNoteImage from '../components/ShareableNoteImage';
 import KeyboardToolbar from '../components/ui/KeyboardToolbar';
 import ImagePickerModal from '../components/ui/ImagePickerModal';
+import { DrawingCanvas } from '../components/ui/DrawingCanvas';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
@@ -88,6 +89,7 @@ export default function NoteDetail() {
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [showKeyboardToolbar, setShowKeyboardToolbar] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
+  const [showDrawingCanvas, setShowDrawingCanvas] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(null);
 
@@ -318,13 +320,25 @@ export default function NoteDetail() {
   };
 
   const handleToolbarDraw = () => {
-    console.log('🎨 Draw toolbar pressed');
-    // TODO: Implementar canvas de dibujo
-    Alert.alert('Dibujar', 'Herramientas de dibujo - Próximamente');
+    setShowDrawingCanvas(true);
+  };
+
+  const handleDrawingSaved = async (drawingDataUri: string) => {
+    if (!note || !drawingDataUri) return;
+
+    try {
+      // Use the same logic as regular images
+      updateNote(note.id, {
+        images: [...(note.images || []), drawingDataUri],
+        updatedAt: new Date(),
+      });
+      
+    } catch (error) {
+      console.error('Error adding drawing to note:', error);
+    }
   };
 
   const handleToolbarImage = () => {
-    console.log('📷 Image toolbar pressed');
     setShowImagePicker(true);
   };
 
@@ -332,32 +346,14 @@ export default function NoteDetail() {
     if (!note) return;
 
     try {
-      console.log('🖼️ Adding image to note blocks:', imageUri);
-      
-      // Get current blocks or create initial ones
-      const currentBlocks = note.contentBlocks || [
-        { type: 'text' as const, content: note.content || '' }
-      ];
-      
-      // Add image block and a new empty text block after it
-      const newBlocks = [
-        ...currentBlocks,
-        { type: 'image' as const, uri: imageUri },
-        { type: 'text' as const, content: '' } // Always add empty text block after image
-      ];
-      
-      // Update the note with new blocks system
+      // Simple: always just add to images array
       updateNote(note.id, {
-        contentBlocks: newBlocks,
-        images: [...(note.images || []), imageUri], // Keep legacy field for compatibility
+        images: [...(note.images || []), imageUri],
         updatedAt: new Date(),
       });
       
-      console.log('✅ Image added to blocks successfully');
-      
     } catch (error) {
       console.error('Error adding image to note:', error);
-      Alert.alert('Error', 'No se pudo agregar la imagen a la nota.');
     }
   };
 
@@ -937,13 +933,54 @@ export default function NoteDetail() {
 
     const hasText = note.content && note.content.trim();
     const hasChecklist = note.checklistItems && note.checklistItems.length > 0;
+    const hasImages = note.images && note.images.length > 0;
 
-    // If neither text nor checklist, show empty state
+    // If neither text nor checklist, show empty state (but still show images if they exist)
     if (!hasText && !hasChecklist) {
       return (
-        <Text style={[styles.emptyText, { color: textColors.secondary }]}>
-          Start writing or add a checklist...
-        </Text>
+        <View>
+          {hasImages && (
+            <View style={styles.imagesSection}>
+              {note.images.map((imageUri, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.imageContainer}
+                  onPress={() => {
+                    if (selectedImageIndex === index) {
+                      setSelectedImageIndex(null);
+                    } else {
+                      setSelectedImageIndex(index);
+                      setSelectedBlockIndex(null);
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={styles.noteImage}
+                    resizeMode="cover"
+                  />
+                  {selectedImageIndex === index && (
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        removeImageFromLegacy(index);
+                        setSelectedImageIndex(null);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialIcons name="delete" size={24} color="white" />
+                    </TouchableOpacity>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+          <Text style={[styles.emptyText, { color: textColors.secondary }]}>
+            Start writing or add a checklist...
+          </Text>
+        </View>
       );
     }
 
@@ -965,12 +1002,11 @@ export default function NoteDetail() {
                   </Text>
                 ))}
               </TouchableOpacity>
-            ) : block.type === 'image' && block.uri ? (
+            ) : block.type === 'image' && block.uri && block.uri.length > 50 && (block.uri.startsWith('data:') || block.uri.startsWith('file:')) ? (
               <View key={`view-block-${index}`} style={styles.imageWithTextWrapper}>
                 <TouchableOpacity
                   style={styles.imageContainer}
                   onPress={() => {
-                    console.log('🖼️ Image tapped:', index);
                     if (selectedBlockIndex === index) {
                       // Deselect if already selected
                       setSelectedBlockIndex(null);
@@ -1029,7 +1065,6 @@ export default function NoteDetail() {
                     key={index}
                     style={styles.imageContainer}
                     onPress={() => {
-                      console.log('🖼️ Legacy image tapped:', index);
                       if (selectedImageIndex === index) {
                         // Deselect if already selected
                         setSelectedImageIndex(null);
@@ -1617,6 +1652,13 @@ export default function NoteDetail() {
         visible={showImagePicker}
         onClose={() => setShowImagePicker(false)}
         onImageSelected={handleImageSelected}
+      />
+
+      {/* Drawing Canvas Modal */}
+      <DrawingCanvas
+        visible={showDrawingCanvas}
+        onClose={() => setShowDrawingCanvas(false)}
+        onSaveDrawing={handleDrawingSaved}
       />
     </SafeAreaView>
   );
