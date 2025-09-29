@@ -10,6 +10,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
+import { RichEditor, RichToolbar, actions } from 'react-native-pell-rich-editor';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -85,6 +86,7 @@ export default function NoteDetail() {
   const [editedChecklistItems, setEditedChecklistItems] = useState<ChecklistItem[]>([]);
   const inputRefs = useRef<{ [key: string]: TextInput | null }>({});
   const shareableImageRef = useRef<View>(null);
+  const richTextRef = useRef<RichEditor>(null);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -331,30 +333,107 @@ export default function NoteDetail() {
     setIsFormatMode(!isFormatMode);
   };
 
-  // Format Mode Functions
+  // Format Mode Functions - Using RichEditor actions
   const handleH1Press = () => {
     console.log('H1 pressed');
-    // TODO: Implementar formato H1
+    richTextRef.current?.sendAction(actions.heading1, 'result');
   };
 
   const handleH2Press = () => {
     console.log('H2 pressed');
-    // TODO: Implementar formato H2
+    richTextRef.current?.sendAction(actions.heading2, 'result');
   };
 
   const handleH3Press = () => {
     console.log('H3 pressed');
-    // TODO: Implementar formato H3
+    richTextRef.current?.sendAction(actions.heading3, 'result');
   };
 
   const handleBoldPress = () => {
     console.log('Bold pressed');
-    // TODO: Implementar formato Bold
+    richTextRef.current?.sendAction(actions.setBold, 'result');
   };
 
   const handleHighlightPress = () => {
     console.log('Highlight pressed');
-    // TODO: Implementar resaltado amarillo
+    richTextRef.current?.sendAction(actions.setBackgroundColor, 'yellow');
+  };
+
+  // Rich text functions no longer needed - using RichEditor
+  
+  // Display rich text content - simple HTML to Text conversion
+  const renderRichContent = (content: string) => {
+    if (!content || !content.trim()) {
+      return (
+        <Text style={[styles.contentText, { color: textColors.secondary }]}>
+          No content
+        </Text>
+      );
+    }
+
+    // If it's plain text, return as is
+    if (!content.includes('<') || !content.includes('>')) {
+      return (
+        <Text style={[styles.contentText, { color: textColors.primary }]}>
+          {content}
+        </Text>
+      );
+    }
+
+    // Simple regex-based HTML parsing for basic formatting
+    const elements: any[] = [];
+    let key = 0;
+    
+    // Split content by HTML tags but process each part
+    const parts = content.split(/(<[^>]*>.*?<\/[^>]*>|<[^>]*\/>)/);
+    
+    parts.forEach(part => {
+      if (!part.trim()) return;
+      
+      // Check for headings
+      if (part.match(/<h1[^>]*>(.*?)<\/h1>/)) {
+        const text = part.replace(/<h1[^>]*>(.*?)<\/h1>/, '$1');
+        elements.push(
+          <Text key={key++} style={[styles.headerH1, { color: textColors.primary }]}>
+            {text}
+          </Text>
+        );
+      } else if (part.match(/<h2[^>]*>(.*?)<\/h2>/)) {
+        const text = part.replace(/<h2[^>]*>(.*?)<\/h2>/, '$1');
+        elements.push(
+          <Text key={key++} style={[styles.headerH2, { color: textColors.primary }]}>
+            {text}
+          </Text>
+        );
+      } else if (part.match(/<h3[^>]*>(.*?)<\/h3>/)) {
+        const text = part.replace(/<h3[^>]*>(.*?)<\/h3>/, '$1');
+        elements.push(
+          <Text key={key++} style={[styles.headerH3, { color: textColors.primary }]}>
+            {text}
+          </Text>
+        );
+      } else {
+        // Regular text - remove HTML tags
+        const cleanText = part.replace(/<[^>]*>/g, '');
+        if (cleanText.trim()) {
+          elements.push(
+            <Text key={key++} style={[styles.contentText, { color: textColors.primary }]}>
+              {cleanText}
+            </Text>
+          );
+        }
+      }
+    });
+    
+    return (
+      <View>
+        {elements.length > 0 ? elements : (
+          <Text style={[styles.contentText, { color: textColors.primary }]}>
+            {content.replace(/<[^>]*>/g, '')}
+          </Text>
+        )}
+      </View>
+    );
   };
 
   const handleToolbarAudio = () => {
@@ -1062,11 +1141,7 @@ export default function NoteDetail() {
                 onPress={handleStartContentEdit}
                 activeOpacity={1}
               >
-                {block.content.split('\n').filter((p) => p.trim()).map((paragraph, pIndex) => (
-                  <Text key={pIndex} style={[styles.contentText, { color: textColors.primary }]}>
-                    {paragraph}
-                  </Text>
-                ))}
+                {renderRichContent(block.content)}
               </TouchableOpacity>
             ) : block.type === 'image' && block.uri && block.uri.length > 50 && (block.uri.startsWith('data:') || block.uri.startsWith('file:')) ? (
               isAudioUri(block.uri) ? (
@@ -1128,11 +1203,7 @@ export default function NoteDetail() {
                 style={styles.textSection}
                 onPress={handleStartContentEdit}
                 activeOpacity={1}>
-                {note.content.split('\n').filter((p) => p.trim()).map((paragraph, index) => (
-                  <Text key={index} style={[styles.contentText, { color: textColors.primary }]}>
-                    {paragraph}
-                  </Text>
-                ))}
+                {renderRichContent(note.content)}
               </TouchableOpacity>
             )}
 
@@ -1488,20 +1559,19 @@ export default function NoteDetail() {
         {/* Content */}
         {editingElement === 'content' ? (
           <View>
-            <TextInput
-              style={[styles.contentInput, { 
-                color: textColors.primary, 
-                backgroundColor: note.backgroundColor || colors.background, 
-                borderColor: textColors.secondary,
+            <RichEditor
+              ref={richTextRef}
+              style={{
+                minHeight: 200,
                 flex: 1
-              }]}
-              value={editedContent}
-              onChangeText={setEditedContent}
+              }}
+              initialContentHTML={editedContent}
+              onChange={setEditedContent}
               placeholder="Start writing..."
-              placeholderTextColor={textColors.secondary}
-              multiline
-              textAlignVertical="top"
-              autoFocus
+              editorStyle={{
+                backgroundColor: 'transparent',
+                color: textColors.primary
+              }}
             />
             
             {/* Show images and audio during editing - RESTORED */}
@@ -1868,6 +1938,36 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.bodySize + 2, // Slightly larger for reading
     lineHeight: TYPOGRAPHY.bodySize * 1.6,
     marginBottom: SPACING.md,
+  },
+  // Format text styles
+  headerH1: {
+    fontSize: TYPOGRAPHY.titleSize + 4, // 32px
+    fontWeight: 'bold',
+    lineHeight: TYPOGRAPHY.titleSize * 1.3,
+    marginBottom: SPACING.lg,
+    marginTop: SPACING.md,
+  },
+  headerH2: {
+    fontSize: TYPOGRAPHY.titleSize, // 28px
+    fontWeight: 'bold',
+    lineHeight: TYPOGRAPHY.titleSize * 1.3,
+    marginBottom: SPACING.md,
+    marginTop: SPACING.sm,
+  },
+  headerH3: {
+    fontSize: TYPOGRAPHY.titleSize - 4, // 24px
+    fontWeight: 'bold',
+    lineHeight: TYPOGRAPHY.titleSize * 1.2,
+    marginBottom: SPACING.sm,
+    marginTop: SPACING.sm,
+  },
+  boldText: {
+    fontWeight: 'bold',
+  },
+  highlightText: {
+    backgroundColor: '#FFFF00', // Yellow background
+    paddingHorizontal: 2,
+    borderRadius: 2,
   },
   errorContainer: {
     flex: 1,

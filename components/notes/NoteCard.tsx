@@ -42,6 +42,27 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
     });
   };
 
+  // Helper function to clean HTML from content for preview
+  const cleanHtmlContent = (content: string) => {
+    if (!content) return '';
+    
+    // Process HTML content to preserve structure while removing tags
+    let cleanContent = content
+      // Replace block elements with line breaks
+      .replace(/<\/?(h[1-6]|p|div)[^>]*>/g, '\n')
+      .replace(/<br\s*\/?>/g, '\n') // Replace <br> tags with line breaks
+      .replace(/<[^>]*>/g, '') // Remove remaining HTML tags
+      .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
+      .replace(/&amp;/g, '&')  // Replace encoded ampersands
+      .replace(/&lt;/g, '<')   // Replace encoded less than
+      .replace(/&gt;/g, '>')   // Replace encoded greater than
+      .replace(/\n\s*\n/g, '\n') // Remove multiple consecutive line breaks
+      .replace(/^\s+|\s+$/g, '') // Trim whitespace from start and end
+      .replace(/\n\s+/g, '\n'); // Remove leading spaces from lines
+    
+    return cleanContent;
+  };
+
   const renderContent = () => {
     if (note.type === 'checklist' && note.checklistItems) {
       // Show first 3 checklist items
@@ -55,13 +76,16 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
       ));
     }
 
-    // Show text content preview
+    // Show text content preview - clean HTML tags
     if (note.content.trim()) {
-      return (
-        <Text style={[styles.contentText, { color: textColors.secondary }]} numberOfLines={3}>
-          {note.content}
-        </Text>
-      );
+      const cleanContent = cleanHtmlContent(note.content);
+      if (cleanContent) {
+        return (
+          <Text style={[styles.contentText, { color: textColors.secondary }]} numberOfLines={3}>
+            {cleanContent}
+          </Text>
+        );
+      }
     }
 
     return null;
