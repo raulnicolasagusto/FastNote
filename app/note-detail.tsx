@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Image,
 } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -26,6 +27,7 @@ import ShareMenu from '../components/ui/ShareMenu';
 import ImagePreviewModal from '../components/ImagePreviewModal';
 import ShareableNoteImage from '../components/ShareableNoteImage';
 import KeyboardToolbar from '../components/ui/KeyboardToolbar';
+import ImagePickerModal from '../components/ui/ImagePickerModal';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
@@ -84,6 +86,7 @@ export default function NoteDetail() {
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [showKeyboardToolbar, setShowKeyboardToolbar] = useState(false);
+  const [showImagePicker, setShowImagePicker] = useState(false);
 
   useEffect(() => {
     if (noteId) {
@@ -319,8 +322,31 @@ export default function NoteDetail() {
 
   const handleToolbarImage = () => {
     console.log('📷 Image toolbar pressed');
-    // TODO: Implementar inserción de imágenes en el texto
-    Alert.alert('Imagen', 'Insertar imagen - Próximamente');
+    setShowImagePicker(true);
+  };
+
+  const handleImageSelected = async (imageUri: string) => {
+    if (!note) return;
+
+    try {
+      console.log('🖼️ Adding image to note:', imageUri);
+      
+      // Directamente usar la URI de la imagen (Base64 o file URI)
+      // expo-image-picker ya devuelve URIs que React Native puede manejar
+      const updatedImages = [...(note.images || []), imageUri];
+      
+      // Actualizar la nota
+      updateNote(note.id, {
+        images: updatedImages,
+        updatedAt: new Date(),
+      });
+      
+      console.log('✅ Image added to note successfully');
+      
+    } catch (error) {
+      console.error('Error adding image to note:', error);
+      Alert.alert('Error', 'No se pudo agregar la imagen a la nota.');
+    }
   };
 
   const startRecording = async () => {
@@ -881,6 +907,29 @@ export default function NoteDetail() {
           </TouchableOpacity>
         )}
 
+        {/* Render images if they exist */}
+        {note.images && note.images.length > 0 && (
+          <View style={styles.imagesSection}>
+            {note.images.map((imageBase64, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.imageContainer}
+                onPress={() => {
+                  // TODO: Abrir imagen en pantalla completa
+                  console.log('🖼️ Image tapped:', index);
+                }}
+                activeOpacity={0.8}
+              >
+                <Image
+                  source={{ uri: imageBase64 }}
+                  style={styles.noteImage}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
         {/* Text placeholder when no text but has checklist */}
         {!hasText && hasChecklist && (
           <TouchableOpacity
@@ -1364,6 +1413,13 @@ export default function NoteDetail() {
         onDrawPress={handleToolbarDraw}
         onImagePress={handleToolbarImage}
       />
+
+      {/* Image Picker Modal */}
+      <ImagePickerModal
+        visible={showImagePicker}
+        onClose={() => setShowImagePicker(false)}
+        onImageSelected={handleImageSelected}
+      />
     </SafeAreaView>
   );
 }
@@ -1680,5 +1736,23 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  imagesSection: {
+    marginTop: 16,
+    gap: 12,
+  },
+  imageContainer: {
+    borderRadius: 8,
+    overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  noteImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
   },
 });

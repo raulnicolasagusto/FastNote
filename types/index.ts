@@ -6,7 +6,7 @@ export interface Note {
   type: 'text' | 'checklist' | 'mixed';
   createdAt: Date;
   updatedAt: Date;
-  images: string[]; // Base64 encoded images
+  images: string[]; // Image URIs (Base64 or file URIs)
   checklistItems?: ChecklistItem[];
   isArchived: boolean;
   isPinned: boolean; // For star functionality
