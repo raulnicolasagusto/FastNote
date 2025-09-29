@@ -4,24 +4,39 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
+  Text,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 
 interface KeyboardToolbarProps {
   visible?: boolean;
+  isFormatMode?: boolean;
   onFormatPress?: () => void;
   onAudioPress?: () => void;
   onDrawPress?: () => void;
   onImagePress?: () => void;
+  // Format mode handlers
+  onH1Press?: () => void;
+  onH2Press?: () => void;
+  onH3Press?: () => void;
+  onBoldPress?: () => void;
+  onHighlightPress?: () => void;
 }
 
 const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
   visible = false,
+  isFormatMode = false,
   onFormatPress,
   onAudioPress,
   onDrawPress,
   onImagePress,
+  // Format mode handlers
+  onH1Press,
+  onH2Press,
+  onH3Press,
+  onBoldPress,
+  onHighlightPress,
 }) => {
   const { colors } = useThemeStore();
 
@@ -42,57 +57,137 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
       ]}
     >
       <View style={styles.toolbar}>
-        {/* Formato de texto */}
-        <TouchableOpacity
-          style={[styles.toolButton, { backgroundColor: colors.background }]}
-          onPress={onFormatPress}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons
-            name="format-bold"
-            size={20}
-            color={colors.textPrimary}
-          />
-        </TouchableOpacity>
+        {isFormatMode ? (
+          // Format mode buttons: H1, H2, H3, B, Highlight, X
+          <>
+            {/* H1 */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onH1Press}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.headerText, { color: colors.textPrimary }]}>
+                H1
+              </Text>
+            </TouchableOpacity>
 
-        {/* Grabación de audio */}
-        <TouchableOpacity
-          style={[styles.toolButton, { backgroundColor: colors.background }]}
-          onPress={onAudioPress}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons
-            name="mic"
-            size={20}
-            color={colors.accent.red}
-          />
-        </TouchableOpacity>
+            {/* H2 */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onH2Press}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.headerText, { color: colors.textPrimary }]}>
+                H2
+              </Text>
+            </TouchableOpacity>
 
-        {/* Herramientas de dibujo */}
-        <TouchableOpacity
-          style={[styles.toolButton, { backgroundColor: colors.background }]}
-          onPress={onDrawPress}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons
-            name="brush"
-            size={20}
-            color={colors.accent.blue}
-          />
-        </TouchableOpacity>
+            {/* H3 */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onH3Press}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.headerText, { color: colors.textPrimary }]}>
+                H3
+              </Text>
+            </TouchableOpacity>
 
-        {/* Insertar imagen */}
-        <TouchableOpacity
-          style={[styles.toolButton, { backgroundColor: colors.background }]}
-          onPress={onImagePress}
-          activeOpacity={0.7}
-        >
-          <MaterialIcons
-            name="image"
-            size={20}
-            color={colors.accent.green}
-          />
-        </TouchableOpacity>
+            {/* Bold (B) */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onBoldPress}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons
+                name="format-bold"
+                size={20}
+                color={colors.textPrimary}
+              />
+            </TouchableOpacity>
+
+            {/* Highlight (like a marker) */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onHighlightPress}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons
+                name="highlight"
+                size={20}
+                color="#FFD700"
+              />
+            </TouchableOpacity>
+
+            {/* Close Format Mode (X) */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onFormatPress}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons
+                name="close"
+                size={20}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          </>
+        ) : (
+          // Normal mode buttons: Format, Audio, Draw, Image
+          <>
+            {/* Formato de texto */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onFormatPress}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons
+                name="format-bold"
+                size={20}
+                color={colors.textPrimary}
+              />
+            </TouchableOpacity>
+
+            {/* Grabación de audio */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onAudioPress}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons
+                name="mic"
+                size={20}
+                color={colors.accent.red}
+              />
+            </TouchableOpacity>
+
+            {/* Herramientas de dibujo */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onDrawPress}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons
+                name="brush"
+                size={20}
+                color={colors.accent.blue}
+              />
+            </TouchableOpacity>
+
+            {/* Insertar imagen */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onImagePress}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons
+                name="image"
+                size={20}
+                color={colors.accent.green}
+              />
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </Animated.View>
   );
@@ -131,6 +226,11 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+  },
+  headerText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

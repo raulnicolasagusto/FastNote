@@ -90,6 +90,7 @@ export default function NoteDetail() {
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [showKeyboardToolbar, setShowKeyboardToolbar] = useState(false);
+  const [isFormatMode, setIsFormatMode] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [showDrawingCanvas, setShowDrawingCanvas] = useState(false);
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
@@ -110,6 +111,13 @@ export default function NoteDetail() {
       }
     }
   }, [noteId, notes, resetCallouts]);
+
+  // Reset format mode when toolbar is hidden
+  useEffect(() => {
+    if (!showKeyboardToolbar) {
+      setIsFormatMode(false);
+    }
+  }, [showKeyboardToolbar]);
 
 
 
@@ -319,8 +327,34 @@ export default function NoteDetail() {
   // Keyboard Toolbar Functions
   const handleToolbarFormat = () => {
     console.log('🎨 Format toolbar pressed');
-    // TODO: Implementar menú de formato (negrita, cursiva, títulos, etc.)
-    Alert.alert('Formato', 'Herramientas de formato - Próximamente');
+    // Toggle between normal mode and format mode
+    setIsFormatMode(!isFormatMode);
+  };
+
+  // Format Mode Functions
+  const handleH1Press = () => {
+    console.log('H1 pressed');
+    // TODO: Implementar formato H1
+  };
+
+  const handleH2Press = () => {
+    console.log('H2 pressed');
+    // TODO: Implementar formato H2
+  };
+
+  const handleH3Press = () => {
+    console.log('H3 pressed');
+    // TODO: Implementar formato H3
+  };
+
+  const handleBoldPress = () => {
+    console.log('Bold pressed');
+    // TODO: Implementar formato Bold
+  };
+
+  const handleHighlightPress = () => {
+    console.log('Highlight pressed');
+    // TODO: Implementar resaltado amarillo
   };
 
   const handleToolbarAudio = () => {
@@ -1360,10 +1394,17 @@ export default function NoteDetail() {
       {/* Keyboard Toolbar */}
       <KeyboardToolbar
         visible={showKeyboardToolbar}
+        isFormatMode={isFormatMode}
         onFormatPress={handleToolbarFormat}
         onAudioPress={handleToolbarAudio}
         onDrawPress={handleToolbarDraw}
         onImagePress={handleToolbarImage}
+        // Format mode handlers
+        onH1Press={handleH1Press}
+        onH2Press={handleH2Press}
+        onH3Press={handleH3Press}
+        onBoldPress={handleBoldPress}
+        onHighlightPress={handleHighlightPress}
       />
 
       {/* Callouts */}
