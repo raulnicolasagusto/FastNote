@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   TouchableOpacity,
   StyleSheet,
-  Keyboard,
-  Platform,
   Animated,
-  Dimensions,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
@@ -27,35 +24,6 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
   onImagePress,
 }) => {
   const { colors } = useThemeStore();
-  const [keyboardHeight] = useState(new Animated.Value(0));
-
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', (e) => {
-      console.log('🎹 Keyboard showing, height:', e.endCoordinates.height);
-      // Use minimum height of 270 to ensure toolbar is always visible
-      const effectiveHeight = Math.max(e.endCoordinates.height, 270);
-      console.log('🎹 Using effective height:', effectiveHeight);
-      Animated.timing(keyboardHeight, {
-        toValue: effectiveHeight,
-        duration: 250,
-        useNativeDriver: false,
-      }).start();
-    });
-
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-      console.log('🎹 Keyboard hiding');
-      Animated.timing(keyboardHeight, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: false,
-      }).start();
-    });
-
-    return () => {
-      showSubscription?.remove();
-      hideSubscription?.remove();
-    };
-  }, [keyboardHeight]);
 
   // Solo renderizar si visible
   if (!visible) {
@@ -68,8 +36,8 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
         styles.container,
         {
           backgroundColor: colors.cardBackground,
-          borderTopColor: colors.textSecondary + '20',
-          marginBottom: keyboardHeight,
+          borderBottomColor: colors.textSecondary + '20',
+          opacity: visible ? 1 : 0,
         },
       ]}
     >
@@ -132,14 +100,14 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderTopWidth: 1,
+    borderBottomWidth: 1,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    elevation: 10,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: -2,
+      height: 2,
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,

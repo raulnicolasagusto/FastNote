@@ -9,8 +9,6 @@ import {
   StyleSheet,
   Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -1300,6 +1298,15 @@ export default function NoteDetail() {
         </View>
       </View>
 
+      {/* Keyboard Toolbar */}
+      <KeyboardToolbar
+        visible={showKeyboardToolbar}
+        onFormatPress={handleToolbarFormat}
+        onAudioPress={handleToolbarAudio}
+        onDrawPress={handleToolbarDraw}
+        onImagePress={handleToolbarImage}
+      />
+
       {/* Callouts */}
       {currentCallout && (
         <Callout
@@ -1312,14 +1319,10 @@ export default function NoteDetail() {
       )}
 
       {/* Content */}
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      <ScrollView 
+        style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]} 
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView 
-          style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]} 
-          showsVerticalScrollIndicator={false}
-        >
         <TouchableWithoutFeedback onPress={() => {
           // Deselect any selected images when touching outside
           setSelectedImageIndex(null);
@@ -1504,7 +1507,6 @@ export default function NoteDetail() {
           </View>
         </TouchableWithoutFeedback>
       </ScrollView>
-      </KeyboardAvoidingView>
 
       {/* Camera Modal */}
       {showCameraModal && (
@@ -1645,15 +1647,6 @@ export default function NoteDetail() {
           height={768}
         />
       )}
-
-      {/* Keyboard Toolbar */}
-      <KeyboardToolbar
-        visible={showKeyboardToolbar}
-        onFormatPress={handleToolbarFormat}
-        onAudioPress={handleToolbarAudio}
-        onDrawPress={handleToolbarDraw}
-        onImagePress={handleToolbarImage}
-      />
 
       {/* Image Picker Modal */}
       <ImagePickerModal
