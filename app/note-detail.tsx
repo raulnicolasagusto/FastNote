@@ -9,6 +9,8 @@ import {
   StyleSheet,
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -1310,7 +1312,14 @@ export default function NoteDetail() {
       )}
 
       {/* Content */}
-      <ScrollView style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView 
+          style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]} 
+          showsVerticalScrollIndicator={false}
+        >
         <TouchableWithoutFeedback onPress={() => {
           // Deselect any selected images when touching outside
           setSelectedImageIndex(null);
@@ -1495,6 +1504,7 @@ export default function NoteDetail() {
           </View>
         </TouchableWithoutFeedback>
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Camera Modal */}
       {showCameraModal && (
