@@ -1985,7 +1985,7 @@ const styles = StyleSheet.create({
   },
   noteImage: {
     width: '100%',
-    height: 250,
+    height: 320,
     borderRadius: 8,
   },
   contentEditContainer: {
