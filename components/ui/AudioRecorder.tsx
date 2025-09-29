@@ -118,7 +118,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
       sound.unloadAsync();
     }
     
-    // Reset state
+    // Reset state completely for next time
     setRecording(null);
     setSound(null);
     setAudioUri(null);
@@ -127,6 +127,18 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
     
     onClose();
   };
+
+  // Start recording automatically when modal opens
+  useEffect(() => {
+    if (visible && !recording && !audioUri) {
+      // Small delay to let the modal open smoothly
+      const timer = setTimeout(() => {
+        startRecording();
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [visible]);
 
   useEffect(() => {
     return () => {
@@ -189,7 +201,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
               ? 'Grabando... Presiona para detener' 
               : audioUri 
                 ? 'Audio grabado correctamente'
-                : 'Presiona el micrófono para empezar'
+                : 'Iniciando grabación...'
             }
           </Text>
         </View>
@@ -197,23 +209,25 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
         {/* Controls */}
         <View style={styles.controls}>
           {!audioUri ? (
-            // Recording controls
+            // Recording controls - only show stop button since recording starts automatically
             <TouchableOpacity
               style={[
                 styles.recordButton,
                 { 
-                  backgroundColor: isRecording ? colors.accent.red : colors.accent.blue 
+                  backgroundColor: colors.accent.red,
+                  opacity: isRecording ? 1 : 0.5
                 }
               ]}
-              onPress={isRecording ? stopRecording : startRecording}
+              onPress={stopRecording}
+              disabled={!isRecording}
             >
               <MaterialIcons 
-                name={isRecording ? "stop" : "fiber-manual-record"} 
+                name="stop"
                 size={24} 
                 color="white" 
               />
               <Text style={styles.buttonText}>
-                {isRecording ? 'Detener' : 'Grabar'}
+                Detener Grabación
               </Text>
             </TouchableOpacity>
           ) : (
