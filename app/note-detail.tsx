@@ -428,7 +428,7 @@ export default function NoteDetail() {
             if (spanPart.match(/<span[^>]*background[^>]*>(.*?)<\/span>/)) {
               const innerText = spanPart.replace(/<span[^>]*>(.*?)<\/span>/, '$1').replace(/<[^>]*>/g, '');
               return (
-                <Text key={`${key}-${idx}`} style={[baseStyle, { backgroundColor: 'yellow' }]}>
+                <Text key={`${key}-${idx}`} style={[{ color: textColors.primary, backgroundColor: 'yellow' }]}>
                   {innerText}
                 </Text>
               );
