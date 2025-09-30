@@ -65,6 +65,19 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
     return cleanContent;
   };
 
+  // Helper to check if note has images or drawings
+  const hasImages = () => {
+    // Check legacy images array
+    if (note.images && note.images.length > 0) {
+      return true;
+    }
+    // Check contentBlocks
+    if (note.contentBlocks && note.contentBlocks.some(block => block.type === 'image')) {
+      return true;
+    }
+    return false;
+  };
+
   const renderContent = () => {
     if (note.type === 'checklist' && note.checklistItems) {
       // Show first 3 checklist items
@@ -151,6 +164,13 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
       {note.reminderDate && (
         <View style={styles.reminderIndicator}>
           <MaterialIcons name="schedule" size={16} color={colors.accent.blue} />
+        </View>
+      )}
+
+      {/* Image/Drawing indicator */}
+      {hasImages() && (
+        <View style={styles.imageIndicator}>
+          <MaterialIcons name="image" size={16} color={colors.accent.purple} />
         </View>
       )}
     </TouchableOpacity>
@@ -256,6 +276,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: SPACING.xs,
     left: SPACING.xs,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 1,
+    elevation: 2,
+  },
+  imageIndicator: {
+    position: 'absolute',
+    bottom: SPACING.xs,
+    right: SPACING.xs,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.3,

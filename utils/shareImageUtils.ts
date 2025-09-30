@@ -67,7 +67,17 @@ export const generateNoteImageData = async (
 ): Promise<string> => {
   try {
     console.log('📝 Generating image for note:', note.title);
-    
+
+    // Wait a bit for images to load before capturing
+    // This is especially important when the note has images
+    const hasImages = (note.images && note.images.length > 0) ||
+                     (note.contentBlocks && note.contentBlocks.some(b => b.type === 'image'));
+
+    if (hasImages) {
+      console.log('⏳ Note has images, waiting 1 second for them to load...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
     // Capture the component as image
     const imageUri = await captureComponentAsImage(componentRef, {
       format: 'png',
@@ -75,7 +85,7 @@ export const generateNoteImageData = async (
       width: 768,
       height: 768
     });
-    
+
     return imageUri;
   } catch (error) {
     console.error('❌ Error generating note image:', error);
