@@ -1261,8 +1261,8 @@ export default function NoteDetail() {
 
     return (
       <View>
-        {/* Render blocks in view mode */}
-        {note.contentBlocks && note.contentBlocks.length > 0 ? (
+        {/* Render blocks in view mode (contentBlocks system) */}
+        {note.contentBlocks && note.contentBlocks.length > 0 && (
           note.contentBlocks.map((block, index) =>
             block.type === 'text' && block.content && block.content.trim() ? (
               <TouchableOpacity
@@ -1325,73 +1325,71 @@ export default function NoteDetail() {
               )
             ) : null
           )
-        ) : (
-          /* Fallback to legacy content display */
-          <>
-            {hasText && (
-              <TouchableOpacity
-                style={styles.textSection}
-                onPress={handleStartContentEdit}
-                activeOpacity={1}>
-                {renderRichContent(note.content)}
-              </TouchableOpacity>
-            )}
+        )}
 
-            {/* Legacy images and audio display */}
-            {note.images && note.images.length > 0 && (
-              <View style={styles.imagesSection}>
-                {note.images.map((imageUri, index) => 
-                  isAudioUri(imageUri) ? (
-                    // Render audio player for audio files
-                    <AudioPlayer
-                      key={index}
-                      audioUri={imageUri}
-                      onDelete={() => {
-                        removeImageFromLegacy(index);
-                      }}
-                    />
-                  ) : (
-                    // Render image for image files
+        {/* Render legacy text content if no contentBlocks */}
+        {(!note.contentBlocks || note.contentBlocks.length === 0) && hasText && (
+          <TouchableOpacity
+            style={styles.textSection}
+            onPress={handleStartContentEdit}
+            activeOpacity={1}>
+            {renderRichContent(note.content)}
+          </TouchableOpacity>
+        )}
+
+        {/* ALWAYS render legacy images and audio - regardless of contentBlocks */}
+        {note.images && note.images.length > 0 && (
+          <View style={styles.imagesSection}>
+            {note.images.map((imageUri, index) =>
+              isAudioUri(imageUri) ? (
+                // Render audio player for audio files
+                <AudioPlayer
+                  key={index}
+                  audioUri={imageUri}
+                  onDelete={() => {
+                    removeImageFromLegacy(index);
+                  }}
+                />
+              ) : (
+                // Render image for image files
+                <TouchableOpacity
+                  key={index}
+                  style={styles.imageContainer}
+                  onPress={() => {
+                    if (selectedImageIndex === index) {
+                      // Deselect if already selected
+                      setSelectedImageIndex(null);
+                    } else {
+                      // Select this image
+                      setSelectedImageIndex(index);
+                      setSelectedBlockIndex(null); // Clear block selection
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={styles.noteImage}
+                    resizeMode="contain"
+                  />
+                  {/* Delete button - only show if selected */}
+                  {selectedImageIndex === index && (
                     <TouchableOpacity
-                      key={index}
-                      style={styles.imageContainer}
-                      onPress={() => {
-                        if (selectedImageIndex === index) {
-                          // Deselect if already selected
-                          setSelectedImageIndex(null);
-                        } else {
-                          // Select this image
-                          setSelectedImageIndex(index);
-                          setSelectedBlockIndex(null); // Clear block selection
-                        }
+                      style={styles.deleteButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        removeImageFromLegacy(index);
+                        setSelectedImageIndex(null);
                       }}
-                      activeOpacity={0.8}
+                      activeOpacity={0.7}
                     >
-                      <Image
-                        source={{ uri: imageUri }}
-                        style={styles.noteImage}
-                        resizeMode="contain"
-                      />
-                      {/* Delete button - only show if selected */}
-                      {selectedImageIndex === index && (
-                        <TouchableOpacity
-                          style={styles.deleteButton}
-                          onPress={(e) => {
-                            e.stopPropagation();
-                            removeImageFromLegacy(index);
-                            setSelectedImageIndex(null);
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          <MaterialIcons name="delete" size={24} color="white" />
-                        </TouchableOpacity>
-                      )}
+                      <MaterialIcons name="delete" size={24} color="white" />
                     </TouchableOpacity>
-                  )
-                )}
-              </View>
+                  )}
+                </TouchableOpacity>
+              )
             )}
-          </>
+          </View>
         )}
 
 

@@ -65,14 +65,35 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
     return cleanContent;
   };
 
-  // Helper to check if note has images or drawings
+  // Helper to detect if URI is audio
+  const isAudioUri = (uri: string): boolean => {
+    const audioExtensions = ['.mp3', '.wav', '.m4a', '.aac', '.ogg'];
+    return audioExtensions.some(ext => uri.toLowerCase().includes(ext));
+  };
+
+  // Helper to check if note has images or drawings (excluding audio)
   const hasImages = () => {
     // Check legacy images array
     if (note.images && note.images.length > 0) {
-      return true;
+      const hasNonAudioImages = note.images.some(uri => !isAudioUri(uri));
+      if (hasNonAudioImages) return true;
     }
     // Check contentBlocks
-    if (note.contentBlocks && note.contentBlocks.some(block => block.type === 'image')) {
+    if (note.contentBlocks && note.contentBlocks.some(block => block.type === 'image' && block.uri && !isAudioUri(block.uri))) {
+      return true;
+    }
+    return false;
+  };
+
+  // Helper to check if note has audio files
+  const hasAudio = () => {
+    // Check legacy images array for audio files
+    if (note.images && note.images.length > 0) {
+      const hasAudioFiles = note.images.some(uri => isAudioUri(uri));
+      if (hasAudioFiles) return true;
+    }
+    // Check contentBlocks for audio
+    if (note.contentBlocks && note.contentBlocks.some(block => block.type === 'image' && block.uri && isAudioUri(block.uri))) {
       return true;
     }
     return false;
@@ -169,8 +190,18 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
 
       {/* Image/Drawing indicator */}
       {hasImages() && (
-        <View style={styles.imageIndicator}>
+        <View style={[
+          styles.imageIndicator,
+          hasAudio() && { right: SPACING.xs + 28 } // Move left if audio indicator is present
+        ]}>
           <MaterialIcons name="image" size={16} color={colors.accent.purple} />
+        </View>
+      )}
+
+      {/* Audio indicator */}
+      {hasAudio() && (
+        <View style={styles.audioIndicator}>
+          <MaterialIcons name="mic" size={16} color={colors.accent.orange} />
         </View>
       )}
     </TouchableOpacity>
@@ -283,6 +314,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   imageIndicator: {
+    position: 'absolute',
+    bottom: SPACING.xs,
+    right: SPACING.xs,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 1,
+    elevation: 2,
+  },
+  audioIndicator: {
     position: 'absolute',
     bottom: SPACING.xs,
     right: SPACING.xs,

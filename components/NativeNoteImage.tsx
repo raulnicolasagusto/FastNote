@@ -329,11 +329,14 @@ const styles = StyleSheet.create({
     borderColor: '#34495e',
     borderRadius: 12,
     backgroundColor: '#ffffff',
-    padding: 20,
+    padding: 30, // Increased from 20 to give more horizontal padding
   },
   contentArea: {
     flex: 1,
     justifyContent: 'flex-start',
+    maxWidth: 620, // Limit width so text wraps more like in real note (768 - 2*margins - 2*paddings)
+    alignSelf: 'center',
+    width: '100%',
   },
   title: {
     fontSize: 28,
