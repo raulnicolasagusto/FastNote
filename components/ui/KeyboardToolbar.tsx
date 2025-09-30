@@ -22,6 +22,14 @@ interface KeyboardToolbarProps {
   onH3Press?: () => void;
   onBoldPress?: () => void;
   onHighlightPress?: () => void;
+  // Active states
+  activeFormats?: {
+    bold: boolean;
+    h1: boolean;
+    h2: boolean;
+    h3: boolean;
+    highlight: boolean;
+  };
 }
 
 const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
@@ -37,6 +45,8 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
   onH3Press,
   onBoldPress,
   onHighlightPress,
+  // Active states
+  activeFormats = { bold: false, h1: false, h2: false, h3: false, highlight: false },
 }) => {
   const { colors } = useThemeStore();
 
@@ -62,60 +72,84 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
           <>
             {/* H1 */}
             <TouchableOpacity
-              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              style={[
+                styles.toolButton, 
+                { backgroundColor: activeFormats.h1 ? colors.accent.blue : colors.background }
+              ]}
               onPress={onH1Press}
               activeOpacity={0.7}
             >
-              <Text style={[styles.headerText, { color: colors.textPrimary }]}>
+              <Text style={[
+                styles.headerText, 
+                { color: activeFormats.h1 ? 'white' : colors.textPrimary }
+              ]}>
                 H1
               </Text>
             </TouchableOpacity>
 
             {/* H2 */}
             <TouchableOpacity
-              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              style={[
+                styles.toolButton, 
+                { backgroundColor: activeFormats.h2 ? colors.accent.blue : colors.background }
+              ]}
               onPress={onH2Press}
               activeOpacity={0.7}
             >
-              <Text style={[styles.headerText, { color: colors.textPrimary }]}>
+              <Text style={[
+                styles.headerText, 
+                { color: activeFormats.h2 ? 'white' : colors.textPrimary }
+              ]}>
                 H2
               </Text>
             </TouchableOpacity>
 
             {/* H3 */}
             <TouchableOpacity
-              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              style={[
+                styles.toolButton, 
+                { backgroundColor: activeFormats.h3 ? colors.accent.blue : colors.background }
+              ]}
               onPress={onH3Press}
               activeOpacity={0.7}
             >
-              <Text style={[styles.headerText, { color: colors.textPrimary }]}>
+              <Text style={[
+                styles.headerText, 
+                { color: activeFormats.h3 ? 'white' : colors.textPrimary }
+              ]}>
                 H3
               </Text>
             </TouchableOpacity>
 
             {/* Bold (B) */}
             <TouchableOpacity
-              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              style={[
+                styles.toolButton, 
+                { backgroundColor: activeFormats.bold ? colors.accent.blue : colors.background }
+              ]}
               onPress={onBoldPress}
               activeOpacity={0.7}
             >
               <MaterialIcons
                 name="format-bold"
                 size={20}
-                color={colors.textPrimary}
+                color={activeFormats.bold ? 'white' : colors.textPrimary}
               />
             </TouchableOpacity>
 
             {/* Highlight (like a marker) */}
             <TouchableOpacity
-              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              style={[
+                styles.toolButton, 
+                { backgroundColor: activeFormats.highlight ? '#FFD700' : colors.background }
+              ]}
               onPress={onHighlightPress}
               activeOpacity={0.7}
             >
               <MaterialIcons
                 name="highlight"
                 size={20}
-                color="#FFD700"
+                color={activeFormats.highlight ? 'black' : '#FFD700'}
               />
             </TouchableOpacity>
 

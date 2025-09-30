@@ -99,6 +99,15 @@ export default function NoteDetail() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(null);
   const [selectedAudioIndex, setSelectedAudioIndex] = useState<number | null>(null);
+  
+  // Format button active states
+  const [activeFormats, setActiveFormats] = useState({
+    bold: false,
+    h1: false,
+    h2: false,
+    h3: false,
+    highlight: false
+  });
 
   useEffect(() => {
     if (noteId) {
@@ -112,6 +121,14 @@ export default function NoteDetail() {
         resetCallouts();
       }
     }
+    // Reset format states when loading any note (new or existing)
+    setActiveFormats({
+      bold: false,
+      h1: false,
+      h2: false,
+      h3: false,
+      highlight: false
+    });
   }, [noteId, notes, resetCallouts]);
 
   // Reset format mode when toolbar is hidden
@@ -337,26 +354,41 @@ export default function NoteDetail() {
   const handleH1Press = () => {
     console.log('H1 pressed');
     richTextRef.current?.sendAction(actions.heading1, 'result');
+    setActiveFormats(prev => ({ ...prev, h1: !prev.h1, h2: false, h3: false }));
   };
 
   const handleH2Press = () => {
     console.log('H2 pressed');
     richTextRef.current?.sendAction(actions.heading2, 'result');
+    setActiveFormats(prev => ({ ...prev, h2: !prev.h2, h1: false, h3: false }));
   };
 
   const handleH3Press = () => {
     console.log('H3 pressed');
     richTextRef.current?.sendAction(actions.heading3, 'result');
+    setActiveFormats(prev => ({ ...prev, h3: !prev.h3, h1: false, h2: false }));
   };
 
   const handleBoldPress = () => {
     console.log('Bold pressed');
     richTextRef.current?.sendAction(actions.setBold, 'result');
+    setActiveFormats(prev => ({ ...prev, bold: !prev.bold }));
   };
 
   const handleHighlightPress = () => {
     console.log('Highlight pressed');
-    richTextRef.current?.sendAction(actions.setBackgroundColor, 'yellow');
+    if (activeFormats.highlight) {
+      // Deactivate highlight - restore default background
+      richTextRef.current?.commandDOM(`
+        document.execCommand("backColor", false, "inherit");
+      `);
+    } else {
+      // Activate highlight - apply yellow background
+      richTextRef.current?.commandDOM(`
+        document.execCommand("hiliteColor", false, "yellow");
+      `);
+    }
+    setActiveFormats(prev => ({ ...prev, highlight: !prev.highlight }));
   };
 
   // Rich text functions no longer needed - using RichEditor
@@ -380,50 +412,112 @@ export default function NoteDetail() {
       );
     }
 
-    // Simple regex-based HTML parsing for basic formatting
-    const elements: any[] = [];
-    let key = 0;
-    
-    // Split content by HTML tags but process each part
-    const parts = content.split(/(<[^>]*>.*?<\/[^>]*>|<[^>]*\/>)/);
-    
-    parts.forEach(part => {
-      if (!part.trim()) return;
+    // Enhanced HTML parsing for rich text with proper nesting
+    const parseHtmlToElements = (html: string) => {
+      const elements: any[] = [];
+      let key = 0;
       
-      // Check for headings
-      if (part.match(/<h1[^>]*>(.*?)<\/h1>/)) {
-        const text = part.replace(/<h1[^>]*>(.*?)<\/h1>/, '$1');
-        elements.push(
-          <Text key={key++} style={[styles.headerH1, { color: textColors.primary }]}>
-            {text}
-          </Text>
-        );
-      } else if (part.match(/<h2[^>]*>(.*?)<\/h2>/)) {
-        const text = part.replace(/<h2[^>]*>(.*?)<\/h2>/, '$1');
-        elements.push(
-          <Text key={key++} style={[styles.headerH2, { color: textColors.primary }]}>
-            {text}
-          </Text>
-        );
-      } else if (part.match(/<h3[^>]*>(.*?)<\/h3>/)) {
-        const text = part.replace(/<h3[^>]*>(.*?)<\/h3>/, '$1');
-        elements.push(
-          <Text key={key++} style={[styles.headerH3, { color: textColors.primary }]}>
-            {text}
-          </Text>
-        );
-      } else {
-        // Regular text - remove HTML tags
-        const cleanText = part.replace(/<[^>]*>/g, '');
-        if (cleanText.trim()) {
-          elements.push(
-            <Text key={key++} style={[styles.contentText, { color: textColors.primary }]}>
+      // Process content line by line to handle complex structures
+      const processText = (text: string, baseStyle: any = [styles.contentText, { color: textColors.primary }]) => {
+        // Handle inline formatting within text
+        if (text.includes('<span') && text.includes('background')) {
+          // Split by highlight spans while preserving structure
+          const spanParts = text.split(/(<span[^>]*background[^>]*>.*?<\/span>)/);
+          
+          return spanParts.map((spanPart, idx) => {
+            if (spanPart.match(/<span[^>]*background[^>]*>(.*?)<\/span>/)) {
+              const innerText = spanPart.replace(/<span[^>]*>(.*?)<\/span>/, '$1').replace(/<[^>]*>/g, '');
+              return (
+                <Text key={`${key}-${idx}`} style={[baseStyle, { backgroundColor: 'yellow' }]}>
+                  {innerText}
+                </Text>
+              );
+            } else {
+              const cleanText = spanPart.replace(/<[^>]*>/g, '');
+              return cleanText ? (
+                <Text key={`${key}-${idx}`} style={baseStyle}>
+                  {cleanText}
+                </Text>
+              ) : null;
+            }
+          }).filter(Boolean);
+        } else {
+          const cleanText = text.replace(/<[^>]*>/g, '');
+          return cleanText ? (
+            <Text key={key} style={baseStyle}>
               {cleanText}
             </Text>
-          );
+          ) : null;
+        }
+      };
+      
+      // Split by major block elements
+      const blocks = html.split(/(<\/?(?:h[1-6]|div|p)[^>]*>)/);
+      
+      let currentBlockType: 'h1' | 'h2' | 'h3' | null = null;
+      let currentContent = '';
+      
+      blocks.forEach(block => {
+        if (block.match(/<h1[^>]*>/)) {
+          currentBlockType = 'h1';
+          currentContent = '';
+        } else if (block.match(/<h2[^>]*>/)) {
+          currentBlockType = 'h2'; 
+          currentContent = '';
+        } else if (block.match(/<h3[^>]*>/)) {
+          currentBlockType = 'h3';
+          currentContent = '';
+        } else if (block.match(/<\/h[1-6]>/)) {
+          // End of heading - process accumulated content
+          if (currentContent.trim()) {
+            const style = currentBlockType === 'h1' ? styles.headerH1 : 
+                         currentBlockType === 'h2' ? styles.headerH2 : styles.headerH3;
+            const processed = processText(currentContent, [style, { color: textColors.primary }]);
+            if (Array.isArray(processed)) {
+              elements.push(
+                <Text key={key++} style={[style, { color: textColors.primary }]}>
+                  {processed}
+                </Text>
+              );
+            } else if (processed) {
+              elements.push(processed);
+              key++;
+            }
+          }
+          currentBlockType = null;
+          currentContent = '';
+        } else if (block.match(/<\/?(?:div|p)/)) {
+          // Skip div/p tags but process any accumulated content
+          if (currentContent.trim()) {
+            const processed = processText(currentContent);
+            if (Array.isArray(processed)) {
+              elements.push(...processed);
+            } else if (processed) {
+              elements.push(processed);
+            }
+            key++;
+          }
+          currentContent = '';
+        } else if (block.trim()) {
+          // Accumulate content
+          currentContent += block;
+        }
+      });
+      
+      // Process any remaining content
+      if (currentContent.trim()) {
+        const processed = processText(currentContent);
+        if (Array.isArray(processed)) {
+          elements.push(...processed);
+        } else if (processed) {
+          elements.push(processed);
         }
       }
-    });
+      
+      return elements;
+    };
+    
+    const elements = parseHtmlToElements(content);
     
     return (
       <View>
@@ -1476,6 +1570,8 @@ export default function NoteDetail() {
         onH3Press={handleH3Press}
         onBoldPress={handleBoldPress}
         onHighlightPress={handleHighlightPress}
+        // Active states for visual feedback
+        activeFormats={activeFormats}
       />
 
       {/* Callouts */}
