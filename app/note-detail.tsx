@@ -383,9 +383,12 @@ export default function NoteDetail() {
         document.execCommand("backColor", false, "inherit");
       `);
     } else {
-      // Activate highlight - apply yellow background
+      // Activate highlight - use different color based on theme
+      // Dark mode: darker orange/amber for better contrast with black background
+      // Light mode: bright yellow for traditional highlight
+      const highlightColor = isDarkMode ? "#D97706" : "yellow";
       richTextRef.current?.commandDOM(`
-        document.execCommand("hiliteColor", false, "yellow");
+        document.execCommand("hiliteColor", false, "${highlightColor}");
       `);
     }
     setActiveFormats(prev => ({ ...prev, highlight: !prev.highlight }));
@@ -412,35 +415,68 @@ export default function NoteDetail() {
       );
     }
 
+    // Helper to decode HTML entities
+    const decodeHtmlEntities = (text: string): string => {
+      return text
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+    };
+
     // Enhanced HTML parsing for rich text with proper nesting
     const parseHtmlToElements = (html: string) => {
       const elements: any[] = [];
       let key = 0;
-      
+
       // Process content line by line to handle complex structures
       const processText = (text: string, baseStyle: any = [styles.contentText, { color: textColors.primary }]) => {
-        // Handle inline formatting within text
-        if (text.includes('<span') && text.includes('background')) {
-          // Split by highlight spans while preserving structure
-          const spanParts = text.split(/(<span[^>]*background[^>]*>.*?<\/span>)/);
-          
-          return spanParts.map((spanPart, idx) => {
-            if (spanPart.match(/<span[^>]*background[^>]*>(.*?)<\/span>/)) {
-              const innerText = spanPart.replace(/<span[^>]*>(.*?)<\/span>/, '$1').replace(/<[^>]*>/g, '');
-              return (
-                <Text key={`${key}-${idx}`} style={[{ color: textColors.primary, backgroundColor: 'yellow' }]}>
-                  {innerText}
-                </Text>
-              );
-            } else {
-              const cleanText = spanPart.replace(/<[^>]*>/g, '');
-              return cleanText ? (
-                <Text key={`${key}-${idx}`} style={baseStyle}>
-                  {cleanText}
-                </Text>
-              ) : null;
+        // Handle inline formatting within text - detect both yellow and dark mode orange
+        if (text.includes('<span') && (text.includes('background') || text.includes('yellow') || text.includes('#D97706') || text.includes('rgb(217, 119, 6)'))) {
+          // More precise regex to capture ONLY the span content
+          const regex = /<span[^>]*background[^>]*>(.*?)<\/span>/gs;
+          const parts: any[] = [];
+          let lastIndex = 0;
+          let match;
+
+          while ((match = regex.exec(text)) !== null) {
+            // Add text before the span as plain string
+            if (match.index > lastIndex) {
+              const beforeText = decodeHtmlEntities(text.substring(lastIndex, match.index).replace(/<[^>]*>/g, ''));
+              if (beforeText) {
+                parts.push(beforeText);
+              }
             }
-          }).filter(Boolean);
+
+            // Add highlighted text as nested Text component
+            const innerText = decodeHtmlEntities(match[1].replace(/<[^>]*>/g, ''));
+            // Use different highlight color based on theme
+            const highlightBg = isDarkMode ? '#D97706' : 'yellow';
+            parts.push(
+              <Text key={`${key}-hl-${parts.length}`} style={{ backgroundColor: highlightBg }}>
+                {innerText}
+              </Text>
+            );
+
+            lastIndex = regex.lastIndex;
+          }
+
+          // Add remaining text after last span as plain string
+          if (lastIndex < text.length) {
+            const afterText = decodeHtmlEntities(text.substring(lastIndex).replace(/<[^>]*>/g, ''));
+            if (afterText) {
+              parts.push(afterText);
+            }
+          }
+
+          // Wrap everything in ONE Text component to keep them in the same line
+          return (
+            <Text key={key} style={baseStyle}>
+              {parts}
+            </Text>
+          );
         } else {
           const cleanText = text.replace(/<[^>]*>/g, '');
           return cleanText ? (
