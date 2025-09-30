@@ -9,24 +9,39 @@ interface NotesGridProps {
   onNotePress: (note: Note) => void;
   onNoteEdit?: (note: Note) => void;
   onNoteLongPress?: (note: Note) => void;
-  pressedNoteId?: string | null;
+  selectedNoteIds?: string[]; // Multi-select mode
+  isMultiSelectMode?: boolean; // Multi-select mode active
 }
 
-export const NotesGrid: React.FC<NotesGridProps> = ({ notes, onNotePress, onNoteEdit, onNoteLongPress, pressedNoteId }) => {
+export const NotesGrid: React.FC<NotesGridProps> = ({
+  notes,
+  onNotePress,
+  onNoteEdit,
+  onNoteLongPress,
+  selectedNoteIds = [],
+  isMultiSelectMode = false
+}) => {
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = (screenWidth - SPACING.md * 2 - LAYOUT.gridGutter) / LAYOUT.gridColumns;
 
-  const renderNote = ({ item }: { item: Note }) => (
-    <View style={[styles.cardContainer, { width: cardWidth }]}>
-      <NoteCard
-        note={item}
-        onPress={() => onNotePress(item)}
-        onEdit={onNoteEdit ? () => onNoteEdit(item) : undefined}
-        onLongPress={onNoteLongPress ? () => onNoteLongPress(item) : undefined}
-        isPressed={pressedNoteId === item.id}
-      />
-    </View>
-  );
+  const renderNote = ({ item }: { item: Note }) => {
+    const isSelected = selectedNoteIds.includes(item.id);
+    const isPressed = isSelected && isMultiSelectMode;
+
+    return (
+      <View style={[styles.cardContainer, { width: cardWidth }]}>
+        <NoteCard
+          note={item}
+          onPress={() => onNotePress(item)}
+          onEdit={!isMultiSelectMode && onNoteEdit ? () => onNoteEdit(item) : undefined}
+          onLongPress={onNoteLongPress ? () => onNoteLongPress(item) : undefined}
+          isPressed={isPressed}
+          isSelected={isSelected}
+          isMultiSelectMode={isMultiSelectMode}
+        />
+      </View>
+    );
+  };
 
   return (
     <FlatList

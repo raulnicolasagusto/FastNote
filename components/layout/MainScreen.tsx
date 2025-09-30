@@ -36,14 +36,13 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   onFoldersPress,
 }) => {
   const [activeTab, setActiveTab] = useState('all');
-  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const [pressedNoteId, setPressedNoteId] = useState<string | null>(null);
+  const [selectedNotes, setSelectedNotes] = useState<Note[]>([]); // Multi-select array
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false); // Multi-select mode active
   const [noteToMove, setNoteToMove] = useState<Note | null>(null);
   const [showBottomMenu, setShowBottomMenu] = useState(false);
   const [showMoveFolderModal, setShowMoveFolderModal] = useState(false);
   const [showReminderPicker, setShowReminderPicker] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const { loadNotes, setCurrentCategory, setCurrentFolder, togglePinNote, archiveNote, deleteNote, moveNoteToFolder, setNoteReminder } = useNotesStore();
   const { colors, isDarkMode } = useThemeStore();
   const filteredNotes = useFilteredNotes();
@@ -88,37 +87,72 @@ export const MainScreen: React.FC<MainScreenProps> = ({
     // Trigger haptic feedback
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    setSelectedNote(note);
-    setPressedNoteId(note.id);
+    // Activate multi-select mode with first note
+    setIsMultiSelectMode(true);
+    setSelectedNotes([note]);
     setShowBottomMenu(true);
-    console.log('👆 LONG PRESS DEBUG - State updated, showBottomMenu:', true);
+    console.log('👆 LONG PRESS DEBUG - Multi-select mode activated, 1 note selected');
+  };
+
+  const handleNoteSelect = (note: Note) => {
+    console.log('✅ SELECT DEBUG - Note tapped in multi-select mode:', note.title);
+
+    // Check if note is already selected
+    const isAlreadySelected = selectedNotes.some(n => n.id === note.id);
+
+    if (isAlreadySelected) {
+      // Deselect note
+      const newSelection = selectedNotes.filter(n => n.id !== note.id);
+      setSelectedNotes(newSelection);
+
+      // If no notes left, exit multi-select mode
+      if (newSelection.length === 0) {
+        setIsMultiSelectMode(false);
+        setShowBottomMenu(false);
+        console.log('✅ SELECT DEBUG - Last note deselected, exiting multi-select mode');
+      } else {
+        console.log(`✅ SELECT DEBUG - Note deselected, ${newSelection.length} notes remaining`);
+      }
+    } else {
+      // Select note
+      const newSelection = [...selectedNotes, note];
+      setSelectedNotes(newSelection);
+      console.log(`✅ SELECT DEBUG - Note selected, total: ${newSelection.length}`);
+    }
   };
 
   const handleCloseBottomMenu = () => {
     setShowBottomMenu(false);
-    setSelectedNote(null);
-    setPressedNoteId(null);
+    setSelectedNotes([]);
+    setIsMultiSelectMode(false);
+    console.log('❌ CLOSE DEBUG - Multi-select mode deactivated');
   };
 
   const handlePin = () => {
-    if (selectedNote) {
-      togglePinNote(selectedNote.id);
-    }
+    // Toggle pin for all selected notes
+    selectedNotes.forEach(note => {
+      togglePinNote(note.id);
+    });
+    console.log(`📌 PIN DEBUG - Toggled pin for ${selectedNotes.length} notes`);
   };
 
   const handleMoveTo = () => {
-    setNoteToMove(selectedNote);
+    // All selected notes will be moved to chosen folder
+    console.log('📁 MOVE DEBUG - handleMoveTo called, selectedNotes:', selectedNotes.length);
     setShowMoveFolderModal(true);
   };
 
   const handleSelectFolder = (folderId: string) => {
-    if (noteToMove) {
-      moveNoteToFolder(noteToMove.id, folderId);
-      setShowBottomMenu(false);
-      setShowMoveFolderModal(false);
-      setSelectedNote(null);
-      setNoteToMove(null);
-    }
+    // Move all selected notes to the folder
+    selectedNotes.forEach(note => {
+      moveNoteToFolder(note.id, folderId);
+    });
+    console.log(`📁 MOVE DEBUG - Moved ${selectedNotes.length} notes to folder ${folderId}`);
+    setShowBottomMenu(false);
+    setShowMoveFolderModal(false);
+    setSelectedNotes([]);
+    setIsMultiSelectMode(false);
+    setNoteToMove(null);
   };
 
   const handleCloseMoveModal = () => {
@@ -127,21 +161,29 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   };
 
   const handleHide = () => {
-    if (selectedNote) {
-      archiveNote(selectedNote.id);
-    }
+    // Archive all selected notes
+    selectedNotes.forEach(note => {
+      archiveNote(note.id);
+    });
+    console.log(`👁️ HIDE DEBUG - Archived ${selectedNotes.length} notes`);
   };
 
   const handleReminder = () => {
-    console.log('⏰ REMINDER DEBUG - handleReminder called, selectedNote:', selectedNote?.title, selectedNote?.id);
-    setShowReminderPicker(true);
+    // Only works with single note
+    if (selectedNotes.length === 1) {
+      console.log('⏰ REMINDER DEBUG - handleReminder called, selectedNote:', selectedNotes[0]?.title, selectedNotes[0]?.id);
+      setShowReminderPicker(true);
+    }
   };
 
   const handleReminderConfirm = async (reminderDate: Date | null) => {
     console.log('🔔 REMINDER DEBUG - handleReminderConfirm called with:', reminderDate);
-    console.log('🔔 REMINDER DEBUG - selectedNote:', selectedNote?.title, selectedNote?.id);
-    
-    if (selectedNote) {
+
+    // Only works with single note
+    if (selectedNotes.length === 1) {
+      const selectedNote = selectedNotes[0];
+      console.log('🔔 REMINDER DEBUG - selectedNote:', selectedNote?.title, selectedNote?.id);
+
       // Cancel existing notification if any
       if (selectedNote.notificationId) {
         await NotificationService.cancelNotification(selectedNote.notificationId);
@@ -170,32 +212,35 @@ export const MainScreen: React.FC<MainScreenProps> = ({
     // Cerrar tanto el ReminderPicker como el BottomMenu
     setShowReminderPicker(false);
     setShowBottomMenu(false);
-    setSelectedNote(null);
+    setSelectedNotes([]);
+    setIsMultiSelectMode(false);
   };
 
   const handleReminderClose = () => {
     // Cuando se cancela el ReminderPicker, también cerrar el BottomMenu
     setShowReminderPicker(false);
     setShowBottomMenu(false);
-    setSelectedNote(null);
+    setSelectedNotes([]);
+    setIsMultiSelectMode(false);
   };
 
   const handleDelete = () => {
-    if (selectedNote) {
-      setNoteToDelete(selectedNote);
+    console.log('🗑️ DELETE DEBUG - handleDelete called, selectedNotes:', selectedNotes.length);
+    if (selectedNotes.length > 0) {
       setShowDeleteConfirmModal(true);
     }
   };
 
   const confirmDelete = () => {
-    if (noteToDelete) {
-      deleteNote(noteToDelete.id);
-      setShowDeleteConfirmModal(false);
-      setShowBottomMenu(false);
-      setSelectedNote(null);
-      setPressedNoteId(null);
-      setNoteToDelete(null);
-    }
+    // Delete all selected notes
+    selectedNotes.forEach(note => {
+      deleteNote(note.id);
+    });
+    console.log(`🗑️ DELETE DEBUG - Deleted ${selectedNotes.length} notes`);
+    setShowDeleteConfirmModal(false);
+    setShowBottomMenu(false);
+    setSelectedNotes([]);
+    setIsMultiSelectMode(false);
   };
 
   const cancelDelete = () => {
@@ -218,10 +263,19 @@ export const MainScreen: React.FC<MainScreenProps> = ({
       <View style={styles.content}>
         <NotesGrid
           notes={filteredNotes}
-          onNotePress={onNotePress}
+          onNotePress={(note) => {
+            console.log('🎯 MAINSCREEN DEBUG - onNotePress called for:', note.title);
+            console.log('🎯 MAINSCREEN DEBUG - isMultiSelectMode:', isMultiSelectMode);
+            if (isMultiSelectMode) {
+              handleNoteSelect(note);
+            } else {
+              onNotePress(note);
+            }
+          }}
           onNoteEdit={handleNoteEdit}
           onNoteLongPress={handleNoteLongPress}
-          pressedNoteId={pressedNoteId}
+          selectedNoteIds={selectedNotes.map(n => n.id)}
+          isMultiSelectMode={isMultiSelectMode}
         />
 
         <FloatingActionButton onNewNotePress={onNewNotePress} onVoiceNotePress={onVoiceNotePress} />
@@ -230,13 +284,14 @@ export const MainScreen: React.FC<MainScreenProps> = ({
       {/* Bottom Menu */}
       <BottomMenu
         visible={showBottomMenu}
-        note={selectedNote}
+        notes={selectedNotes}
         onClose={handleCloseBottomMenu}
         onPin={handlePin}
         onMoveTo={handleMoveTo}
         onHide={handleHide}
         onReminder={handleReminder}
         onDelete={handleDelete}
+        isMultiSelectMode={isMultiSelectMode}
       />
 
       {/* Move Folder Modal */}
@@ -249,7 +304,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
       {/* Reminder Picker */}
       <ReminderPicker
         visible={showReminderPicker}
-        currentDate={selectedNote?.reminderDate}
+        currentDate={selectedNotes.length === 1 ? selectedNotes[0]?.reminderDate : undefined}
         onClose={handleReminderClose}
         onConfirm={handleReminderConfirm}
       />
@@ -269,7 +324,10 @@ export const MainScreen: React.FC<MainScreenProps> = ({
                 style={styles.warningIcon}
               />
               <Text style={[styles.deleteTitle, { color: colors.textPrimary }]}>
-                ¿Seguro que quieres eliminar la nota {noteToDelete?.title}?
+                {selectedNotes.length === 1
+                  ? `¿Seguro que quieres eliminar la nota "${selectedNotes[0]?.title}"?`
+                  : `¿Seguro que quieres eliminar ${selectedNotes.length} notas?`
+                }
               </Text>
               <View style={styles.deleteActions}>
                 <TouchableOpacity

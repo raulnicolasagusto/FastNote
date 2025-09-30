@@ -687,6 +687,106 @@ Renderiza resultados en NotesGrid
 
 ---
 
+## Protocolo para Nuevas Implementaciones
+
+Cuando el usuario solicite una **NUEVA funcionalidad o feature**, SIEMPRE seguir este checklist en orden:
+
+### 1. ✅ Verificar Dependencias ANTES de Instalar
+- **Leer [package.json](package.json)** para verificar si la dependencia ya está instalada
+- **NO duplicar dependencias** - muchas veces ya existen librerías que hacen lo mismo
+- **Buscar versiones actualizadas** usando MCP:
+  - `mcp__Ref__ref_search_documentation` para buscar documentación oficial
+  - Buscar compatibilidad con Expo SDK 54 y React Native 0.81.4
+- **Verificar compatibilidad Expo** - no todas las librerías funcionan con Expo managed workflow
+- Si necesitas instalar algo nuevo, **proponer primero** y esperar confirmación
+
+### 2. ✅ Leer Archivos Relacionados
+- **[types/index.ts](types/index.ts)** - Ver tipos existentes, entender estructura de datos
+- **Stores relevantes** en `store/` - Ver cómo se maneja estado similar
+- **Componentes similares** - Buscar patterns existentes que puedas reutilizar
+- **[constants/theme.ts](constants/theme.ts)** - Para estilos y colores consistentes
+- **Archivos de configuración**: `app.json`, `tsconfig.json`, `eas.json`
+
+### 3. ✅ Buscar Documentación con MCP
+- Usar `mcp__Ref__ref_search_documentation` para:
+  - Documentación oficial de librerías
+  - Ejemplos de implementación
+  - Best practices de React Native y Expo
+- Usar `mcp__Ref__ref_read_url` para leer docs específicas
+
+### 4. ✅ Proponer Arquitectura ANTES de Codear
+**NUNCA empezar a codear directamente.** Siempre proponer primero:
+- ¿Qué archivos se van a modificar?
+- ¿Qué archivos nuevos se van a crear?
+- ¿Se necesita nuevo store de Zustand?
+- ¿Se necesitan nuevos tipos en types/index.ts?
+- ¿Hay que modificar app.json para permisos nativos?
+- ¿Cómo se integra con código existente?
+
+### 5. ✅ Confirmar con Usuario
+- **Presentar el plan completo** al usuario
+- **Esperar confirmación explícita** antes de hacer cambios
+- Si el usuario dice "adelante" o "hazlo", entonces proceder
+- Si hay dudas, hacer preguntas específicas
+
+### 6. ✅ Durante Implementación
+- **No romper código existente** - prioridad #1
+- **Respetar patrones establecidos** (estructura de stores, componentes, estilos)
+- **Usar TypeScript correctamente** - tipar todo
+- **Seguir convenciones de nombres** del proyecto
+- **Comentar código complejo** en español o inglés
+- **Console.logs útiles** con emojis para debugging (ej: `console.log('🎯 Feature X:')`)
+
+### 7. ✅ Testing Manual (sin levantar servidores)
+- **NO ejecutar `npm start`** sin permiso explícito
+- Revisar código mentalmente
+- Verificar imports y exports
+- Asegurar que TypeScript compile (sin ejecutar typecheck)
+
+### 8. ✅ Actualizar Documentación
+- **Actualizar [CLAUDE.md](CLAUDE.md)** si es feature significativo:
+  - Agregar a "Características Implementadas"
+  - Actualizar "Stack Tecnológico" si hay nuevas dependencias
+  - Agregar a "APIs Utilizadas" si corresponde
+  - Actualizar "Flujo de Datos" si cambia arquitectura
+- Mantener la sección "Última actualización" al día
+
+### 9. ✅ Preguntas Clave ANTES de Implementar
+
+Antes de codear una nueva feature, responder mentalmente:
+
+1. **¿Ya existe algo similar en el codebase?** → Reutilizar primero
+2. **¿Esta dependencia ya está instalada?** → Revisar package.json
+3. **¿Es compatible con Expo?** → Verificar docs oficiales
+4. **¿Rompe algo existente?** → Analizar impacto
+5. **¿Sigue los patterns del proyecto?** → Mantener consistencia
+6. **¿Necesita permisos nativos?** → Actualizar app.json
+7. **¿Necesita variables de entorno?** → Documentar en CLAUDE.md
+
+### 10. ✅ Archivos Críticos a Revisar Siempre
+
+Para cualquier implementación nueva, revisar estos archivos:
+
+- **[package.json](package.json)** - Dependencias y scripts
+- **[app.json](app.json)** - Configuración Expo, permisos, plugins
+- **[types/index.ts](types/index.ts)** - Tipos TypeScript centrales
+- **[constants/theme.ts](constants/theme.ts)** - Colores, spacing, tipografía
+- **Stores en `store/`** - Estado global existente
+- **[CLAUDE.md](CLAUDE.md)** (este archivo) - Reglas y patterns del proyecto
+
+## Frases Gatillo para Activar Protocolo
+
+Cuando el usuario diga:
+- "Quiero implementar..."
+- "Necesito agregar..."
+- "Vamos a crear..."
+- "Ayúdame a hacer..."
+- "Agrega una funcionalidad de..."
+
+→ **ACTIVAR este protocolo completo** antes de escribir código.
+
+---
+
 **Última actualización**: 30/09/2025
 **Mantenedor**: Claude Code Assistant
-**Revisión**: Completa basada en lectura de codebase
+**Revisión**: Completa basada en lectura de codebase + Protocolo de implementación agregado

@@ -18,13 +18,14 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface BottomMenuProps {
   visible: boolean;
-  note: Note | null;
+  notes: Note[]; // Changed from single note to array
   onClose: () => void;
   onPin: () => void;
   onMoveTo: () => void;
   onHide: () => void;
   onReminder: () => void;
   onDelete: () => void;
+  isMultiSelectMode?: boolean; // Mode flag from parent
 }
 
 interface MenuButton {
@@ -36,17 +37,21 @@ interface MenuButton {
 
 export default function BottomMenu({
   visible,
-  note,
+  notes,
   onClose,
   onPin,
   onMoveTo,
   onHide,
   onReminder,
   onDelete,
+  isMultiSelectMode = false,
 }: BottomMenuProps) {
   const { colors } = useThemeStore();
   const insets = useSafeAreaInsets();
   const slideAnim = React.useState(new Animated.Value(0))[0];
+
+  const isMultiSelect = notes.length > 1;
+  const firstNote = notes[0];
 
   useEffect(() => {
     if (visible) {
@@ -64,11 +69,15 @@ export default function BottomMenu({
     }
   }, [visible, slideAnim]);
 
+  // Check if all selected notes have the same pin status
+  const allPinned = notes.every(note => note.isPinned);
+  const somePinned = notes.some(note => note.isPinned);
+
   const menuButtons: MenuButton[] = [
     {
       id: 'pin',
-      icon: note?.isPinned ? 'star' : 'star-border',
-      label: note?.isPinned ? 'Desanclar' : 'Anclar',
+      icon: allPinned ? 'star' : 'star-border',
+      label: allPinned ? 'Desanclar' : 'Anclar',
       action: onPin,
     },
     {
@@ -85,8 +94,8 @@ export default function BottomMenu({
     },
     {
       id: 'reminder',
-      icon: note?.reminderDate ? 'edit-notifications' : 'schedule',
-      label: note?.reminderDate ? 'Editar' : 'Recordar',
+      icon: firstNote?.reminderDate ? 'edit-notifications' : 'schedule',
+      label: firstNote?.reminderDate ? 'Editar' : 'Recordar',
       action: onReminder,
     },
     {
@@ -107,20 +116,99 @@ export default function BottomMenu({
     outputRange: [0, 1],
   });
 
-  if (!note) return null;
+  if (notes.length === 0) return null;
 
+  // If multi-select MODE (not just count), render as fixed bottom bar WITHOUT Modal
+  if (isMultiSelectMode && visible) {
+    return (
+      <View
+        style={[
+          styles.multiSelectContainer,
+          {
+            backgroundColor: colors.cardBackground,
+            borderTopColor: colors.textSecondary + '20',
+            paddingBottom: insets.bottom + SPACING.md,
+          },
+        ]}>
+        {/* Handle bar */}
+        <View style={[styles.handle, { backgroundColor: colors.textSecondary }]} />
+
+        {/* Note title or counter */}
+        <Text
+          style={[styles.noteTitle, { color: colors.textPrimary }]}
+          numberOfLines={1}>
+          {`${notes.length} notas seleccionadas`}
+        </Text>
+
+        {/* Menu buttons */}
+        <View style={styles.buttonsContainer}>
+          {menuButtons.map((button) => {
+            // Disable reminder button if multiple notes selected
+            const isDisabled = button.id === 'reminder' && isMultiSelect;
+
+            return (
+              <TouchableOpacity
+                key={button.id}
+                style={styles.menuButton}
+                onPress={() => {
+                  if (isDisabled) return;
+                  button.action();
+                  // Don't close for buttons that open modals (reminder, move, delete)
+                  if (button.id !== 'reminder' && button.id !== 'move' && button.id !== 'delete') {
+                    onClose();
+                  }
+                }}
+                disabled={isDisabled}>
+                <View style={[
+                  styles.iconContainer,
+                  { backgroundColor: colors.background },
+                  isDisabled && { opacity: 0.3 }
+                ]}>
+                  <MaterialIcons
+                    name={button.icon as any}
+                    size={24}
+                    color={
+                      button.id === 'delete'
+                        ? colors.accent.red
+                        : button.id === 'pin' && allPinned
+                        ? colors.accent.orange
+                        : colors.textPrimary
+                    }
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.buttonLabel,
+                    {
+                      color:
+                        button.id === 'delete'
+                          ? colors.accent.red
+                          : colors.textPrimary,
+                    },
+                    isDisabled && { opacity: 0.3 }
+                  ]}>
+                  {button.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
+  // Single note mode - use Modal with backdrop
   return (
     <Modal
       animationType="none"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}>
-      <Animated.View style={[styles.overlay, { opacity }]}>
-        {/* Backdrop */}
-        <TouchableOpacity
+      <Animated.View style={[styles.overlay, { opacity }]} pointerEvents="box-none">
+        {/* Backdrop - no longer blocks touches, only visible for dimming effect */}
+        <View
           style={styles.backdrop}
-          activeOpacity={1}
-          onPress={onClose}
+          pointerEvents="none"
         />
 
         {/* Menu */}
@@ -137,53 +225,65 @@ export default function BottomMenu({
           {/* Handle bar */}
           <View style={[styles.handle, { backgroundColor: colors.textSecondary }]} />
 
-          {/* Note title */}
+          {/* Note title or counter */}
           <Text
             style={[styles.noteTitle, { color: colors.textPrimary }]}
             numberOfLines={1}>
-            {note.title}
+            {isMultiSelect ? `${notes.length} notas seleccionadas` : firstNote.title}
           </Text>
 
           {/* Menu buttons */}
           <View style={styles.buttonsContainer}>
-            {menuButtons.map((button) => (
-              <TouchableOpacity
-                key={button.id}
-                style={styles.menuButton}
-                onPress={() => {
-                  button.action();
-                  // Solo cerrar si NO es el botón de recordatorio
-                  if (button.id !== 'reminder') {
-                    onClose();
-                  }
-                }}>
-                <View style={[styles.iconContainer, { backgroundColor: colors.background }]}>
-                  <MaterialIcons
-                    name={button.icon as any}
-                    size={24}
-                    color={
-                      button.id === 'delete'
-                        ? colors.accent.red
-                        : button.id === 'pin' && note?.isPinned
-                        ? colors.accent.orange
-                        : colors.textPrimary
+            {menuButtons.map((button) => {
+              // Disable reminder button if multiple notes selected
+              const isDisabled = button.id === 'reminder' && isMultiSelect;
+
+              return (
+                <TouchableOpacity
+                  key={button.id}
+                  style={styles.menuButton}
+                  onPress={() => {
+                    if (isDisabled) return; // Don't execute if disabled
+                    button.action();
+                    // Solo cerrar si NO es el botón de recordatorio
+                    if (button.id !== 'reminder') {
+                      onClose();
                     }
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.buttonLabel,
-                    {
-                      color:
+                  }}
+                  disabled={isDisabled}>
+                  <View style={[
+                    styles.iconContainer,
+                    { backgroundColor: colors.background },
+                    isDisabled && { opacity: 0.3 }
+                  ]}>
+                    <MaterialIcons
+                      name={button.icon as any}
+                      size={24}
+                      color={
                         button.id === 'delete'
                           ? colors.accent.red
-                          : colors.textPrimary,
-                    },
-                  ]}>
-                  {button.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                          : button.id === 'pin' && allPinned
+                          ? colors.accent.orange
+                          : colors.textPrimary
+                      }
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.buttonLabel,
+                      {
+                        color:
+                          button.id === 'delete'
+                            ? colors.accent.red
+                            : colors.textPrimary,
+                      },
+                      isDisabled && { opacity: 0.3 }
+                    ]}>
+                    {button.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </Animated.View>
       </Animated.View>
@@ -220,6 +320,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 8,
+  },
+  multiSelectContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderTopWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
+    zIndex: 100,
   },
   handle: {
     width: 40,

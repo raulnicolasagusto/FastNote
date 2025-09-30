@@ -11,9 +11,11 @@ interface NoteCardProps {
   onEdit?: () => void;
   onLongPress?: () => void;
   isPressed?: boolean;
+  isSelected?: boolean; // Multi-select mode
+  isMultiSelectMode?: boolean; // Show empty circle indicator
 }
 
-export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLongPress, isPressed }) => {
+export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLongPress, isPressed, isSelected, isMultiSelectMode }) => {
   const { colors } = useThemeStore();
   
   // Helper function to get text colors for notes with custom backgrounds
@@ -104,6 +106,19 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
       activeOpacity={0.7}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
+          {/* Multi-select circle indicator */}
+          {isMultiSelectMode && (
+            <View style={[
+              styles.selectCircle,
+              { borderColor: colors.accent.blue },
+              isSelected && { backgroundColor: colors.accent.blue }
+            ]}>
+              {isSelected && (
+                <MaterialIcons name="check" size={14} color="#FFFFFF" />
+              )}
+            </View>
+          )}
+
           <Text style={[styles.title, { color: textColors.primary }]} numberOfLines={2}>
             {note.title}
           </Text>
@@ -166,6 +181,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: SPACING.xs,
+  },
+  selectCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    marginRight: SPACING.xs,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
   },
   title: {
     fontSize: TYPOGRAPHY.titleSize,
