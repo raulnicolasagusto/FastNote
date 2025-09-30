@@ -15,6 +15,30 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// Helper function to strip HTML tags and convert to plain text
+function stripHtmlTags(html: string): string {
+  if (!html) return '';
+
+  return html
+    // Replace block elements with line breaks
+    .replace(/<\/?(h[1-6]|p|div|br)[^>]*>/gi, '\n')
+    // Remove all other HTML tags
+    .replace(/<[^>]*>/g, '')
+    // Decode HTML entities
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    // Remove multiple consecutive line breaks
+    .replace(/\n\s*\n/g, '\n')
+    // Trim whitespace from start and end
+    .replace(/^\s+|\s+$/g, '')
+    // Remove leading spaces from lines
+    .replace(/\n\s+/g, '\n');
+}
+
 export class NotificationService {
   static async requestPermissions(): Promise<boolean> {
     try {
@@ -52,8 +76,9 @@ export class NotificationService {
         return `reminder_${note.id}_${Date.now()}`;
       }
 
-      // Create notification content
-      const bodyLines = note.content.split('\n').filter(line => line.trim());
+      // Create notification content - strip HTML tags first
+      const plainTextContent = stripHtmlTags(note.content);
+      const bodyLines = plainTextContent.split('\n').filter(line => line.trim());
       const bodyPreview = bodyLines.slice(0, 2).join('\n');
       const displayBody = bodyPreview || 'Abrir nota para ver contenido';
 
