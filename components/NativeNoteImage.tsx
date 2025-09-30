@@ -243,7 +243,7 @@ export const NativeNoteImage: React.FC<NativeNoteImageProps> = ({
   }, [note, images]);
 
   return (
-    <View style={[styles.container, { width, height }]}>
+    <View style={[styles.container, { width }]}>
       {/* Background with border */}
       <View style={styles.border}>
         <View style={styles.innerBorder}>
@@ -313,26 +313,26 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#ffffff',
     padding: 0,
+    minHeight: 768, // Minimum height, but can grow
   },
   border: {
-    flex: 1,
     borderWidth: 8,
     borderColor: '#2c3e50',
     borderRadius: 20,
     backgroundColor: '#ffffff',
     padding: 16,
     margin: 20,
+    minHeight: 700, // Allow to grow with content
   },
   innerBorder: {
-    flex: 1,
     borderWidth: 2,
     borderColor: '#34495e',
     borderRadius: 12,
     backgroundColor: '#ffffff',
     padding: 30, // Increased from 20 to give more horizontal padding
+    minHeight: 650, // Allow to grow with content
   },
   contentArea: {
-    flex: 1,
     justifyContent: 'flex-start',
     maxWidth: 620, // Limit width so text wraps more like in real note (768 - 2*margins - 2*paddings)
     alignSelf: 'center',

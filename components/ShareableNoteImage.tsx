@@ -14,23 +14,23 @@ interface ShareableNoteImageProps {
  * This component renders the note in a capturable format
  */
 export const ShareableNoteImage = forwardRef<View, ShareableNoteImageProps>(
-  ({ note, width = 768, height = 768 }, ref) => {
+  ({ note, width = 768, height }, ref) => {
     return (
-      <View 
+      <View
         ref={ref}
         style={[
           styles.container,
           {
             width,
-            height,
+            // Don't set fixed height - let content determine it
           }
         ]}
         collapsable={false}
       >
-        <NativeNoteImage 
-          note={note} 
-          width={width} 
-          height={height} 
+        <NativeNoteImage
+          note={note}
+          width={width}
+          height={height}
         />
       </View>
     );

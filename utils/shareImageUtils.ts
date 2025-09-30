@@ -34,21 +34,28 @@ export const captureComponentAsImage = async (
 ): Promise<string> => {
   try {
     console.log('🖼️ Capturing component as image...');
-    
+
     const {
       format = 'png',
       quality = 1.0,
       width = 768,
-      height = 768
+      height
     } = options;
 
-    const uri = await captureRef(componentRef.current, {
+    // Build capture options - only include height if explicitly provided
+    const captureOptions: any = {
       format,
       quality,
       width,
-      height,
       result: 'tmpfile',
-    });
+    };
+
+    // Only add height if it's specified, otherwise let it be automatic
+    if (height !== undefined) {
+      captureOptions.height = height;
+    }
+
+    const uri = await captureRef(componentRef.current, captureOptions);
 
     console.log('✅ Component captured successfully:', uri);
     return uri;
@@ -78,12 +85,12 @@ export const generateNoteImageData = async (
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    // Capture the component as image
+    // Capture the component as image (without fixed height - let it grow with content)
     const imageUri = await captureComponentAsImage(componentRef, {
       format: 'png',
       quality: 1.0,
       width: 768,
-      height: 768
+      // height is intentionally omitted to allow dynamic height based on content
     });
 
     return imageUri;

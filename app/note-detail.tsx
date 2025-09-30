@@ -1956,7 +1956,7 @@ export default function NoteDetail() {
           ref={shareableImageRef}
           note={note}
           width={768}
-          height={768}
+          // height is intentionally omitted to allow dynamic height
         />
       )}
 
