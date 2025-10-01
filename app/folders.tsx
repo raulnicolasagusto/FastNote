@@ -13,15 +13,21 @@ import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useThemeStore } from '../store/theme/useThemeStore';
 import { useFoldersStore } from '../store/folders/useFoldersStore';
 import { SPACING, TYPOGRAPHY } from '../constants/theme';
+import { Folder } from '../types';
 
 export default function Folders() {
   const { colors, isDarkMode } = useThemeStore();
-  const { folders, addFolder } = useFoldersStore();
+  const { folders, addFolder, updateFolder, deleteFolder, togglePinFolder } = useFoldersStore();
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
+  const [showBottomMenu, setShowBottomMenu] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editedFolderName, setEditedFolderName] = useState('');
 
   const handleBack = () => {
     router.back();
@@ -53,6 +59,90 @@ export default function Folders() {
     setShowNewFolderModal(false);
   };
 
+  const handleFolderLongPress = (folder: Folder) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setSelectedFolder(folder);
+    setShowBottomMenu(true);
+  };
+
+  const handleCloseBottomMenu = () => {
+    setShowBottomMenu(false);
+    setSelectedFolder(null);
+  };
+
+  const handlePinFolder = () => {
+    if (selectedFolder) {
+      togglePinFolder(selectedFolder.id);
+      handleCloseBottomMenu();
+    }
+  };
+
+  const handleEditFolder = () => {
+    if (selectedFolder) {
+      setEditedFolderName(selectedFolder.name);
+      setShowEditModal(true);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    const trimmedName = editedFolderName.trim();
+
+    if (!trimmedName) {
+      Alert.alert('Error', 'El nombre de la carpeta no puede estar vacío');
+      return;
+    }
+
+    if (selectedFolder && trimmedName !== selectedFolder.name) {
+      // Check for duplicate names (excluding current folder)
+      if (folders.some(f => f.id !== selectedFolder.id && f.name.toLowerCase() === trimmedName.toLowerCase())) {
+        Alert.alert('Error', 'Ya existe una carpeta con ese nombre');
+        return;
+      }
+
+      try {
+        updateFolder(selectedFolder.id, { name: trimmedName });
+        setShowEditModal(false);
+        handleCloseBottomMenu();
+      } catch (error) {
+        Alert.alert('Error', (error as Error).message);
+      }
+    } else {
+      setShowEditModal(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditedFolderName('');
+    setShowEditModal(false);
+  };
+
+  const handleDeleteFolder = () => {
+    if (selectedFolder) {
+      Alert.alert(
+        'Eliminar Carpeta',
+        `¿Estás seguro de que deseas eliminar la carpeta "${selectedFolder.name}"?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: () => {
+              deleteFolder(selectedFolder.id);
+              handleCloseBottomMenu();
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  // Sort folders: pinned first, then by name
+  const sortedFolders = [...folders].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <StatusBar
@@ -76,17 +166,26 @@ export default function Folders() {
 
       {/* Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {folders.map((folder) => (
+        {sortedFolders.map((folder) => (
           <TouchableOpacity
             key={folder.id}
-            style={[styles.folderItem, { backgroundColor: colors.cardBackground }]}
+            style={[
+              styles.folderItem,
+              { backgroundColor: colors.cardBackground },
+              selectedFolder?.id === folder.id && showBottomMenu && styles.pressedFolder
+            ]}
             onPress={() => {
               // TODO: Navigate to folder content
-            }}>
+            }}
+            onLongPress={() => handleFolderLongPress(folder)}
+            activeOpacity={0.7}>
             <MaterialIcons name="folder" size={24} color={colors.textPrimary} />
             <Text style={[styles.folderName, { color: colors.textPrimary }]}>
               {folder.name}
             </Text>
+            {folder.isPinned && (
+              <MaterialIcons name="star" size={20} color={colors.accent.orange} style={styles.pinIcon} />
+            )}
             <MaterialIcons name="chevron-right" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
         ))}
@@ -148,6 +247,117 @@ export default function Folders() {
           </View>
         </View>
       </Modal>
+
+      {/* Edit Folder Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showEditModal}
+        onRequestClose={handleCancelEdit}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+              Editar Carpeta
+            </Text>
+
+            <TextInput
+              style={[styles.modalInput, {
+                color: colors.textPrimary,
+                borderColor: colors.textSecondary,
+                backgroundColor: colors.background
+              }]}
+              value={editedFolderName}
+              onChangeText={setEditedFolderName}
+              placeholder="Nuevo nombre..."
+              placeholderTextColor={colors.textSecondary}
+              maxLength={50}
+              autoFocus
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
+                onPress={handleCancelEdit}>
+                <Text style={[styles.modalButtonText, { color: colors.cardBackground }]}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.confirmButton, { backgroundColor: colors.accent.blue }]}
+                onPress={handleSaveEdit}>
+                <Text style={[styles.modalButtonText, { color: colors.cardBackground }]}>
+                  Guardar
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Bottom Menu - Custom for Folders */}
+      {selectedFolder && showBottomMenu && (
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={showBottomMenu}
+          onRequestClose={handleCloseBottomMenu}>
+          <View style={styles.bottomMenuOverlay}>
+            <TouchableOpacity
+              style={styles.backdrop}
+              activeOpacity={1}
+              onPress={handleCloseBottomMenu}
+            />
+
+            <View style={[styles.bottomMenuContainer, { backgroundColor: colors.cardBackground, borderTopColor: colors.textSecondary + '20' }]}>
+              {/* Handle bar */}
+              <View style={[styles.handle, { backgroundColor: colors.textSecondary }]} />
+
+              {/* Folder name */}
+              <Text style={[styles.bottomMenuTitle, { color: colors.textPrimary }]} numberOfLines={1}>
+                {selectedFolder.name}
+              </Text>
+
+              {/* Menu buttons */}
+              <View style={styles.bottomMenuButtons}>
+                {/* Pin */}
+                <TouchableOpacity style={styles.bottomMenuButton} onPress={handlePinFolder}>
+                  <View style={[styles.bottomMenuIconContainer, { backgroundColor: colors.background }]}>
+                    <MaterialIcons
+                      name={selectedFolder.isPinned ? 'star' : 'star-border'}
+                      size={24}
+                      color={selectedFolder.isPinned ? colors.accent.orange : colors.textPrimary}
+                    />
+                  </View>
+                  <Text style={[styles.bottomMenuButtonLabel, { color: colors.textPrimary }]}>
+                    {selectedFolder.isPinned ? 'Desanclar' : 'Anclar'}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Edit */}
+                <TouchableOpacity style={styles.bottomMenuButton} onPress={handleEditFolder}>
+                  <View style={[styles.bottomMenuIconContainer, { backgroundColor: colors.background }]}>
+                    <MaterialIcons name="edit" size={24} color={colors.textPrimary} />
+                  </View>
+                  <Text style={[styles.bottomMenuButtonLabel, { color: colors.textPrimary }]}>
+                    Editar
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Delete */}
+                <TouchableOpacity style={styles.bottomMenuButton} onPress={handleDeleteFolder}>
+                  <View style={[styles.bottomMenuIconContainer, { backgroundColor: colors.background }]}>
+                    <MaterialIcons name="delete" size={24} color={colors.accent.red} />
+                  </View>
+                  <Text style={[styles.bottomMenuButtonLabel, { color: colors.accent.red }]}>
+                    Eliminar
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
@@ -195,11 +405,21 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  pressedFolder: {
+    transform: [{ scale: 0.97 }],
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
   folderName: {
     flex: 1,
     fontSize: TYPOGRAPHY.bodySize,
     fontWeight: '500',
     marginLeft: SPACING.md,
+  },
+  pinIcon: {
+    marginRight: SPACING.xs,
   },
   newFolderButton: {
     flexDirection: 'row',
@@ -267,5 +487,73 @@ const styles = StyleSheet.create({
   modalButtonText: {
     fontSize: TYPOGRAPHY.bodySize,
     fontWeight: '600',
+  },
+  bottomMenuOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  bottomMenuContainer: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
+    borderTopWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: SPACING.md,
+    opacity: 0.3,
+  },
+  bottomMenuTitle: {
+    fontSize: TYPOGRAPHY.titleSize,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  bottomMenuButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  bottomMenuButton: {
+    alignItems: 'center',
+    flex: 1,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xs,
+  },
+  bottomMenuIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  bottomMenuButtonLabel: {
+    fontSize: TYPOGRAPHY.dateSize,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });

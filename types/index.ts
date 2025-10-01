@@ -42,6 +42,7 @@ export interface Category {
 export interface Folder {
   id: string;
   name: string;
+  isPinned?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

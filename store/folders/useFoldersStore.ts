@@ -13,6 +13,7 @@ interface FoldersActions {
   addFolder: (name: string) => string;
   updateFolder: (id: string, updates: Partial<Omit<Folder, 'id' | 'createdAt'>>) => void;
   deleteFolder: (id: string) => void;
+  togglePinFolder: (id: string) => void;
   loadFolders: () => Promise<void>;
 }
 
@@ -63,6 +64,16 @@ export const useFoldersStore = create<FoldersStore>()(
       deleteFolder: (id: string) => {
         set((state) => ({
           folders: state.folders.filter((folder) => folder.id !== id),
+        }));
+      },
+
+      togglePinFolder: (id: string) => {
+        set((state) => ({
+          folders: state.folders.map((folder) =>
+            folder.id === id
+              ? { ...folder, isPinned: !folder.isPinned, updatedAt: new Date() }
+              : folder
+          ),
         }));
       },
 

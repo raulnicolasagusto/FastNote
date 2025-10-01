@@ -7,6 +7,7 @@ import {
   Animated,
   Modal,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -68,6 +69,18 @@ export default function BottomMenu({
       }).start();
     }
   }, [visible, slideAnim]);
+
+  // Handle Android back button
+  useEffect(() => {
+    if (visible) {
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+        onClose();
+        return true; // Prevent default behavior (exit app)
+      });
+
+      return () => backHandler.remove();
+    }
+  }, [visible, onClose]);
 
   // Check if all selected notes have the same pin status
   const allPinned = notes.every(note => note.isPinned);
@@ -351,7 +364,7 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.titleSize,
     fontWeight: '600',
     textAlign: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.sm,
   },
   buttonsContainer: {
     flexDirection: 'row',
