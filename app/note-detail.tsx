@@ -19,6 +19,7 @@ import { Audio } from 'expo-av';
 import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { File } from 'expo-file-system';
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { useThemeStore } from '../store/theme/useThemeStore';
 import { Note, ChecklistItem } from '../types';
@@ -1980,6 +1981,17 @@ export default function NoteDetail() {
         onClose={() => setShowAudioRecorder(false)}
         onSaveAudio={handleAudioSaved}
       />
+
+      {/* AdMob Banner at bottom */}
+      <View style={styles.bannerContainer}>
+        <BannerAd
+          unitId={TestIds.BANNER}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{
+            requestNonPersonalizedAdsOnly: false,
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -2439,5 +2451,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
+  },
+  bannerContainer: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    paddingVertical: SPACING.xs,
   },
 });
