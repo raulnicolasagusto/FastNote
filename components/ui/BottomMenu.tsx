@@ -100,12 +100,6 @@ export default function BottomMenu({
       action: onMoveTo,
     },
     {
-      id: 'hide',
-      icon: 'visibility-off',
-      label: 'Ocultar',
-      action: onHide,
-    },
-    {
       id: 'reminder',
       icon: firstNote?.reminderDate ? 'edit-notifications' : 'schedule',
       label: firstNote?.reminderDate ? 'Editar' : 'Recordar',
@@ -368,14 +362,15 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
+    paddingHorizontal: SPACING.xs,
   },
   menuButton: {
     alignItems: 'center',
-    flex: 1,
+    minWidth: 70,
     paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
   },
   iconContainer: {
     width: 48,
