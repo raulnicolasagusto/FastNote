@@ -6,14 +6,25 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import * as QuickActions from 'expo-quick-actions';
 import { useQuickActionRouting } from 'expo-quick-actions/router';
+import mobileAds from 'react-native-google-mobile-ads';
 
 export default function Layout() {
   const router = useRouter();
-  
+
   // Enable routing for quick actions
   useQuickActionRouting();
 
   useEffect(() => {
+    // Initialize Google Mobile Ads SDK
+    mobileAds()
+      .initialize()
+      .then(adapterStatuses => {
+        console.log('🎯 AdMob SDK initialized:', adapterStatuses);
+      })
+      .catch(error => {
+        console.error('❌ AdMob SDK initialization failed:', error);
+      });
+
     // Configure quick actions
     QuickActions.setItems([
       {

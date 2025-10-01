@@ -4,6 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import { Header } from './Header';
 import { TabBar } from './TabBar';
 import { NotesGrid } from '../notes/NotesGrid';
@@ -352,6 +353,17 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         </Modal>
       )}
 
+      {/* AdMob Banner at bottom */}
+      <View style={styles.bannerContainer}>
+        <BannerAd
+          unitId={TestIds.BANNER}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{
+            requestNonPersonalizedAdsOnly: false,
+          }}
+        />
+      </View>
+
     </SafeAreaView>
   );
 };
@@ -418,5 +430,10 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: TYPOGRAPHY.bodySize,
     fontWeight: '600',
+  },
+  bannerContainer: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    paddingVertical: SPACING.xs,
   },
 });

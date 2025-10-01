@@ -42,7 +42,14 @@
           }
         }
       ],
-      "expo-build-properties"
+      "expo-build-properties",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-1467750216848197~2756187783",
+          "iosAppId": "ca-app-pub-xxxxxxxx~xxxxxxxx"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
