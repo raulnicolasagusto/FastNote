@@ -27,7 +27,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     action();
   };
 
-  const fabBottom = LAYOUT.fabMargin + (Platform.OS === 'android' ? insets.bottom : 0);
+  const fabBottom = LAYOUT.fabMargin -50 + (Platform.OS === 'android' ? insets.bottom : 0);
 
   return (
     <>
