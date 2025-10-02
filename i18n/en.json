@@ -146,7 +146,15 @@
     "folders": "Organize your notes with folders.",
     "reminders": "Set reminders to never forget important tasks.",
     "search": "Quickly find any note with powerful search.",
-    "multiSelect": "Long press to select multiple notes."
+    "multiSelect": "Long press to select multiple notes.",
+    "voiceListKeywords": "You can create a list by saying:",
+    "keywords": {
+      "newList": "new list",
+      "listNew": "list new",
+      "shoppingList": "shopping list",
+      "taskList": "task list",
+      "todoList": "to do list"
+    }
   },
   "quickActions": {
     "newNote": "New Note",

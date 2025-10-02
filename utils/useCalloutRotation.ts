@@ -6,22 +6,19 @@ interface CalloutData {
   id: string;
   messageKey: string;
   iconName: string;
+  keywordsKey?: string; // Key para obtener keywords traducidos
+}
+
+interface CalloutWithKeywords extends CalloutData {
   keywords?: string[];
 }
 
 const CALLOUTS: CalloutData[] = [
   {
     id: 'voice-list',
-    messageKey: 'callouts.voiceNotes',
+    messageKey: 'callouts.voiceListKeywords',
     iconName: 'mic',
-    keywords: [
-      'nueva lista',
-      'lista nueva',
-      'lista de compras',
-      'lista de tareas',
-      'shopping list',
-      'to do list'
-    ],
+    keywordsKey: 'callouts.keywords',
   },
   {
     id: 'camera-ocr',
@@ -30,8 +27,23 @@ const CALLOUTS: CalloutData[] = [
   },
 ];
 
+// Función para obtener keywords traducidos
+const getTranslatedKeywords = (keywordsKey?: string): string[] | undefined => {
+  if (!keywordsKey) return undefined;
+
+  try {
+    const keywords = t(keywordsKey) as any;
+    if (typeof keywords === 'object') {
+      return Object.values(keywords) as string[];
+    }
+  } catch (error) {
+    console.warn('⚠️ Error getting translated keywords:', error);
+  }
+  return undefined;
+};
+
 export const useCalloutRotation = () => {
-  const { calloutsEnabled } = useThemeStore();
+  const { calloutsEnabled, currentLanguage } = useThemeStore();
   const [currentCallout, setCurrentCallout] = useState<CalloutData | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -87,7 +99,7 @@ export const useCalloutRotation = () => {
       setIsVisible(false);
       setCurrentCallout(null);
     }
-  }, [calloutsEnabled, dismissedCallouts, currentIndex]);
+  }, [calloutsEnabled, dismissedCallouts, currentIndex, currentLanguage]);
 
   const handleCloseCallout = () => {
     if (currentCallout) {
@@ -103,8 +115,16 @@ export const useCalloutRotation = () => {
     setCurrentCallout(null);
   }, []);
 
+  // Generar callout con keywords traducidos
+  const currentCalloutWithKeywords: CalloutWithKeywords | null = currentCallout
+    ? {
+        ...currentCallout,
+        keywords: getTranslatedKeywords(currentCallout.keywordsKey),
+      }
+    : null;
+
   return {
-    currentCallout,
+    currentCallout: currentCalloutWithKeywords,
     isVisible,
     onCloseCallout: handleCloseCallout,
     resetCallouts,

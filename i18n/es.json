@@ -146,7 +146,15 @@
     "folders": "Organiza tus notas con carpetas.",
     "reminders": "Establece recordatorios para nunca olvidar tareas importantes.",
     "search": "Encuentra rápidamente cualquier nota con búsqueda potente.",
-    "multiSelect": "Mantén presionado para seleccionar múltiples notas."
+    "multiSelect": "Mantén presionado para seleccionar múltiples notas.",
+    "voiceListKeywords": "Puedes crear una lista diciendo:",
+    "keywords": {
+      "newList": "nueva lista",
+      "listNew": "lista nueva",
+      "shoppingList": "lista de compras",
+      "taskList": "lista de tareas",
+      "todoList": "lista de pendientes"
+    }
   },
   "quickActions": {
     "newNote": "Nueva Nota",
