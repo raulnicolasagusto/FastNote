@@ -49,11 +49,16 @@
           "androidAppId": "ca-app-pub-1467750216848197~2756187783",
           "iosAppId": "ca-app-pub-xxxxxxxx~xxxxxxxx"
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
+    },
+    "locales": {
+      "en": "./i18n/app-metadata/en.json",
+      "es": "./i18n/app-metadata/es.json"
     },
     "orientation": "portrait",
     "icon": "./assets/icons/adaptive-icon.png",

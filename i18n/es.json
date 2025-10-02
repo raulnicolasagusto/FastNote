@@ -1,0 +1,185 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "done": "Listo",
+    "back": "Volver",
+    "yes": "Sí",
+    "no": "No",
+    "ok": "OK",
+    "confirm": "Confirmar",
+    "search": "Buscar",
+    "close": "Cerrar"
+  },
+  "tabs": {
+    "all": "Todas",
+    "personal": "Personal",
+    "work": "Trabajo",
+    "ideas": "Ideas"
+  },
+  "notes": {
+    "title": "Notas",
+    "newNote": "Nueva Nota",
+    "voiceNote": "Nota de Voz",
+    "quickNote": "Nota Rápida",
+    "emptyState": "No hay notas aún",
+    "emptyStateDesc": "Toca + para crear tu primera nota",
+    "searchPlaceholder": "Buscar notas...",
+    "charactersCount": "{{count}} caracteres",
+    "pinned": "Fijada",
+    "locked": "Bloqueada",
+    "archived": "Archivada"
+  },
+  "noteDetail": {
+    "titlePlaceholder": "Título",
+    "contentPlaceholder": "Comienza a escribir...",
+    "tapToEdit": "Toca para editar",
+    "editTitle": "Editar Título",
+    "editContent": "Editar Contenido",
+    "addImage": "Agregar Imagen",
+    "addAudio": "Agregar Audio",
+    "addDrawing": "Agregar Dibujo",
+    "backgroundColor": "Color de Fondo",
+    "defaultColor": "Predeterminado",
+    "yellowColor": "Amarillo",
+    "creamColor": "Crema",
+    "peachColor": "Durazno",
+    "pinkColor": "Rosa",
+    "lavenderColor": "Lavanda",
+    "mintColor": "Menta",
+    "skyColor": "Cielo"
+  },
+  "checklist": {
+    "title": "Lista de Tareas",
+    "newItem": "Nuevo elemento",
+    "addItem": "Agregar elemento",
+    "itemPlaceholder": "Descripción del elemento...",
+    "completed": "Completado",
+    "pending": "Pendiente"
+  },
+  "folders": {
+    "title": "Carpetas",
+    "allNotes": "Todas las Notas",
+    "newFolder": "Nueva Carpeta",
+    "folderName": "Nombre de Carpeta",
+    "moveToFolder": "Mover a Carpeta",
+    "selectFolder": "Selecciona una carpeta",
+    "createFolder": "Crear Carpeta",
+    "deleteFolder": "Eliminar Carpeta",
+    "folderNamePlaceholder": "Ingresa el nombre de la carpeta..."
+  },
+  "reminders": {
+    "title": "Recordatorio",
+    "setReminder": "Establecer Recordatorio",
+    "reminderSet": "Recordatorio establecido correctamente",
+    "removeReminder": "Eliminar Recordatorio",
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "in": "En",
+    "days": "días",
+    "at": "a las"
+  },
+  "share": {
+    "title": "Compartir",
+    "shareAsText": "Compartir como Texto",
+    "shareAsImage": "Compartir como Imagen",
+    "shareAsMarkdown": "Compartir como Markdown",
+    "shareNote": "Compartir Nota",
+    "exportNote": "Exportar Nota"
+  },
+  "recording": {
+    "title": "Grabando",
+    "recording": "Grabando...",
+    "stop": "Detener",
+    "cancel": "Cancelar",
+    "transcribing": "Transcribiendo...",
+    "processing": "Procesando audio..."
+  },
+  "camera": {
+    "title": "Capturar Texto",
+    "takePhoto": "Tomar Foto",
+    "chooseFromGallery": "Elegir de la Galería",
+    "scanning": "Escaneando texto...",
+    "processingImage": "Procesando imagen..."
+  },
+  "menu": {
+    "pin": "Fijar",
+    "unpin": "Desfijar",
+    "lock": "Bloquear",
+    "unlock": "Desbloquear",
+    "archive": "Archivar",
+    "unarchive": "Desarchivar",
+    "delete": "Eliminar",
+    "share": "Compartir",
+    "moveToFolder": "Mover a Carpeta",
+    "setReminder": "Establecer Recordatorio",
+    "changeColor": "Cambiar Color",
+    "settings": "Configuración",
+    "theme": "Tema",
+    "about": "Acerca de"
+  },
+  "alerts": {
+    "deleteNoteTitle": "Eliminar Nota",
+    "deleteNoteMessage": "¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.",
+    "deleteNotesTitle": "Eliminar {{count}} Notas",
+    "deleteNotesMessage": "¿Estás seguro de que quieres eliminar {{count}} notas? Esta acción no se puede deshacer.",
+    "archiveNoteTitle": "Archivar Nota",
+    "archiveNoteMessage": "Esta nota será movida a archivos.",
+    "noteLocked": "Nota Bloqueada",
+    "noteLockedMessage": "Esta nota está bloqueada. Desbloquéala primero para editarla.",
+    "emptyTitle": "Título Vacío",
+    "emptyTitleMessage": "El título no puede estar vacío",
+    "errorTitle": "Error",
+    "successTitle": "Éxito",
+    "permissionDenied": "Permiso Denegado",
+    "permissionMessage": "Por favor concede permiso para usar esta función"
+  },
+  "callouts": {
+    "pinNotes": "¡Fija notas importantes para mantenerlas en la parte superior!",
+    "lockNotes": "Bloquea notas para proteger información sensible.",
+    "voiceNotes": "¡Usa notas de voz para captura rápida en movimiento!",
+    "checklistMode": "Crea listas de tareas para organizar tus pendientes.",
+    "richText": "Usa las herramientas de formato para mejorar tus notas.",
+    "shareNotes": "Comparte tus notas como texto o imágenes.",
+    "folders": "Organiza tus notas con carpetas.",
+    "reminders": "Establece recordatorios para nunca olvidar tareas importantes.",
+    "search": "Encuentra rápidamente cualquier nota con búsqueda potente.",
+    "multiSelect": "Mantén presionado para seleccionar múltiples notas."
+  },
+  "quickActions": {
+    "newNote": "Nueva Nota",
+    "voiceNote": "Nota de Voz"
+  },
+  "formats": {
+    "heading1": "Encabezado 1",
+    "heading2": "Encabezado 2",
+    "heading3": "Encabezado 3",
+    "bold": "Negrita",
+    "highlight": "Resaltar",
+    "format": "Formato"
+  },
+  "notifications": {
+    "reminderTitle": "Recordatorio de Nota",
+    "reminderBody": "{{title}}"
+  },
+  "sidebar": {
+    "darkMode": "Modo Oscuro",
+    "lightMode": "Modo Claro",
+    "settings": "Configuración",
+    "about": "Acerca de FastNote",
+    "version": "Versión {{version}}",
+    "callouts": "Mostrar Consejos",
+    "language": "Idioma"
+  },
+  "timestamps": {
+    "created": "Creada",
+    "updated": "Actualizada",
+    "edited": "Editada",
+    "justNow": "Justo ahora",
+    "minutesAgo": "Hace {{count}} min",
+    "hoursAgo": "Hace {{count}} horas",
+    "daysAgo": "Hace {{count}} días"
+  }
+}

@@ -17,6 +17,7 @@ import Sidebar from '../components/ui/Sidebar';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
 import { interstitialAdService } from '../utils/interstitialAdService';
+import { t } from '../utils/i18n';
 
 export default function Home() {
   const { addNote } = useNotesStore();
@@ -389,7 +390,7 @@ export default function Home() {
     const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
 
-    return `Nota Rápida ${day}/${month}/${year} ${hours}:${minutes}`;
+    return `${t('notes.quickNote')} ${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
   const generateNewNoteTitle = (): string => {
@@ -400,7 +401,7 @@ export default function Home() {
     const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
 
-    return `Nueva Nota ${day}/${month}/${year} ${hours}:${minutes}`;
+    return `${t('notes.newNote')} ${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
   const createVoiceNote = async (transcribedText: string) => {
@@ -579,7 +580,7 @@ export default function Home() {
                   color={isRecording ? colors.accent.red : colors.textSecondary}
                 />
                 <Text style={[styles.recordingText, { color: colors.textPrimary }]}>
-                  {isRecording ? 'Recording...' : 'Transcribing...'}
+                  {isRecording ? t('recording.recording') : t('recording.transcribing')}
                 </Text>
               </View>
 
@@ -588,7 +589,7 @@ export default function Home() {
                   style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
                   onPress={cancelRecording}>
                   <MaterialIcons name="close" size={24} color={colors.cardBackground} />
-                  <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Cancel</Text>
+                  <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
 
                 {isRecording && (
@@ -596,7 +597,7 @@ export default function Home() {
                     style={[styles.recordingButton, styles.confirmButton, { backgroundColor: colors.accent.green }]}
                     onPress={stopRecording}>
                     <MaterialIcons name="check" size={24} color={colors.cardBackground} />
-                    <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Stop & Create Note</Text>
+                    <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{t('recording.stop')}</Text>
                   </TouchableOpacity>
                 )}
               </View>

@@ -1,0 +1,8 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "FastNote"
+  },
+  "android": {
+    "app_name": "FastNote"
+  }
+}

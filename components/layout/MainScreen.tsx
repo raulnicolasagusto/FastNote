@@ -18,6 +18,7 @@ import { SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { NotificationService } from '../../utils/notifications';
 import { useNotificationHandlers } from '../../utils/useNotificationHandlers';
 import { Note } from '../../types';
+import { t } from '../../utils/i18n';
 
 interface MainScreenProps {
   onNotePress: (note: Note) => void;
@@ -257,7 +258,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         translucent={false}
       />
 
-      <Header title="Notes" onSearchPress={onSearchPress} onMenuPress={onMenuPress} onFoldersPress={onFoldersPress} />
+      <Header title={t('notes.title')} onSearchPress={onSearchPress} onMenuPress={onMenuPress} onFoldersPress={onFoldersPress} />
 
       <TabBar activeTab={activeTab} onTabPress={handleTabPress} />
 

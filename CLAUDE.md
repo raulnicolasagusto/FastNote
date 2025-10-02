@@ -202,13 +202,40 @@
   - **Trigger**: Al volver de nota → home (primera vez)
   - **CPM estimado**: $2-4 USD (5-10x más que banners)
   - **Store**: [useAdsStore.ts](store/ads/useAdsStore.ts) - Tracking de sesión
-  - **Hook**: [useInterstitialAd.ts](utils/useInterstitialAd.ts) - Manejo de ads
+  - **Servicio**: [interstitialAdService.ts](utils/interstitialAdService.ts) - Singleton service
   - **Configuración**: Ver [INTERSTITIAL_ADS_SETUP.md](INTERSTITIAL_ADS_SETUP.md)
   - **Reset de sesión**: Automático al abrir app en [index.tsx](app/index.tsx)
   - **Integración**: [note-detail.tsx](app/note-detail.tsx) función `handleBack()`
 - **Impacto en Revenue**:
   - Con 1,000 usuarios activos/día: +$90/mes adicionales
   - Incremento estimado: +650% vs solo banners
+
+### 14. Internacionalización (i18n) - Octubre 2025 ✅
+- **Librerías**: `i18n-js` + `expo-localization`
+- **Idiomas Soportados**:
+  - 🇺🇸 **Inglés (English)** - Idioma por defecto
+  - 🇪🇸 **Español (Spanish)**
+- **Características**:
+  - Detección automática del idioma del dispositivo
+  - Fallback a inglés si idioma no soportado
+  - +150 strings traducidos en cada idioma
+  - Soporte para interpolación de variables (`{{count}}`)
+- **Archivos de Traducción**:
+  - [i18n/en.json](i18n/en.json) - Traducciones en inglés
+  - [i18n/es.json](i18n/es.json) - Traducciones en español
+  - [i18n/app-metadata/](i18n/app-metadata/) - Metadatos de app (nombre localizado)
+- **Servicio**: [utils/i18n.ts](utils/i18n.ts)
+  - `t(key, params?)` - Función de traducción
+  - `changeLanguage(locale)` - Cambiar idioma manualmente
+  - `getCurrentLanguage()` - Obtener idioma actual
+  - `getAvailableLanguages()` - Listar idiomas disponibles
+- **Configuración**: [app.json](app.json) líneas 58-61 (locales config)
+- **Documentación**: Ver [I18N_IMPLEMENTATION_GUIDE.md](I18N_IMPLEMENTATION_GUIDE.md)
+- **Status**: 🟡 Infraestructura completa, integración en progreso
+- **Componentes Ya Traducidos**:
+  - [app/index.tsx](app/index.tsx) - Modal de grabación, títulos de notas
+  - [components/layout/MainScreen.tsx](components/layout/MainScreen.tsx) - Header title
+- **Pendientes de Traducir**: Ver guía de implementación (12 componentes)
 
 ## Arquitectura del Código
 
@@ -264,7 +291,8 @@ utils/
 ├── shareImageUtils.ts            # Captura + compartir imagen
 ├── useCalloutRotation.ts         # Hook callouts rotativos
 ├── useNotificationHandlers.ts    # Hook manejo notificaciones
-└── useInterstitialAd.ts          # Hook manejo Interstitial Ads (precarga, show, tracking)
+├── interstitialAdService.ts      # Servicio Singleton Interstitial Ads
+└── i18n.ts                       # Servicio de internacionalización (i18n-js + expo-localization)
 
 types/
 └── index.ts               # Definiciones TypeScript centralizadas
@@ -823,4 +851,6 @@ Cuando el usuario diga:
 **Última actualización**: 02/10/2025
 **Mantenedor**: Claude Code Assistant
 **Revisión**: Completa basada en lectura de codebase + Protocolo de implementación agregado
-**Última feature**: Sistema de Interstitial Ads (Octubre 2025)
+**Últimas features**:
+- Sistema de Interstitial Ads (Octubre 2025) ✅
+- Sistema de Internacionalización i18n (Octubre 2025) 🟡
