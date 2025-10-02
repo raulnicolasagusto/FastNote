@@ -18,8 +18,10 @@ import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
 import { interstitialAdService } from '../utils/interstitialAdService';
 import { t } from '../utils/i18n';
+import { useLanguage } from '../utils/useLanguage';
 
 export default function Home() {
+  useLanguage(); // Forzar re-render en cambio de idioma
   const { addNote } = useNotesStore();
   const { colors } = useThemeStore();
   const { resetInterstitialSession } = useAdsStore();

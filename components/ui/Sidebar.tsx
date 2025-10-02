@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,13 @@ import {
   StyleSheet,
   Modal,
   Switch,
+  ActivityIndicator,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { SPACING, TYPOGRAPHY } from '../../constants/theme';
+import { t, changeLanguage, getAvailableLanguages } from '../../utils/i18n';
+import { useLanguage } from '../../utils/useLanguage';
 
 interface SidebarProps {
   visible: boolean;
@@ -17,7 +20,23 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ visible, onClose }: SidebarProps) {
-  const { isDarkMode, colors, calloutsEnabled, toggleTheme, toggleCallouts } = useThemeStore();
+  useLanguage(); // Forzar re-render en cambio de idioma
+  const { isDarkMode, colors, calloutsEnabled, currentLanguage, toggleTheme, toggleCallouts, setLanguage } = useThemeStore();
+  const [isChangingLanguage, setIsChangingLanguage] = useState(false);
+  const availableLanguages = getAvailableLanguages();
+
+  const handleLanguageChange = async (newLang: 'en' | 'es') => {
+    if (newLang === currentLanguage || isChangingLanguage) return;
+
+    setIsChangingLanguage(true);
+    await changeLanguage(newLang);
+    setLanguage(newLang);
+
+    // Delay para que se vea el spinner
+    setTimeout(() => {
+      setIsChangingLanguage(false);
+    }, 500);
+  };
 
   return (
     <Modal
@@ -38,7 +57,7 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
           {/* Header */}
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.textPrimary }]}>
-              Configuración
+              {t('sidebar.settings')}
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <MaterialIcons
@@ -59,10 +78,10 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
               />
               <View style={styles.settingText}>
                 <Text style={[styles.settingTitle, { color: colors.textPrimary }]}>
-                  Tema Oscuro
+                  {t('sidebar.darkMode')}
                 </Text>
                 <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>
-                  {isDarkMode ? 'Activado' : 'Desactivado'}
+                  {isDarkMode ? t('common.yes') : t('common.no')}
                 </Text>
               </View>
             </View>
@@ -87,10 +106,10 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
               />
               <View style={styles.settingText}>
                 <Text style={[styles.settingTitle, { color: colors.textPrimary }]}>
-                  Desactivar Tips
+                  {t('sidebar.callouts')}
                 </Text>
                 <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>
-                  {calloutsEnabled ? 'Tips activados' : 'Tips desactivados'}
+                  {calloutsEnabled ? t('common.yes') : t('common.no')}
                 </Text>
               </View>
             </View>
@@ -103,6 +122,53 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
               }}
               thumbColor={!calloutsEnabled ? colors.cardBackground : colors.cardBackground}
             />
+          </View>
+
+          {/* Language Selector */}
+          <View style={styles.settingItem}>
+            <View style={styles.settingInfo}>
+              <MaterialIcons
+                name="language"
+                size={24}
+                color={colors.textPrimary}
+              />
+              <View style={styles.settingText}>
+                <Text style={[styles.settingTitle, { color: colors.textPrimary }]}>
+                  {t('sidebar.language')}
+                </Text>
+                <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>
+                  {availableLanguages.find(l => l.code === currentLanguage)?.flag}{' '}
+                  {availableLanguages.find(l => l.code === currentLanguage)?.name}
+                </Text>
+              </View>
+            </View>
+
+            {isChangingLanguage ? (
+              <ActivityIndicator size="small" color={colors.accent.blue} />
+            ) : (
+              <View style={styles.languageButtons}>
+                {availableLanguages.map((lang) => (
+                  <TouchableOpacity
+                    key={lang.code}
+                    style={[
+                      styles.languageButton,
+                      {
+                        backgroundColor: currentLanguage === lang.code ? colors.accent.blue : colors.background,
+                        borderColor: currentLanguage === lang.code ? colors.accent.blue : colors.textSecondary,
+                      }
+                    ]}
+                    onPress={() => handleLanguageChange(lang.code as 'en' | 'es')}
+                  >
+                    <Text style={[
+                      styles.languageButtonText,
+                      { color: currentLanguage === lang.code ? colors.cardBackground : colors.textPrimary }
+                    ]}>
+                      {lang.flag}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
 
           {/* App Info */}
@@ -188,5 +254,20 @@ const styles = StyleSheet.create({
   appInfo: {
     fontSize: TYPOGRAPHY.dateSize,
     fontStyle: 'italic',
+  },
+  languageButtons: {
+    flexDirection: 'row',
+    gap: SPACING.xs,
+  },
+  languageButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  languageButtonText: {
+    fontSize: 20,
   },
 });

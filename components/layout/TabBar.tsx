@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-nati
 import { SPACING, TYPOGRAPHY, LAYOUT } from '../../constants/theme';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { useFoldersStore } from '../../store/folders/useFoldersStore';
+import { t } from '../../utils/i18n';
+import { useLanguage } from '../../utils/useLanguage';
 
 interface TabBarProps {
   activeTab: string;
@@ -10,12 +12,13 @@ interface TabBarProps {
 }
 
 export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabPress }) => {
+  useLanguage(); // Forzar re-render en cambio de idioma
   const { colors } = useThemeStore();
   const { folders } = useFoldersStore();
 
   // Create tabs from folders, including "Todas" as the first option
   const tabs = [
-    { id: 'all', name: 'Todas' },
+    { id: 'all', name: t('tabs.all') },
     ...folders.map((folder) => ({
       id: folder.id,
       name: folder.name,

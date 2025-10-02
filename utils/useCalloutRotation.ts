@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useThemeStore } from '../store/theme/useThemeStore';
+import { t } from './i18n';
 
 interface CalloutData {
   id: string;
-  message: string;
+  messageKey: string;
   iconName: string;
   keywords?: string[];
 }
@@ -11,7 +12,7 @@ interface CalloutData {
 const CALLOUTS: CalloutData[] = [
   {
     id: 'voice-list',
-    message: 'Puedes crear una lista diciendo: ',
+    messageKey: 'callouts.voiceNotes',
     iconName: 'mic',
     keywords: [
       'nueva lista',
@@ -24,7 +25,7 @@ const CALLOUTS: CalloutData[] = [
   },
   {
     id: 'camera-ocr',
-    message: 'Puedes sacar una foto a un texto o cargar una imagen y la IA lo convertirá en texto editable',
+    messageKey: 'callouts.richText',
     iconName: 'photo-camera',
   },
 ];

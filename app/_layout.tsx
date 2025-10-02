@@ -7,9 +7,12 @@ import { useEffect } from 'react';
 import * as QuickActions from 'expo-quick-actions';
 import { useQuickActionRouting } from 'expo-quick-actions/router';
 import mobileAds from 'react-native-google-mobile-ads';
+import { useThemeStore } from '../store/theme/useThemeStore';
+import { t } from '../utils/i18n';
 
 export default function Layout() {
   const router = useRouter();
+  const { currentLanguage } = useThemeStore();
 
   // Enable routing for quick actions
   useQuickActionRouting();
@@ -25,24 +28,20 @@ export default function Layout() {
         console.error('❌ AdMob SDK initialization failed:', error);
       });
 
-    // Configure quick actions
-    QuickActions.setItems([
-      {
-        id: "voice_note",
-        title: "Nota de Voz Rápida",
-        subtitle: "Grabar una nota hablando",
-        icon: "voice_note",
-        params: { action: "voice_note" },
-      },
-      // Preparamos espacio para el segundo shortcut futuro
-      // {
-      //   id: "quick_note",
-      //   title: "Nota Rápida", 
-      //   subtitle: "Crear nota de texto",
-      //   icon: "voice_note",
-      //   params: { action: "quick_note" },
-      // },
-    ]);
+    // Configure quick actions (actualizar cuando cambie el idioma)
+    const updateQuickActions = () => {
+      QuickActions.setItems([
+        {
+          id: "voice_note",
+          title: t('quickActions.voiceNote'),
+          subtitle: t('quickActions.voiceNoteSubtitle'),
+          icon: "voice_note",
+          params: { action: "voice_note" },
+        },
+      ]);
+    };
+
+    updateQuickActions();
 
     // Listen for quick action triggers
     const subscription = QuickActions.addListener((action) => {
@@ -55,7 +54,7 @@ export default function Layout() {
     return () => {
       subscription?.remove();
     };
-  }, []);
+  }, [currentLanguage]); // Re-run cuando cambie el idioma
 
   return (
     <SafeAreaProvider>

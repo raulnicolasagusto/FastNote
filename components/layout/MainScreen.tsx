@@ -19,6 +19,7 @@ import { NotificationService } from '../../utils/notifications';
 import { useNotificationHandlers } from '../../utils/useNotificationHandlers';
 import { Note } from '../../types';
 import { t } from '../../utils/i18n';
+import { useLanguage } from '../../utils/useLanguage';
 
 interface MainScreenProps {
   onNotePress: (note: Note) => void;
@@ -37,6 +38,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
   onMenuPress,
   onFoldersPress,
 }) => {
+  useLanguage(); // Forzar re-render en cambio de idioma
   const [activeTab, setActiveTab] = useState('all');
   const [selectedNotes, setSelectedNotes] = useState<Note[]>([]); // Multi-select array
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false); // Multi-select mode active

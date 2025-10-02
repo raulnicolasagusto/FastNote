@@ -3,16 +3,19 @@ import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { SPACING, TYPOGRAPHY } from '../../constants/theme';
+import { t } from '../../utils/i18n';
+import { useLanguage } from '../../utils/useLanguage';
 
 interface CalloutProps {
   visible: boolean;
-  message: string;
+  messageKey: string;
   iconName: string;
   keywords?: string[];
   onClose?: () => void;
 }
 
-export default function Callout({ visible, message, iconName, keywords, onClose }: CalloutProps) {
+export default function Callout({ visible, messageKey, iconName, keywords, onClose }: CalloutProps) {
+  useLanguage(); // Forzar re-render en cambio de idioma
   const { colors } = useThemeStore();
   const [fadeAnim] = React.useState(new Animated.Value(0));
 
@@ -45,7 +48,7 @@ export default function Callout({ visible, message, iconName, keywords, onClose 
             style={styles.icon}
           />
           <Text style={[styles.message, { color: '#8B6914' }]}>
-            {message}
+            {t(messageKey)}
             {keywords && keywords.length > 0 && (
               <Text style={styles.keywords}>
                 {' "'}{keywords.join('", "')}{'"'}

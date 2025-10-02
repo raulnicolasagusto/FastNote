@@ -14,6 +14,10 @@ import es from '../i18n/es.json';
  * Fallback a inglés si el idioma no está disponible.
  */
 
+// Event listener para cambios de idioma
+type LanguageChangeListener = () => void;
+const languageChangeListeners: Set<LanguageChangeListener> = new Set();
+
 // Crear instancia de i18n
 const i18n = new I18n({
   en,
@@ -56,13 +60,36 @@ export const t = (key: string, params?: Record<string, any>): string => {
  * Cambiar idioma manualmente
  * @param newLocale - Código de idioma ('en' | 'es')
  */
-export const changeLanguage = (newLocale: 'en' | 'es') => {
-  if (supportedLocales.includes(newLocale)) {
-    i18n.locale = newLocale;
-    console.log('🌍 Language changed to:', newLocale);
-  } else {
-    console.warn('⚠️ Locale not supported:', newLocale);
-  }
+export const changeLanguage = (newLocale: 'en' | 'es'): Promise<void> => {
+  return new Promise((resolve) => {
+    if (supportedLocales.includes(newLocale)) {
+      i18n.locale = newLocale;
+      console.log('🌍 Language changed to:', newLocale);
+
+      // Notificar a todos los listeners
+      languageChangeListeners.forEach(listener => listener());
+
+      // Pequeño delay para asegurar que el cambio se propaga
+      setTimeout(() => {
+        resolve();
+      }, 100);
+    } else {
+      console.warn('⚠️ Locale not supported:', newLocale);
+      resolve();
+    }
+  });
+};
+
+/**
+ * Suscribirse a cambios de idioma
+ * @param listener - Función que se ejecutará cuando cambie el idioma
+ * @returns Función para desuscribirse
+ */
+export const onLanguageChange = (listener: LanguageChangeListener): (() => void) => {
+  languageChangeListeners.add(listener);
+  return () => {
+    languageChangeListeners.delete(listener);
+  };
 };
 
 /**

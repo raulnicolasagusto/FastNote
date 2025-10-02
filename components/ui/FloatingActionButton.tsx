@@ -4,6 +4,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LAYOUT, SHADOWS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { useThemeStore } from '../../store/theme/useThemeStore';
+import { t } from '../../utils/i18n';
+import { useLanguage } from '../../utils/useLanguage';
 
 interface FloatingActionButtonProps {
   onNewNotePress: () => void;
@@ -14,6 +16,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   onNewNotePress,
   onVoiceNotePress
 }) => {
+  useLanguage(); // Forzar re-render en cambio de idioma
   const { colors } = useThemeStore();
   const insets = useSafeAreaInsets();
   const [showMenu, setShowMenu] = useState(false);
@@ -48,7 +51,9 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
             onPress={() => handleMenuItemPress(onVoiceNotePress)}
             activeOpacity={0.8}>
             <MaterialIcons name="mic" size={20} color={colors.cardBackground} />
-            <Text style={[styles.menuText, { color: colors.cardBackground }]}>Nota de voz rápida</Text>
+            <Text style={[styles.menuText, { color: colors.cardBackground }]}>
+              {t('quickActions.voiceNote')}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -56,7 +61,9 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
             onPress={() => handleMenuItemPress(onNewNotePress)}
             activeOpacity={0.8}>
             <MaterialIcons name="edit" size={20} color={colors.cardBackground} />
-            <Text style={[styles.menuText, { color: colors.cardBackground }]}>Nueva Nota</Text>
+            <Text style={[styles.menuText, { color: colors.cardBackground }]}>
+              {t('quickActions.newNote')}
+            </Text>
           </TouchableOpacity>
         </View>
       )}

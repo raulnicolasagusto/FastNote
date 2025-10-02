@@ -150,7 +150,8 @@
   },
   "quickActions": {
     "newNote": "New Note",
-    "voiceNote": "Voice Note"
+    "voiceNote": "Quick Voice Note",
+    "voiceNoteSubtitle": "Record a note by speaking"
   },
   "formats": {
     "heading1": "Heading 1",

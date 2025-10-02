@@ -797,6 +797,12 @@ Cuando el usuario solicite una **NUEVA funcionalidad o feature**, SIEMPRE seguir
 - **Seguir convenciones de nombres** del proyecto
 - **Comentar código complejo** en español o inglés
 - **Console.logs útiles** con emojis para debugging (ej: `console.log('🎯 Feature X:')`)
+- **INTERNACIONALIZACIÓN (i18n)**:
+  - ❌ **NUNCA hardcodear strings visibles al usuario** (ej: `<Text>Hola</Text>`)
+  - ✅ **SIEMPRE usar** `t('key')` para todos los textos (ej: `<Text>{t('common.hello')}</Text>`)
+  - ✅ **Agregar `useLanguage()` hook** en componentes que usen `t()` para re-render automático
+  - ✅ **Agregar traducciones** en `i18n/en.json` y `i18n/es.json` para nuevas keys
+  - ✅ **Usar keys descriptivas** organizadas por sección (ej: `sidebar.settings`, `notes.title`)
 
 ### 7. ✅ Testing Manual (sin levantar servidores)
 - **NO ejecutar `npm start`** sin permiso explícito
@@ -823,6 +829,7 @@ Antes de codear una nueva feature, responder mentalmente:
 5. **¿Sigue los patterns del proyecto?** → Mantener consistencia
 6. **¿Necesita permisos nativos?** → Actualizar app.json
 7. **¿Necesita variables de entorno?** → Documentar en CLAUDE.md
+8. **¿Los textos mostrados son traducibles?** → Usar `t('key')` en vez de hardcodear strings
 
 ### 10. ✅ Archivos Críticos a Revisar Siempre
 
@@ -833,6 +840,8 @@ Para cualquier implementación nueva, revisar estos archivos:
 - **[types/index.ts](types/index.ts)** - Tipos TypeScript centrales
 - **[constants/theme.ts](constants/theme.ts)** - Colores, spacing, tipografía
 - **Stores en `store/`** - Estado global existente
+- **[i18n/en.json](i18n/en.json)** y **[i18n/es.json](i18n/es.json)** - Traducciones (agregar nuevas keys aquí)
+- **[utils/i18n.ts](utils/i18n.ts)** - Servicio de internacionalización
 - **[CLAUDE.md](CLAUDE.md)** (este archivo) - Reglas y patterns del proyecto
 
 ## Frases Gatillo para Activar Protocolo
