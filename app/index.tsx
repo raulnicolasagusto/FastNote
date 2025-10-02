@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system/legacy';
 import { MainScreen } from '../components/layout/MainScreen';
 import { Note, ChecklistItem } from '../types';
 import { useNotesStore } from '../store/notes/useNotesStore';
@@ -170,6 +171,40 @@ export default function Home() {
     return listKeywords.some(keyword => lowerText.startsWith(keyword));
   };
 
+  const extractListName = (text: string): { listName: string | null; remainingText: string } => {
+    const lowerText = text.toLowerCase().trim();
+
+    // Detectar "lista de [nombre]"
+    const listaDeMatch = lowerText.match(/^lista de ([^,\.]+)/i);
+    if (listaDeMatch) {
+      const listName = text.substring('lista de '.length, listaDeMatch[0].length).trim();
+      const remainingText = text.substring(listaDeMatch[0].length).trim();
+      // Remover coma o punto inicial si existe
+      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
+      return { listName, remainingText: cleanRemaining };
+    }
+
+    // Detectar "lista del [nombre]"
+    const listaDelMatch = lowerText.match(/^lista del ([^,\.]+)/i);
+    if (listaDelMatch) {
+      const listName = text.substring('lista del '.length, listaDelMatch[0].length).trim();
+      const remainingText = text.substring(listaDelMatch[0].length).trim();
+      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
+      return { listName, remainingText: cleanRemaining };
+    }
+
+    // Detectar "lista para [nombre]"
+    const listaParaMatch = lowerText.match(/^lista para ([^,\.]+)/i);
+    if (listaParaMatch) {
+      const listName = text.substring('lista para '.length, listaParaMatch[0].length).trim();
+      const remainingText = text.substring(listaParaMatch[0].length).trim();
+      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
+      return { listName, remainingText: cleanRemaining };
+    }
+
+    return { listName: null, remainingText: text };
+  };
+
   const parseTextToChecklistItems = (text: string): ChecklistItem[] => {
     const items: ChecklistItem[] = [];
 
@@ -223,33 +258,40 @@ export default function Home() {
 
   const transcribeAudio = async (audioUri: string) => {
     try {
-      if (!process.env.EXPO_PUBLIC_OPENAI_API_KEY) {
-        Alert.alert('Error', 'OpenAI API key not found. Please check your configuration.');
+      if (!process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY) {
+        Alert.alert('Error', 'Deepgram API key not found. Please check your configuration.');
         return;
       }
 
-      const formData = new FormData();
-      formData.append('file', {
-        uri: audioUri,
-        type: 'audio/m4a',
-        name: 'recording.m4a',
-      } as any);
-      formData.append('model', 'whisper-1');
+      console.log('🎤 Reading audio file from:', audioUri);
 
-      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      // Leer el archivo de audio como string de bytes
+      const audioData = await FileSystem.readAsStringAsync(audioUri, {
+        encoding: 'base64',
+      });
+
+      // Convertir base64 a binary
+      const binaryAudio = Uint8Array.from(atob(audioData), c => c.charCodeAt(0));
+
+      console.log('🎤 Audio file size:', binaryAudio.length, 'bytes');
+
+      const response = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=es&punctuate=true&smart_format=true', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
-          'Content-Type': 'multipart/form-data',
+          'Authorization': `Token ${process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY}`,
+          'Content-Type': 'audio/m4a',
         },
-        body: formData,
+        body: binaryAudio,
       });
 
       const result = await response.json();
 
-      if (response.ok && result.text) {
-        await createVoiceNote(result.text);
+      if (response.ok && result.results?.channels?.[0]?.alternatives?.[0]?.transcript) {
+        const transcribedText = result.results.channels[0].alternatives[0].transcript;
+        console.log('🎤 Transcribed text:', transcribedText);
+        await createVoiceNote(transcribedText);
       } else {
+        console.error('Deepgram transcription error:', result);
         Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
       }
     } catch (error) {
@@ -284,8 +326,6 @@ export default function Home() {
   };
 
   const createVoiceNote = async (transcribedText: string) => {
-    const noteTitle = generateVoiceNoteTitle();
-
     console.log('🎤 VOICE NOTE CREATION - Starting analysis for:', transcribedText);
 
     try {
@@ -298,8 +338,27 @@ export default function Home() {
 
       // Check if the cleaned text indicates a list
       if (detectListKeywords(noteContent)) {
-        // Convert to checklist
-        const checklistItems = parseTextToChecklistItems(noteContent);
+        // Extract list name if exists (e.g., "Lista de Supermercado")
+        const { listName, remainingText } = extractListName(noteContent);
+        console.log('🎤 LIST NAME EXTRACTION - listName:', listName, '| remainingText:', remainingText);
+
+        // Generate title with list name if available
+        let noteTitle: string;
+        if (listName) {
+          const now = new Date();
+          const day = now.getDate();
+          const month = now.getMonth() + 1;
+          const year = now.getFullYear().toString().slice(-2);
+          const hours = now.getHours().toString().padStart(2, '0');
+          const minutes = now.getMinutes().toString().padStart(2, '0');
+          noteTitle = `${listName} ${day}/${month}/${year} ${hours}:${minutes}`;
+        } else {
+          noteTitle = generateVoiceNoteTitle();
+        }
+
+        // Convert to checklist using remaining text (without list name)
+        const textToParse = listName ? remainingText : noteContent;
+        const checklistItems = parseTextToChecklistItems(textToParse);
 
         if (checklistItems.length > 0) {
           // Create note with checklist

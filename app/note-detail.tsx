@@ -18,7 +18,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import { File } from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { useThemeStore } from '../store/theme/useThemeStore';
@@ -723,33 +723,40 @@ export default function NoteDetail() {
 
   const transcribeAudio = async (audioUri: string) => {
     try {
-      if (!process.env.EXPO_PUBLIC_OPENAI_API_KEY) {
-        Alert.alert('Error', 'OpenAI API key not found. Please check your configuration.');
+      if (!process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY) {
+        Alert.alert('Error', 'Deepgram API key not found. Please check your configuration.');
         return;
       }
 
-      const formData = new FormData();
-      formData.append('file', {
-        uri: audioUri,
-        type: 'audio/m4a',
-        name: 'recording.m4a',
-      } as any);
-      formData.append('model', 'whisper-1');
+      console.log('🎤 Reading audio file from:', audioUri);
 
-      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      // Leer el archivo de audio como string de bytes
+      const audioData = await FileSystem.readAsStringAsync(audioUri, {
+        encoding: 'base64',
+      });
+
+      // Convertir base64 a binary
+      const binaryAudio = Uint8Array.from(atob(audioData), c => c.charCodeAt(0));
+
+      console.log('🎤 Audio file size:', binaryAudio.length, 'bytes');
+
+      const response = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=es&punctuate=true&smart_format=true', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
-          'Content-Type': 'multipart/form-data',
+          'Authorization': `Token ${process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY}`,
+          'Content-Type': 'audio/m4a',
         },
-        body: formData,
+        body: binaryAudio,
       });
 
       const result = await response.json();
 
-      if (response.ok && result.text) {
-        await insertTranscribedText(result.text);
+      if (response.ok && result.results?.channels?.[0]?.alternatives?.[0]?.transcript) {
+        const transcribedText = result.results.channels[0].alternatives[0].transcript;
+        console.log('🎤 Transcribed text:', transcribedText);
+        await insertTranscribedText(transcribedText);
       } else {
+        console.error('Deepgram transcription error:', result);
         Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
       }
     } catch (error) {
