@@ -8,11 +8,11 @@ interface ThemeState {
   isDarkMode: boolean;
   colors: ColorScheme;
   calloutsEnabled: boolean;
-  currentLanguage: 'en' | 'es';
+  currentLanguage: 'en' | 'es' | 'pt';
   toggleTheme: () => void;
   setDarkMode: (isDark: boolean) => void;
   toggleCallouts: () => void;
-  setLanguage: (lang: 'en' | 'es') => void;
+  setLanguage: (lang: 'en' | 'es' | 'pt') => void;
 }
 
 const store = create<ThemeState>()(
@@ -36,7 +36,7 @@ const store = create<ThemeState>()(
         set((state) => ({
           calloutsEnabled: !state.calloutsEnabled,
         })),
-      setLanguage: (lang: 'en' | 'es') =>
+      setLanguage: (lang: 'en' | 'es' | 'pt') =>
         set(() => ({
           currentLanguage: lang,
         })),
@@ -69,7 +69,7 @@ export const useThemeStore = () => {
       isDarkMode: false,
       colors: LIGHT_COLORS,
       calloutsEnabled: true,
-      currentLanguage: 'en' as 'en' | 'es',
+      currentLanguage: 'en' as 'en' | 'es' | 'pt',
       toggleTheme: () => {},
       setDarkMode: () => {},
       toggleCallouts: () => {},

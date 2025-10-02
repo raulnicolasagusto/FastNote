@@ -2,6 +2,7 @@ import { I18n } from 'i18n-js';
 import { getLocales } from 'expo-localization';
 import en from '../i18n/en.json';
 import es from '../i18n/es.json';
+import pt from '../i18n/pt.json';
 
 /**
  * Servicio de Internacionalización (i18n)
@@ -9,6 +10,7 @@ import es from '../i18n/es.json';
  * Soporta:
  * - 🇺🇸 English (en)
  * - 🇪🇸 Español (es)
+ * - 🇧🇷 Português (pt)
  *
  * Detección automática del idioma del dispositivo.
  * Fallback a inglés si el idioma no está disponible.
@@ -22,6 +24,7 @@ const languageChangeListeners: Set<LanguageChangeListener> = new Set();
 const i18n = new I18n({
   en,
   es,
+  pt,
 });
 
 // Configurar locale basado en el dispositivo
@@ -29,7 +32,7 @@ const deviceLocales = getLocales();
 const deviceLanguage = deviceLocales[0]?.languageCode ?? 'en';
 
 // Mapear códigos de idioma a locales soportados
-const supportedLocales = ['en', 'es'];
+const supportedLocales = ['en', 'es', 'pt'];
 const locale = supportedLocales.includes(deviceLanguage) ? deviceLanguage : 'en';
 
 i18n.locale = locale;
@@ -58,9 +61,9 @@ export const t = (key: string, params?: Record<string, any>): string => {
 
 /**
  * Cambiar idioma manualmente
- * @param newLocale - Código de idioma ('en' | 'es')
+ * @param newLocale - Código de idioma ('en' | 'es' | 'pt')
  */
-export const changeLanguage = (newLocale: 'en' | 'es'): Promise<void> => {
+export const changeLanguage = (newLocale: 'en' | 'es' | 'pt'): Promise<void> => {
   return new Promise((resolve) => {
     if (supportedLocales.includes(newLocale)) {
       i18n.locale = newLocale;
@@ -108,6 +111,7 @@ export const getAvailableLanguages = (): Array<{ code: string; name: string; fla
   return [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'pt', name: 'Português', flag: '🇧🇷' },
   ];
 };
 

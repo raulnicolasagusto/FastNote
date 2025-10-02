@@ -1,0 +1,186 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "done": "Concluído",
+    "back": "Voltar",
+    "yes": "Sim",
+    "no": "Não",
+    "ok": "OK",
+    "confirm": "Confirmar",
+    "search": "Pesquisar",
+    "close": "Fechar"
+  },
+  "tabs": {
+    "all": "Todas",
+    "personal": "Pessoal",
+    "work": "Trabalho",
+    "ideas": "Ideias"
+  },
+  "notes": {
+    "title": "Notas",
+    "newNote": "Nova Nota",
+    "voiceNote": "Nota de Voz",
+    "quickNote": "Nota Rápida",
+    "emptyState": "Ainda não há notas",
+    "emptyStateDesc": "Toque em + para criar sua primeira nota",
+    "searchPlaceholder": "Pesquisar notas...",
+    "charactersCount": "{{count}} caracteres",
+    "pinned": "Fixada",
+    "locked": "Bloqueada",
+    "archived": "Arquivada"
+  },
+  "noteDetail": {
+    "titlePlaceholder": "Título",
+    "contentPlaceholder": "Comece a escrever...",
+    "tapToEdit": "Toque para editar",
+    "editTitle": "Editar Título",
+    "editContent": "Editar Conteúdo",
+    "addImage": "Adicionar Imagem",
+    "addAudio": "Adicionar Áudio",
+    "addDrawing": "Adicionar Desenho",
+    "backgroundColor": "Cor de Fundo",
+    "defaultColor": "Padrão",
+    "yellowColor": "Amarelo",
+    "creamColor": "Creme",
+    "peachColor": "Pêssego",
+    "pinkColor": "Rosa",
+    "lavenderColor": "Lavanda",
+    "mintColor": "Menta",
+    "skyColor": "Céu"
+  },
+  "checklist": {
+    "title": "Lista de Tarefas",
+    "newItem": "Novo item",
+    "addItem": "Adicionar item",
+    "itemPlaceholder": "Descrição do item...",
+    "completed": "Concluído",
+    "pending": "Pendente"
+  },
+  "folders": {
+    "title": "Pastas",
+    "allNotes": "Todas as Notas",
+    "newFolder": "Nova Pasta",
+    "folderName": "Nome da Pasta",
+    "moveToFolder": "Mover para Pasta",
+    "selectFolder": "Selecione uma pasta",
+    "createFolder": "Criar Pasta",
+    "deleteFolder": "Excluir Pasta",
+    "folderNamePlaceholder": "Digite o nome da pasta..."
+  },
+  "reminders": {
+    "title": "Lembrete",
+    "setReminder": "Definir Lembrete",
+    "reminderSet": "Lembrete definido com sucesso",
+    "removeReminder": "Remover Lembrete",
+    "today": "Hoje",
+    "tomorrow": "Amanhã",
+    "in": "Em",
+    "days": "dias",
+    "at": "às"
+  },
+  "share": {
+    "title": "Compartilhar",
+    "shareAsText": "Compartilhar como Texto",
+    "shareAsImage": "Compartilhar como Imagem",
+    "shareAsMarkdown": "Compartilhar como Markdown",
+    "shareNote": "Compartilhar Nota",
+    "exportNote": "Exportar Nota"
+  },
+  "recording": {
+    "title": "Gravando",
+    "recording": "Gravando...",
+    "stop": "Parar",
+    "cancel": "Cancelar",
+    "transcribing": "Transcrevendo...",
+    "processing": "Processando áudio..."
+  },
+  "camera": {
+    "title": "Capturar Texto",
+    "takePhoto": "Tirar Foto",
+    "chooseFromGallery": "Escolher da Galeria",
+    "scanning": "Digitalizando texto...",
+    "processingImage": "Processando imagem..."
+  },
+  "menu": {
+    "pin": "Fixar",
+    "unpin": "Desafixar",
+    "lock": "Bloquear",
+    "unlock": "Desbloquear",
+    "archive": "Arquivar",
+    "unarchive": "Desarquivar",
+    "delete": "Excluir",
+    "share": "Compartilhar",
+    "moveToFolder": "Mover para Pasta",
+    "setReminder": "Definir Lembrete",
+    "changeColor": "Mudar Cor",
+    "settings": "Configurações",
+    "theme": "Tema",
+    "about": "Sobre"
+  },
+  "alerts": {
+    "deleteNoteTitle": "Excluir Nota",
+    "deleteNoteMessage": "Tem certeza de que deseja excluir esta nota? Esta ação não pode ser desfeita.",
+    "deleteNotesTitle": "Excluir {{count}} Notas",
+    "deleteNotesMessage": "Tem certeza de que deseja excluir {{count}} notas? Esta ação não pode ser desfeita.",
+    "archiveNoteTitle": "Arquivar Nota",
+    "archiveNoteMessage": "Esta nota será movida para os arquivos.",
+    "noteLocked": "Nota Bloqueada",
+    "noteLockedMessage": "Esta nota está bloqueada. Desbloqueie-a primeiro para editar.",
+    "emptyTitle": "Título Vazio",
+    "emptyTitleMessage": "O título não pode estar vazio",
+    "errorTitle": "Erro",
+    "successTitle": "Sucesso",
+    "permissionDenied": "Permissão Negada",
+    "permissionMessage": "Por favor, conceda permissão para usar este recurso"
+  },
+  "callouts": {
+    "pinNotes": "Fixe notas importantes para mantê-las no topo!",
+    "lockNotes": "Bloqueie notas para proteger informações confidenciais.",
+    "voiceNotes": "Use notas de voz para captura rápida em movimento!",
+    "checklistMode": "Crie listas de tarefas para organizar suas pendências.",
+    "richText": "Use ferramentas de formatação para melhorar suas notas.",
+    "shareNotes": "Compartilhe suas notas como texto ou imagens.",
+    "folders": "Organize suas notas com pastas.",
+    "reminders": "Defina lembretes para nunca esquecer tarefas importantes.",
+    "search": "Encontre rapidamente qualquer nota com busca poderosa.",
+    "multiSelect": "Pressione e segure para selecionar várias notas."
+  },
+  "quickActions": {
+    "newNote": "Nova Nota",
+    "voiceNote": "Nota de Voz Rápida",
+    "voiceNoteSubtitle": "Gravar uma nota falando"
+  },
+  "formats": {
+    "heading1": "Título 1",
+    "heading2": "Título 2",
+    "heading3": "Título 3",
+    "bold": "Negrito",
+    "highlight": "Destacar",
+    "format": "Formato"
+  },
+  "notifications": {
+    "reminderTitle": "Lembrete de Nota",
+    "reminderBody": "{{title}}"
+  },
+  "sidebar": {
+    "darkMode": "Modo Escuro",
+    "lightMode": "Modo Claro",
+    "settings": "Configurações",
+    "about": "Sobre FastNote",
+    "version": "Versão {{version}}",
+    "callouts": "Mostrar Dicas",
+    "language": "Idioma"
+  },
+  "timestamps": {
+    "created": "Criada",
+    "updated": "Atualizada",
+    "edited": "Editada",
+    "justNow": "Agora mesmo",
+    "minutesAgo": "{{count}} min atrás",
+    "hoursAgo": "{{count}} horas atrás",
+    "daysAgo": "{{count}} dias atrás"
+  }
+}

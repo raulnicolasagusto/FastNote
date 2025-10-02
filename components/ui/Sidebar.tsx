@@ -25,7 +25,7 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
   const availableLanguages = getAvailableLanguages();
 
-  const handleLanguageChange = async (newLang: 'en' | 'es') => {
+  const handleLanguageChange = async (newLang: 'en' | 'es' | 'pt') => {
     if (newLang === currentLanguage || isChangingLanguage) return;
 
     setIsChangingLanguage(true);
@@ -157,7 +157,7 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
                         borderColor: currentLanguage === lang.code ? colors.accent.blue : colors.textSecondary,
                       }
                     ]}
-                    onPress={() => handleLanguageChange(lang.code as 'en' | 'es')}
+                    onPress={() => handleLanguageChange(lang.code as 'en' | 'es' | 'pt')}
                   >
                     <Text style={[
                       styles.languageButtonText,
