@@ -153,6 +153,7 @@ export default function Home() {
   const detectListKeywords = (text: string): boolean => {
     const lowerText = text.toLowerCase().trim();
     const listKeywords = [
+      // Español
       'nueva lista',
       'lista nueva',
       'lista de',
@@ -160,12 +161,22 @@ export default function Home() {
       'lista para',
       'lista de compras',
       'lista de supermercado',
-      'shopping list',
-      'to do list',
       'lista de tareas',
       'checklist',
       'check list',
-      'new list'
+      // Inglés
+      'shopping list',
+      'to do list',
+      'new list',
+      // Portugués
+      'nova lista',
+      'lista do',
+      'lista da',
+      'lista para',
+      'lista de compras',
+      'lista de supermercado',
+      'lista do supermercado',
+      'lista de tarefas'
     ];
 
     return listKeywords.some(keyword => lowerText.startsWith(keyword));
@@ -202,6 +213,42 @@ export default function Home() {
       return { listName, remainingText: cleanRemaining };
     }
 
+    // Detectar "new [nombre] list" (inglés)
+    const newListMatch = lowerText.match(/^new ([^,\.]+?) list/i);
+    if (newListMatch) {
+      const listName = text.substring('new '.length, newListMatch[0].length - ' list'.length).trim();
+      const remainingText = text.substring(newListMatch[0].length).trim();
+      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
+      return { listName, remainingText: cleanRemaining };
+    }
+
+    // Detectar "lista do [nombre]" (portugués)
+    const listaDoMatch = lowerText.match(/^lista do ([^,\.]+)/i);
+    if (listaDoMatch) {
+      const listName = text.substring('lista do '.length, listaDoMatch[0].length).trim();
+      const remainingText = text.substring(listaDoMatch[0].length).trim();
+      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
+      return { listName, remainingText: cleanRemaining };
+    }
+
+    // Detectar "lista da [nombre]" (portugués)
+    const listaDaMatch = lowerText.match(/^lista da ([^,\.]+)/i);
+    if (listaDaMatch) {
+      const listName = text.substring('lista da '.length, listaDaMatch[0].length).trim();
+      const remainingText = text.substring(listaDaMatch[0].length).trim();
+      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
+      return { listName, remainingText: cleanRemaining };
+    }
+
+    // Detectar "nova [nombre] lista" (portugués)
+    const novaListaMatch = lowerText.match(/^nova ([^,\.]+?) lista/i);
+    if (novaListaMatch) {
+      const listName = text.substring('nova '.length, novaListaMatch[0].length - ' lista'.length).trim();
+      const remainingText = text.substring(novaListaMatch[0].length).trim();
+      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
+      return { listName, remainingText: cleanRemaining };
+    }
+
     return { listName: null, remainingText: text };
   };
 
@@ -213,11 +260,10 @@ export default function Home() {
     const lowerText = text.toLowerCase();
 
     const listKeywords = [
+      // Español - específicas primero
       'lista de supermercado',
       'lista de compras',
       'lista de tareas',
-      'shopping list',
-      'to do list',
       'nueva lista',
       'lista nueva',
       'lista del',
@@ -225,7 +271,19 @@ export default function Home() {
       'lista de',
       'checklist',
       'check list',
-      'new list'
+      // Inglés
+      'shopping list',
+      'to do list',
+      'new list',
+      // Portugués - específicas primero
+      'lista do supermercado',
+      'lista de supermercado',
+      'lista de compras',
+      'lista de tarefas',
+      'nova lista',
+      'lista do',
+      'lista da',
+      'lista para'
     ];
 
     // Find and remove the keyword

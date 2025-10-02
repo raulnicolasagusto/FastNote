@@ -771,6 +771,7 @@ export default function NoteDetail() {
   const detectListKeywords = (text: string): boolean => {
     const lowerText = text.toLowerCase().trim();
     const listKeywords = [
+      // Español
       'nueva lista',
       'lista nueva',
       'lista de',
@@ -778,12 +779,22 @@ export default function NoteDetail() {
       'lista para',
       'lista de compras',
       'lista de supermercado',
-      'shopping list',
-      'to do list',
       'lista de tareas',
       'checklist',
       'check list',
-      'new list'
+      // Inglés
+      'shopping list',
+      'to do list',
+      'new list',
+      // Portugués
+      'nova lista',
+      'lista do',
+      'lista da',
+      'lista para',
+      'lista de compras',
+      'lista de supermercado',
+      'lista do supermercado',
+      'lista de tarefas'
     ];
 
     return listKeywords.some(keyword => lowerText.startsWith(keyword));
@@ -816,11 +827,10 @@ export default function NoteDetail() {
     const lowerText = text.toLowerCase();
 
     const listKeywords = [
+      // Español - específicas primero
       'lista de supermercado',
       'lista de compras',
       'lista de tareas',
-      'shopping list',
-      'to do list',
       'nueva lista',
       'lista nueva',
       'lista del',
@@ -828,7 +838,19 @@ export default function NoteDetail() {
       'lista de',
       'checklist',
       'check list',
-      'new list'
+      // Inglés
+      'shopping list',
+      'to do list',
+      'new list',
+      // Portugués - específicas primero
+      'lista do supermercado',
+      'lista de supermercado',
+      'lista de compras',
+      'lista de tarefas',
+      'nova lista',
+      'lista do',
+      'lista da',
+      'lista para'
     ];
 
     // Find and remove the keyword
