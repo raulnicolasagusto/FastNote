@@ -740,7 +740,7 @@ export default function NoteDetail() {
 
       console.log('🎤 Audio file size:', binaryAudio.length, 'bytes');
 
-      const response = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=es&punctuate=true&smart_format=true', {
+      const response = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&detect_language=true&punctuate=true&smart_format=true', {
         method: 'POST',
         headers: {
           'Authorization': `Token ${process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY}`,
@@ -751,12 +751,16 @@ export default function NoteDetail() {
 
       const result = await response.json();
 
+      console.log('🎤 FULL DEEPGRAM RESPONSE:', JSON.stringify(result, null, 2));
+
       if (response.ok && result.results?.channels?.[0]?.alternatives?.[0]?.transcript) {
         const transcribedText = result.results.channels[0].alternatives[0].transcript;
+        const detectedLanguage = result.results?.channels?.[0]?.detected_language;
+        console.log('🎤 Detected language:', detectedLanguage);
         console.log('🎤 Transcribed text:', transcribedText);
         await insertTranscribedText(transcribedText);
       } else {
-        console.error('Deepgram transcription error:', result);
+        console.error('Deepgram transcription error - Full result:', JSON.stringify(result, null, 2));
         Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
       }
     } catch (error) {
