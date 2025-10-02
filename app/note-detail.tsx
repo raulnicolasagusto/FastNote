@@ -37,16 +37,17 @@ import AudioPlayer from '../components/ui/AudioPlayer';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
+import { interstitialAdService } from '../utils/interstitialAdService';
 
-/* 
+/*
   VOICE REMINDER FEATURE:
   Ejemplos de comandos de voz que ahora activan recordatorios automáticamente:
-  
+
   ✅ "Lista de compras: azúcar, tomate, huevo. Agregar recordatorio para las 15:30 de hoy"
   ✅ "Reunión con cliente mañana. Recordar a las 9:00"
   ✅ "Llamar al doctor. Avisar hoy a las 16:00"
   ✅ "Comprar regalo para mamá. Recordatorio para mañana a las 10:00"
-  
+
   La IA extrae automáticamente:
   - El contenido principal de la nota (sin el comando de recordatorio)
   - La fecha y hora del recordatorio
@@ -145,6 +146,10 @@ export default function NoteDetail() {
     if (editingElement) {
       handleCancelEdit();
     } else {
+      // Mostrar Interstitial Ad si es elegible (primera vez esta sesión)
+      interstitialAdService.showIfEligible();
+
+      // Volver a la pantalla anterior
       router.back();
     }
   };

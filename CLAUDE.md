@@ -191,6 +191,25 @@
 - Shortcut ID: `voice_note`
 - Detección en [index.tsx](app/index.tsx) mediante `useLocalSearchParams()`
 
+### 13. Sistema de Publicidad (AdMob)
+- **Banner Ads** (implementados previamente):
+  - Home screen y note-detail screen
+  - CPM estimado: ~$0.40
+  - Componente: `<BannerAd>` de react-native-google-mobile-ads
+- **Interstitial Ads** (implementado - Octubre 2025) ✅:
+  - Pantalla completa con cierre después de ~5 segundos
+  - **Frecuencia**: 1 vez por sesión de app
+  - **Trigger**: Al volver de nota → home (primera vez)
+  - **CPM estimado**: $2-4 USD (5-10x más que banners)
+  - **Store**: [useAdsStore.ts](store/ads/useAdsStore.ts) - Tracking de sesión
+  - **Hook**: [useInterstitialAd.ts](utils/useInterstitialAd.ts) - Manejo de ads
+  - **Configuración**: Ver [INTERSTITIAL_ADS_SETUP.md](INTERSTITIAL_ADS_SETUP.md)
+  - **Reset de sesión**: Automático al abrir app en [index.tsx](app/index.tsx)
+  - **Integración**: [note-detail.tsx](app/note-detail.tsx) función `handleBack()`
+- **Impacto en Revenue**:
+  - Con 1,000 usuarios activos/día: +$90/mes adicionales
+  - Incremento estimado: +650% vs solo banners
+
 ## Arquitectura del Código
 
 ### Estructura de Carpetas
@@ -230,8 +249,10 @@ store/
 │   └── useNotesStore.ts   # Estado principal de notas (CRUD + filtros)
 ├── folders/
 │   └── useFoldersStore.ts # Estado de carpetas
-└── theme/
-    └── useThemeStore.ts   # Estado de tema (light/dark)
+├── theme/
+│   └── useThemeStore.ts   # Estado de tema (light/dark)
+└── ads/
+    └── useAdsStore.ts     # Estado de tracking de Interstitial Ads
 
 utils/
 ├── notifications.ts              # Servicio notificaciones (wrapper)
@@ -242,7 +263,8 @@ utils/
 ├── shareTextUtils.ts             # Compartir texto con expo-sharing
 ├── shareImageUtils.ts            # Captura + compartir imagen
 ├── useCalloutRotation.ts         # Hook callouts rotativos
-└── useNotificationHandlers.ts    # Hook manejo notificaciones
+├── useNotificationHandlers.ts    # Hook manejo notificaciones
+└── useInterstitialAd.ts          # Hook manejo Interstitial Ads (precarga, show, tracking)
 
 types/
 └── index.ts               # Definiciones TypeScript centralizadas
@@ -305,6 +327,17 @@ Actions:
 - updateFolder(id, updates)
 - deleteFolder(id)
 - loadFolders() => Promise<void>
+```
+
+#### Ads Store ([useAdsStore.ts](store/ads/useAdsStore.ts:1))
+```typescript
+State:
+- hasShownInterstitialThisSession: boolean
+- lastInterstitialShownAt: Date | null
+
+Actions:
+- markInterstitialAsShown() - Marca que se mostró el interstitial en esta sesión
+- resetInterstitialSession() - Resetea el tracking al abrir la app (nueva sesión)
 ```
 
 ### Types ([types/index.ts](types/index.ts:1))
@@ -787,6 +820,7 @@ Cuando el usuario diga:
 
 ---
 
-**Última actualización**: 30/09/2025
+**Última actualización**: 02/10/2025
 **Mantenedor**: Claude Code Assistant
 **Revisión**: Completa basada en lectura de codebase + Protocolo de implementación agregado
+**Última feature**: Sistema de Interstitial Ads (Octubre 2025)

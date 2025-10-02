@@ -10,20 +10,36 @@ import { MainScreen } from '../components/layout/MainScreen';
 import { Note, ChecklistItem } from '../types';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { useThemeStore } from '../store/theme/useThemeStore';
+import { useAdsStore } from '../store/ads/useAdsStore';
 import { StorageService } from '../utils/storage';
 import { SPACING, TYPOGRAPHY, DEFAULT_CATEGORIES } from '../constants/theme';
 import Sidebar from '../components/ui/Sidebar';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
+import { interstitialAdService } from '../utils/interstitialAdService';
 
 export default function Home() {
   const { addNote } = useNotesStore();
   const { colors } = useThemeStore();
+  const { resetInterstitialSession } = useAdsStore();
   const [showRecordingModal, setShowRecordingModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const { voiceNote } = useLocalSearchParams();
+
+  // Inicializar Interstitial Ad Service y resetear sesión al abrir la app
+  useEffect(() => {
+    // Inicializar el servicio (solo una vez)
+    interstitialAdService.initialize();
+
+    // Resetear sesión
+    resetInterstitialSession();
+    console.log('🔄 Interstitial Ad session reset - new app session started');
+
+    // Recargar ad para nueva sesión
+    interstitialAdService.reloadAd();
+  }, []);
 
   // Handle quick action for voice note
   useEffect(() => {
