@@ -107,11 +107,11 @@ export const getCurrentLanguage = (): string => {
  * Obtener todos los idiomas disponibles
  * @returns Array de códigos de idioma
  */
-export const getAvailableLanguages = (): Array<{ code: string; name: string; flag: string }> => {
+export const getAvailableLanguages = (): Array<{ code: string; name: string; abbreviation: string }> => {
   return [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'pt', name: 'Português', flag: '🇧🇷' },
+    { code: 'en', name: 'English', abbreviation: 'En' },
+    { code: 'es', name: 'Español', abbreviation: 'Es' },
+    { code: 'pt', name: 'Português', abbreviation: 'Pt' },
   ];
 };
 

@@ -372,12 +372,13 @@ export default function Home() {
         console.log('🎤 Transcribed text:', transcribedText);
         await createVoiceNote(transcribedText);
       } else {
-        console.error('Deepgram transcription error - Full result:', JSON.stringify(result, null, 2));
-        Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
+        // Transcription failed - show user-friendly error
+        Alert.alert(t('alerts.errorTitle'), t('alerts.transcriptionError'));
       }
     } catch (error) {
-      console.error('Transcription error:', error);
-      Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
+      // Network or other error - show user-friendly error
+      console.warn('Transcription failed:', error instanceof Error ? error.message : 'Unknown error');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.transcriptionError'));
     } finally {
       setRecording(null);
       setShowRecordingModal(false);

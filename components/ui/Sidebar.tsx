@@ -23,11 +23,13 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
   useLanguage(); // Forzar re-render en cambio de idioma
   const { isDarkMode, colors, calloutsEnabled, currentLanguage, toggleTheme, toggleCallouts, setLanguage } = useThemeStore();
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const availableLanguages = getAvailableLanguages();
 
   const handleLanguageChange = async (newLang: 'en' | 'es' | 'pt') => {
     if (newLang === currentLanguage || isChangingLanguage) return;
 
+    setShowLanguageMenu(false);
     setIsChangingLanguage(true);
     await changeLanguage(newLang);
     setLanguage(newLang);
@@ -137,7 +139,6 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
                   {t('sidebar.language')}
                 </Text>
                 <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>
-                  {availableLanguages.find(l => l.code === currentLanguage)?.flag}{' '}
                   {availableLanguages.find(l => l.code === currentLanguage)?.name}
                 </Text>
               </View>
@@ -146,30 +147,57 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
             {isChangingLanguage ? (
               <ActivityIndicator size="small" color={colors.accent.blue} />
             ) : (
-              <View style={styles.languageButtons}>
-                {availableLanguages.map((lang) => (
-                  <TouchableOpacity
-                    key={lang.code}
-                    style={[
-                      styles.languageButton,
-                      {
-                        backgroundColor: currentLanguage === lang.code ? colors.accent.blue : colors.background,
-                        borderColor: currentLanguage === lang.code ? colors.accent.blue : colors.textSecondary,
-                      }
-                    ]}
-                    onPress={() => handleLanguageChange(lang.code as 'en' | 'es' | 'pt')}
-                  >
-                    <Text style={[
-                      styles.languageButtonText,
-                      { color: currentLanguage === lang.code ? colors.cardBackground : colors.textPrimary }
-                    ]}>
-                      {lang.flag}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              <TouchableOpacity
+                style={[styles.languageSelect, {
+                  backgroundColor: colors.background,
+                  borderColor: colors.textSecondary
+                }]}
+                onPress={() => setShowLanguageMenu(!showLanguageMenu)}
+              >
+                <Text style={[styles.languageSelectText, { color: colors.textPrimary }]}>
+                  {availableLanguages.find(l => l.code === currentLanguage)?.abbreviation}
+                </Text>
+                <MaterialIcons
+                  name={showLanguageMenu ? "arrow-drop-up" : "arrow-drop-down"}
+                  size={20}
+                  color={colors.textPrimary}
+                />
+              </TouchableOpacity>
             )}
           </View>
+
+          {/* Language Dropdown Menu */}
+          {showLanguageMenu && !isChangingLanguage && (
+            <View style={[styles.languageDropdown, {
+              backgroundColor: colors.cardBackground,
+              borderColor: colors.textSecondary
+            }]}>
+              {availableLanguages.map((lang) => (
+                <TouchableOpacity
+                  key={lang.code}
+                  style={[
+                    styles.languageOption,
+                    currentLanguage === lang.code && { backgroundColor: colors.accent.blue + '20' }
+                  ]}
+                  onPress={() => handleLanguageChange(lang.code as 'en' | 'es' | 'pt')}
+                >
+                  <Text style={[
+                    styles.languageOptionText,
+                    { color: colors.textPrimary }
+                  ]}>
+                    {lang.abbreviation} - {lang.name}
+                  </Text>
+                  {currentLanguage === lang.code && (
+                    <MaterialIcons
+                      name="check"
+                      size={20}
+                      color={colors.accent.blue}
+                    />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
           {/* App Info */}
           <View style={styles.footer}>
@@ -255,19 +283,44 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.dateSize,
     fontStyle: 'italic',
   },
-  languageButtons: {
+  languageSelect: {
     flexDirection: 'row',
-    gap: SPACING.xs,
-  },
-  languageButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
-    justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: SPACING.xs,
+    minWidth: 80,
   },
-  languageButtonText: {
-    fontSize: 20,
+  languageSelectText: {
+    fontSize: TYPOGRAPHY.bodySize,
+    fontWeight: '600',
+  },
+  languageDropdown: {
+    marginLeft: 48,
+    marginTop: -SPACING.sm,
+    marginBottom: SPACING.md,
+    borderRadius: 8,
+    borderWidth: 1,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  languageOptionText: {
+    fontSize: TYPOGRAPHY.bodySize,
+    flex: 1,
   },
 });

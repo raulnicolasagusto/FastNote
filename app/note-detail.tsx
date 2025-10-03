@@ -38,6 +38,7 @@ import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
 import { interstitialAdService } from '../utils/interstitialAdService';
+import i18n from '../utils/i18n';
 
 /*
   VOICE REMINDER FEATURE:
@@ -89,6 +90,8 @@ export default function NoteDetail() {
   const inputRefs = useRef<{ [key: string]: TextInput | null }>({});
   const shareableImageRef = useRef<View>(null);
   const richTextRef = useRef<RichEditor>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const matchViewRefs = useRef<{ [key: number]: View | null }>({});
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -110,6 +113,16 @@ export default function NoteDetail() {
     h3: false,
     highlight: false
   });
+
+  // Search states
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchMatches, setSearchMatches] = useState<number[]>([]);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+
+  // Scroll hint states
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
 
   useEffect(() => {
     if (noteId) {
@@ -140,7 +153,82 @@ export default function NoteDetail() {
     }
   }, [showKeyboardToolbar]);
 
+  // Search logic - find matches in title, content, and checklist
+  useEffect(() => {
+    if (!note || !searchQuery.trim()) {
+      setSearchMatches([]);
+      setCurrentMatchIndex(0);
+      return;
+    }
 
+    const query = searchQuery.toLowerCase();
+    let globalMatchIndex = 0;
+    const matches: number[] = [];
+
+    // Count matches in title
+    const titleText = note.title.toLowerCase();
+    let titleIndex = titleText.indexOf(query);
+    while (titleIndex !== -1) {
+      matches.push(globalMatchIndex++);
+      titleIndex = titleText.indexOf(query, titleIndex + 1);
+    }
+
+    // Count matches in content (strip HTML tags)
+    const contentText = note.content.replace(/<[^>]*>/g, '').toLowerCase();
+    let contentIndex = contentText.indexOf(query);
+    while (contentIndex !== -1) {
+      matches.push(globalMatchIndex++);
+      contentIndex = contentText.indexOf(query, contentIndex + 1);
+    }
+
+    // Count matches in checklist items
+    if (note.checklistItems && note.checklistItems.length > 0) {
+      note.checklistItems.forEach(item => {
+        const itemText = item.text.toLowerCase();
+        let itemIndex = itemText.indexOf(query);
+        while (itemIndex !== -1) {
+          matches.push(globalMatchIndex++);
+          itemIndex = itemText.indexOf(query, itemIndex + 1);
+        }
+      });
+    }
+
+    setSearchMatches(matches);
+    setCurrentMatchIndex(matches.length > 0 ? 0 : 0);
+  }, [searchQuery, note]);
+
+  // Auto-scroll to current match when it changes
+  useEffect(() => {
+    if (currentMatchIndex >= 0 && matchViewRefs.current[currentMatchIndex]) {
+      setTimeout(() => {
+        matchViewRefs.current[currentMatchIndex]?.measureLayout(
+          (scrollViewRef.current as any)?._nativeTag || 0,
+          (x, y, width, height) => {
+            scrollViewRef.current?.scrollTo({
+              y: Math.max(0, y - 150),
+              animated: true
+            });
+          },
+          (error: any) => {
+            console.warn('Failed to measure:', error);
+          }
+        );
+      }, 200);
+    }
+  }, [currentMatchIndex]);
+
+  // Handle scroll to update arrow indicators
+  const handleScroll = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const scrollPosition = contentOffset.x;
+    const scrollWidth = contentSize.width - layoutMeasurement.width;
+
+    // Check if can scroll left (not at start)
+    setCanScrollLeft(scrollPosition > 5);
+
+    // Check if can scroll right (not at end)
+    setCanScrollRight(scrollPosition < scrollWidth - 5);
+  };
 
   const handleBack = () => {
     if (editingElement) {
@@ -412,11 +500,14 @@ export default function NoteDetail() {
       );
     }
 
-    // If it's plain text, return as is
+    // If it's plain text, return as is (with search highlighting if active)
     if (!content.includes('<') || !content.includes('>')) {
       return (
         <Text style={[styles.contentText, { color: textColors.primary }]}>
-          {content}
+          {isSearchMode && searchQuery.trim()
+            ? highlightSearchText(content, getContentMatchOffset())
+            : content
+          }
         </Text>
       );
     }
@@ -570,6 +661,95 @@ export default function NoteDetail() {
         )}
       </View>
     );
+  };
+
+  // Helper function to highlight search matches in text
+  const highlightSearchText = (text: string, startOffset: number = 0) => {
+    if (!searchQuery.trim() || !isSearchMode || !note) {
+      return text;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const lowerText = text.toLowerCase();
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let matchIndex = lowerText.indexOf(query);
+    let localMatchCount = startOffset;
+
+    while (matchIndex !== -1) {
+      // Add text before match as plain string
+      if (matchIndex > lastIndex) {
+        parts.push(text.substring(lastIndex, matchIndex));
+      }
+
+      // Check if this is the current match
+      const isThisCurrentMatch = localMatchCount === currentMatchIndex;
+      const matchedText = text.substring(matchIndex, matchIndex + query.length);
+      const matchId = localMatchCount;
+
+      // Add highlighted match
+      parts.push(
+        <View
+          key={`match-wrapper-${matchId}`}
+          ref={(ref) => {
+            if (ref) {
+              matchViewRefs.current[matchId] = ref;
+            }
+          }}
+          style={{ flexDirection: 'row', flexWrap: 'wrap' }}
+          collapsable={false}
+        >
+          <Text
+            style={{
+              backgroundColor: isThisCurrentMatch ? '#FF6B35' : '#4A90E240',
+              color: isThisCurrentMatch ? '#FFFFFF' : textColors.primary,
+              fontWeight: isThisCurrentMatch ? 'bold' : 'normal',
+            }}
+          >
+            {matchedText}
+          </Text>
+        </View>
+      );
+
+      lastIndex = matchIndex + query.length;
+      matchIndex = lowerText.indexOf(query, lastIndex);
+      localMatchCount++;
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : text;
+  };
+
+  // Calculate match offset for each section
+  const getTitleMatchOffset = () => 0;
+
+  const getContentMatchOffset = () => {
+    if (!note) return 0;
+    const query = searchQuery.toLowerCase();
+    return note.title.toLowerCase().split(query).length - 1;
+  };
+
+  const getChecklistMatchOffset = (itemIndex: number = 0) => {
+    if (!note) return 0;
+    const query = searchQuery.toLowerCase();
+    const titleCount = note.title.toLowerCase().split(query).length - 1;
+    const contentText = note.content.replace(/<[^>]*>/g, '');
+    const contentCount = contentText.toLowerCase().split(query).length - 1;
+
+    // Add matches from previous checklist items
+    let previousItemsCount = 0;
+    if (note.checklistItems && itemIndex > 0) {
+      for (let i = 0; i < itemIndex; i++) {
+        const itemText = note.checklistItems[i].text.toLowerCase();
+        previousItemsCount += itemText.split(query).length - 1;
+      }
+    }
+
+    return titleCount + contentCount + previousItemsCount;
   };
 
   const handleToolbarAudio = () => {
@@ -765,12 +945,13 @@ export default function NoteDetail() {
         console.log('🎤 Transcribed text:', transcribedText);
         await insertTranscribedText(transcribedText);
       } else {
-        console.error('Deepgram transcription error - Full result:', JSON.stringify(result, null, 2));
-        Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
+        // Transcription failed - show user-friendly error
+        Alert.alert(t('alerts.errorTitle'), t('alerts.transcriptionError'));
       }
     } catch (error) {
-      console.error('Transcription error:', error);
-      Alert.alert('Error', 'Failed to transcribe audio. Please try again.');
+      // Network or other error - show user-friendly error
+      console.warn('Transcription failed:', error instanceof Error ? error.message : 'Unknown error');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.transcriptionError'));
     } finally {
       setRecording(null);
       setShowRecordingModal(false);
@@ -893,10 +1074,13 @@ export default function NoteDetail() {
   const processImageForOCR = async (imageUri: string) => {
     try {
       setIsProcessingImage(true);
+      console.log('📸 Starting OCR for image:', imageUri);
 
-      // Convert image to base64 using new File API
-      const file = new File(imageUri);
-      const base64Image = await file.base64();
+      // Convert image to base64 using FileSystem.readAsStringAsync
+      const base64Image = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      console.log('📸 Base64 conversion successful, length:', base64Image.length);
 
       // Use OCR.space free API (25,000 requests/month)
       const formData = new FormData();
@@ -905,29 +1089,35 @@ export default function NoteDetail() {
       formData.append('isOverlayRequired', 'false');
       formData.append('apikey', 'helloworld'); // Free API key
 
+      console.log('📸 Sending request to OCR.space API...');
       const response = await fetch('https://api.ocr.space/parse/image', {
         method: 'POST',
         body: formData,
       });
 
       const result = await response.json();
+      console.log('📸 OCR API Response:', JSON.stringify(result, null, 2));
 
       if (result.ParsedResults?.[0]?.ParsedText) {
         const detectedText = result.ParsedResults[0].ParsedText.trim();
+        console.log('📸 Detected text:', detectedText);
 
         if (detectedText) {
           await insertTranscribedText(detectedText);
-          Alert.alert('Texto Reconocido', 'Texto extraído exitosamente de la imagen!');
+          Alert.alert(i18n.t('alerts.ocrSuccess'), i18n.t('alerts.ocrSuccessMessage'));
         } else {
-          Alert.alert('Sin Texto', 'No se detectó texto en la imagen. Intenta con una imagen más clara.');
+          Alert.alert(i18n.t('alerts.ocrNoText'), i18n.t('alerts.ocrNoTextMessage'));
         }
       } else {
-        Alert.alert('Sin Texto', 'No se detectó texto en la imagen. Intenta con una imagen más clara.');
+        console.log('📸 No ParsedResults found in response');
+        Alert.alert(i18n.t('alerts.ocrNoText'), i18n.t('alerts.ocrNoTextMessage'));
       }
 
     } catch (error) {
-      console.error('OCR Error:', error);
-      Alert.alert('Error', 'Error al procesar la imagen. Verifica tu conexión a internet.');
+      // OCR processing failed - show user-friendly error
+      console.warn('📸 OCR failed:', error instanceof Error ? error.message : 'Unknown error');
+      console.warn('📸 Full error:', error);
+      Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.ocrError'));
     } finally {
       setIsProcessingImage(false);
       setShowCameraModal(false);
@@ -938,7 +1128,7 @@ export default function NoteDetail() {
     try {
       const permission = await Camera.requestCameraPermissionsAsync();
       if (permission.status !== 'granted') {
-        Alert.alert('Permission Required', 'Camera permission is required to scan text.');
+        Alert.alert(t('alerts.permissionDenied'), t('alerts.cameraPermissionRequired'));
         return;
       }
 
@@ -1446,7 +1636,7 @@ export default function NoteDetail() {
         {/* Render checklist items if they exist */}
         {hasChecklist && (
           <View style={[styles.checklistSection, hasText && styles.checklistWithText, hasText && { borderTopWidth: 1, borderTopColor: textColors.secondary + '33' }]}>
-            {note.checklistItems!.map((item) => (
+            {note.checklistItems!.map((item, itemIndex) => (
               <View key={item.id} style={styles.checklistItem}>
                 <TouchableOpacity
                   style={styles.checkboxDisplay}
@@ -1463,7 +1653,9 @@ export default function NoteDetail() {
                   onPress={handleStartChecklistEdit}
                   activeOpacity={1}>
                   <Text style={[styles.checklistText, { color: textColors.primary }, item.completed && styles.completedText]}>
-                    {item.text}
+                    {isSearchMode && searchQuery.trim() && item.text.toLowerCase().includes(searchQuery.toLowerCase())
+                      ? highlightSearchText(item.text, getChecklistMatchOffset(itemIndex))
+                      : item.text}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1515,7 +1707,14 @@ export default function NoteDetail() {
           />
         </TouchableOpacity>
 
-        <View style={styles.headerActions}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.headerActionsScroll}
+          style={styles.headerActionsContainer}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}>
+          <View style={styles.headerActions}>
           {/* Background color picker */}
           <TouchableOpacity
             onPress={() => setShowColorPicker(true)}
@@ -1613,6 +1812,20 @@ export default function NoteDetail() {
             </TouchableOpacity>
           )}
 
+          {/* Search icon - only show when not editing */}
+          {!editingElement && (
+            <TouchableOpacity
+              style={styles.actionIcon}
+              onPress={() => setIsSearchMode(!isSearchMode)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <MaterialIcons
+                name="search"
+                size={24}
+                color={isSearchMode ? colors.accent.blue : colors.textPrimary}
+              />
+            </TouchableOpacity>
+          )}
+
           {/* Save icon - only show when editing */}
           {editingElement && (
             <TouchableOpacity
@@ -1626,8 +1839,73 @@ export default function NoteDetail() {
               />
             </TouchableOpacity>
           )}
-        </View>
+          </View>
+        </ScrollView>
+
+        {/* Scroll hint indicator - always on right side */}
+        {!editingElement && (canScrollLeft || canScrollRight) && (
+          <View style={styles.scrollHintContainer}>
+            <MaterialIcons
+              name={canScrollLeft ? "chevron-left" : "chevron-right"}
+              size={20}
+              color={colors.textSecondary}
+              style={styles.scrollHintIcon}
+            />
+          </View>
+        )}
       </View>
+
+      {/* Search Bar */}
+      {isSearchMode && (
+        <View style={[styles.searchBar, { backgroundColor: colors.cardBackground, borderBottomColor: colors.textSecondary + '30' }]}>
+          <MaterialIcons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.textPrimary }]}
+            placeholder="Buscar en esta nota..."
+            placeholderTextColor={colors.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoFocus
+          />
+          {searchQuery.length > 0 && (
+            <>
+              <Text style={[styles.matchCounter, { color: colors.textSecondary }]}>
+                {searchMatches.length > 0 ? `${currentMatchIndex + 1}/${searchMatches.length}` : '0'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setCurrentMatchIndex((prev) => (prev > 0 ? prev - 1 : searchMatches.length - 1))}
+                disabled={searchMatches.length === 0}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <MaterialIcons
+                  name="keyboard-arrow-up"
+                  size={24}
+                  color={searchMatches.length > 0 ? colors.textPrimary : colors.textSecondary}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setCurrentMatchIndex((prev) => (prev < searchMatches.length - 1 ? prev + 1 : 0))}
+                disabled={searchMatches.length === 0}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <MaterialIcons
+                  name="keyboard-arrow-down"
+                  size={24}
+                  color={searchMatches.length > 0 ? colors.textPrimary : colors.textSecondary}
+                />
+              </TouchableOpacity>
+            </>
+          )}
+          <TouchableOpacity
+            onPress={() => {
+              setIsSearchMode(false);
+              setSearchQuery('');
+              setSearchMatches([]);
+              setCurrentMatchIndex(0);
+            }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <MaterialIcons name="close" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Keyboard Toolbar */}
       <KeyboardToolbar
@@ -1659,8 +1937,9 @@ export default function NoteDetail() {
       )}
 
       {/* Content */}
-      <ScrollView 
-        style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]} 
+      <ScrollView
+        ref={scrollViewRef}
+        style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]}
         showsVerticalScrollIndicator={false}
       >
         <TouchableWithoutFeedback onPress={() => {
@@ -1720,7 +1999,9 @@ export default function NoteDetail() {
             onPress={handleStartTitleEdit}
             activeOpacity={1}>
             <Text style={[styles.title, { color: textColors.primary }]}>
-              {note.title}
+              {isSearchMode && searchQuery.trim()
+                ? highlightSearchText(note.title, getTitleMatchOffset())
+                : note.title}
             </Text>
           </TouchableOpacity>
         )}
@@ -2049,14 +2330,55 @@ const styles = StyleSheet.create({
   backIconButton: {
     padding: SPACING.xs,
   },
+  headerActionsContainer: {
+    flex: 1,
+  },
+  headerActionsScroll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: SPACING.md,
+  },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.md,
+    gap: SPACING.lg,
   },
 
   actionIcon: {
     padding: SPACING.xs,
+  },
+  scrollHintContainer: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.xs,
+    backgroundColor: 'transparent',
+    zIndex: 10,
+  },
+  scrollHintIcon: {
+    opacity: 0.6,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderBottomWidth: 1,
+    gap: SPACING.xs,
+  },
+  searchIcon: {
+    marginRight: SPACING.xs,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: TYPOGRAPHY.bodySize,
+    paddingVertical: SPACING.xs,
+  },
+  matchCounter: {
+    fontSize: TYPOGRAPHY.dateSize,
+    marginRight: SPACING.xs,
   },
   content: {
     flex: 1,
