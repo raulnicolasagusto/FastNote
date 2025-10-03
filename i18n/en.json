@@ -154,14 +154,7 @@
     "reminders": "Set reminders to never forget important tasks.",
     "search": "Quickly find any note with powerful search.",
     "multiSelect": "Long press to select multiple notes.",
-    "voiceListKeywords": "You can create a list by saying: new list, shopping list, etc. And if you say 'Remind me tomorrow at 9 in the morning', a reminder will be saved in that note.",
-    "keywords": {
-      "newList": "new list",
-      "listNew": "list new",
-      "shoppingList": "shopping list",
-      "taskList": "task list",
-      "todoList": "to do list"
-    }
+    "voiceListKeywords": "Say: new shopping list and your list will be automatically created. Then add: remind me tomorrow at 9 am and you'll have a reminder on that same note."
   },
   "quickActions": {
     "newNote": "New Note",

@@ -1931,7 +1931,6 @@ export default function NoteDetail() {
           visible={isVisible}
           messageKey={currentCallout.messageKey}
           iconName={currentCallout.iconName}
-          keywords={currentCallout.keywords}
           onClose={onCloseCallout}
         />
       )}

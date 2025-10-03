@@ -6,11 +6,6 @@ interface CalloutData {
   id: string;
   messageKey: string;
   iconName: string;
-  keywordsKey?: string; // Key para obtener keywords traducidos
-}
-
-interface CalloutWithKeywords extends CalloutData {
-  keywords?: string[];
 }
 
 const CALLOUTS: CalloutData[] = [
@@ -18,7 +13,6 @@ const CALLOUTS: CalloutData[] = [
     id: 'voice-list',
     messageKey: 'callouts.voiceListKeywords',
     iconName: 'mic',
-    keywordsKey: 'callouts.keywords',
   },
   {
     id: 'camera-ocr',
@@ -26,21 +20,6 @@ const CALLOUTS: CalloutData[] = [
     iconName: 'photo-camera',
   },
 ];
-
-// Función para obtener keywords traducidos
-const getTranslatedKeywords = (keywordsKey?: string): string[] | undefined => {
-  if (!keywordsKey) return undefined;
-
-  try {
-    const keywords = t(keywordsKey) as any;
-    if (typeof keywords === 'object') {
-      return Object.values(keywords) as string[];
-    }
-  } catch (error) {
-    console.warn('⚠️ Error getting translated keywords:', error);
-  }
-  return undefined;
-};
 
 export const useCalloutRotation = () => {
   const { calloutsEnabled, currentLanguage } = useThemeStore();
@@ -115,16 +94,8 @@ export const useCalloutRotation = () => {
     setCurrentCallout(null);
   }, []);
 
-  // Generar callout con keywords traducidos
-  const currentCalloutWithKeywords: CalloutWithKeywords | null = currentCallout
-    ? {
-        ...currentCallout,
-        keywords: getTranslatedKeywords(currentCallout.keywordsKey),
-      }
-    : null;
-
   return {
-    currentCallout: currentCalloutWithKeywords,
+    currentCallout,
     isVisible,
     onCloseCallout: handleCloseCallout,
     resetCallouts,

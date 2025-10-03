@@ -10,11 +10,10 @@ interface CalloutProps {
   visible: boolean;
   messageKey: string;
   iconName: string;
-  keywords?: string[];
   onClose?: () => void;
 }
 
-export default function Callout({ visible, messageKey, iconName, keywords, onClose }: CalloutProps) {
+export default function Callout({ visible, messageKey, iconName, onClose }: CalloutProps) {
   useLanguage(); // Forzar re-render en cambio de idioma
   const { colors } = useThemeStore();
   const [fadeAnim] = React.useState(new Animated.Value(0));
@@ -49,11 +48,6 @@ export default function Callout({ visible, messageKey, iconName, keywords, onClo
           />
           <Text style={[styles.message, { color: '#8B6914' }]}>
             {t(messageKey)}
-            {keywords && keywords.length > 0 && (
-              <Text style={styles.keywords}>
-                {' "'}{keywords.join('", "')}{'"'}
-              </Text>
-            )}
           </Text>
           {onClose && (
             <TouchableOpacity
@@ -110,10 +104,6 @@ const styles = StyleSheet.create({
     lineHeight: TYPOGRAPHY.bodySize * 1.4,
     flex: 1,
     fontWeight: '500',
-  },
-  keywords: {
-    fontStyle: 'italic',
-    fontWeight: '400',
   },
   closeButton: {
     position: 'absolute',

@@ -154,14 +154,7 @@
     "reminders": "Defina lembretes para nunca esquecer tarefas importantes.",
     "search": "Encontre rapidamente qualquer nota com busca poderosa.",
     "multiSelect": "Pressione e segure para selecionar várias notas.",
-    "voiceListKeywords": "Você pode criar uma lista dizendo: nova lista, lista de compras, etc. E se você disser 'Lembre-me amanhã às 9 da manhã', um lembrete será salvo nessa nota.",
-    "keywords": {
-      "newList": "nova lista",
-      "listNew": "lista nova",
-      "shoppingList": "lista de compras",
-      "taskList": "lista de tarefas",
-      "todoList": "lista de afazeres"
-    }
+    "voiceListKeywords": "Diga: nova lista de compras e sua lista será criada automaticamente. Depois adicione: lembre-me amanhã às 9 da manhã e você terá um lembrete nessa mesma nota."
   },
   "quickActions": {
     "newNote": "Nova Nota",

@@ -154,14 +154,7 @@
     "reminders": "Establece recordatorios para nunca olvidar tareas importantes.",
     "search": "Encuentra rápidamente cualquier nota con búsqueda potente.",
     "multiSelect": "Mantén presionado para seleccionar múltiples notas.",
-    "voiceListKeywords": "Puedes crear una lista diciendo: nueva lista, lista de compras, checklist, etc. Y si dices 'Recuérdame mañana a las 9 de la mañana', se guardará un recordatorio en esa nota.",
-    "keywords": {
-      "newList": "nueva lista",
-      "listNew": "lista nueva",
-      "shoppingList": "lista de compras",
-      "taskList": "lista de tareas",
-      "todoList": "lista de pendientes"
-    }
+    "voiceListKeywords": "Di: nueva lista de compras y automáticamente se creará tu lista. Luego agrega: recuérdame mañana a las 9 am y tendrás un recordatorio en esa misma nota."
   },
   "quickActions": {
     "newNote": "Nueva Nota",
