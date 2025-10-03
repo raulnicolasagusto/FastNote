@@ -149,7 +149,28 @@
     "ocrError": "Error processing image. Check your internet connection.",
     "cameraPermissionRequired": "Camera permission is required to scan text.",
     "imageLoadError": "Could not load image",
-    "audioLoadError": "Could not load audio"
+    "audioLoadError": "Could not load audio",
+    "permissionsRequired": "Permissions Required",
+    "notificationPermissionRequired": "Notification permissions are required to receive reminders.",
+    "understood": "Understood",
+    "reminderSaved": "Reminder Saved",
+    "reminderSavedNoPermission": "The reminder was saved but you won't receive notifications without permissions.",
+    "reminderScheduled": "✅ Reminder Scheduled",
+    "reminderScheduledMessage": "You will receive a notification on {{date}} at {{time}}.\n\nDebug: In {{minutes}} minutes",
+    "perfect": "Perfect",
+    "reminderError": "Could not schedule the notification. Please try again.",
+    "ok": "OK",
+    "microphonePermissionRequired": "Microphone permission is required to record audio.",
+    "recordingStartError": "Failed to start recording. Please try again.",
+    "recordingStopError": "Failed to stop recording. Please try again.",
+    "deepgramApiKeyMissing": "Deepgram API key not found. Please check your configuration.",
+    "cameraAccessError": "Failed to access camera. Please try again.",
+    "imagePickError": "Failed to pick image. Please try again.",
+    "deleteImageError": "Could not delete the image.",
+    "exportMarkdown": "Export",
+    "exportMarkdownMessage": "Export as Markdown - Coming Soon",
+    "shareWithSomeone": "Share",
+    "shareWithSomeoneMessage": "Share with someone - Coming Soon"
   },
   "callouts": {
     "pinNotes": "Pin important notes to keep them at the top!",
@@ -162,7 +183,7 @@
     "reminders": "Set reminders to never forget important tasks.",
     "search": "Quickly find any note with powerful search.",
     "multiSelect": "Long press to select multiple notes.",
-    "voiceListKeywords": "Say: new shopping list and your list will be automatically created. Then add: remind me tomorrow at 9 am and you'll have a reminder on that same note.",
+    "voiceListKeywords": "Say: 'new shopping list' and your list will be automatically created. Then add: 'remind me tomorrow at 9 am and you'll have a reminder on that same note.'",
     "addToListKeywords": "If you have a list created, add items by saying: add to this list, add, I also need, also add."
   },
   "quickActions": {

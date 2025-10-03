@@ -50,10 +50,13 @@ class InterstitialAdService {
       const store = useAdsStore.getState();
       store.markInterstitialAsShown();
 
-      // Mantener loaded en false para evitar que se muestre de nuevo
+      // Marcar como no cargado
       this.isLoaded = false;
 
       console.log('🔒 Interstitial Ad session locked - won\'t show again until app restart');
+
+      // NO recargar otro ad automáticamente - esperamos al siguiente reinicio de app
+      // Esto evita que se muestre múltiples veces por sesión
     });
 
     this.interstitial.addAdEventListener(AdEventType.OPENED, () => {

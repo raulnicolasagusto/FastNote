@@ -255,7 +255,7 @@ export default function NoteDetail() {
   const handleStartTitleEdit = () => {
     if (!note) return;
     if (note.isLocked) {
-      Alert.alert('Note Locked', 'This note is locked. Unlock it first to edit.');
+      Alert.alert(t('alerts.noteLocked'), t('alerts.noteLockedMessage'));
       return;
     }
     setEditingElement('title');
@@ -264,7 +264,7 @@ export default function NoteDetail() {
   const handleStartContentEdit = () => {
     if (!note) return;
     if (note.isLocked) {
-      Alert.alert('Note Locked', 'This note is locked. Unlock it first to edit.');
+      Alert.alert(t('alerts.noteLocked'), t('alerts.noteLockedMessage'));
       return;
     }
     setEditingElement('content');
@@ -274,7 +274,7 @@ export default function NoteDetail() {
   const handleStartChecklistEdit = () => {
     if (!note) return;
     if (note.isLocked) {
-      Alert.alert('Note Locked', 'This note is locked. Unlock it first to edit.');
+      Alert.alert(t('alerts.noteLocked'), t('alerts.noteLockedMessage'));
       return;
     }
     setEditingElement('checklist');
@@ -284,7 +284,7 @@ export default function NoteDetail() {
     if (!note) return;
 
     if (editedTitle.trim() === '') {
-      Alert.alert('Error', 'Title cannot be empty');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.emptyTitleMessage'));
       return;
     }
 
@@ -432,13 +432,13 @@ export default function NoteDetail() {
   const handleExportAsMarkdown = () => {
     console.log('Exportar como Markdown:', note?.title);
     // TODO: Implementar funcionalidad de exportar como Markdown
-    Alert.alert('Exportar', 'Exportar como Markdown - Próximamente');
+    Alert.alert(t('alerts.exportMarkdown'), t('alerts.exportMarkdownMessage'));
   };
 
   const handleShareWithSomeone = () => {
     console.log('Compartir con alguien:', note?.title);
     // TODO: Implementar funcionalidad de compartir con alguien
-    Alert.alert('Compartir', 'Compartir con alguien - Próximamente');
+    Alert.alert(t('alerts.shareWithSomeone'), t('alerts.shareWithSomeoneMessage'));
   };
 
   // Helper function to detect if URI is audio
@@ -836,7 +836,7 @@ export default function NoteDetail() {
       
     } catch (error) {
       console.error('Error removing image from blocks:', error);
-      Alert.alert('Error', 'No se pudo eliminar la imagen.');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.deleteImageError'));
     }
   };
 
@@ -858,7 +858,7 @@ export default function NoteDetail() {
       
     } catch (error) {
       console.error('Error removing legacy image:', error);
-      Alert.alert('Error', 'No se pudo eliminar la imagen.');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.deleteImageError'));
     }
   };
 
@@ -866,7 +866,7 @@ export default function NoteDetail() {
     try {
       const permission = await Audio.requestPermissionsAsync();
       if (permission.status !== 'granted') {
-        Alert.alert('Permission Required', 'Microphone permission is required to record audio.');
+        Alert.alert(t('alerts.permissionsRequired'), t('alerts.microphonePermissionRequired'));
         return;
       }
 
@@ -883,7 +883,7 @@ export default function NoteDetail() {
       setIsRecording(true);
     } catch (err) {
       console.error('Failed to start recording', err);
-      Alert.alert('Error', 'Failed to start recording. Please try again.');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.recordingStartError'));
     }
   };
 
@@ -902,7 +902,7 @@ export default function NoteDetail() {
       }
     } catch (err) {
       console.error('Failed to stop recording', err);
-      Alert.alert('Error', 'Failed to stop recording. Please try again.');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.recordingStopError'));
     }
   };
 
@@ -919,7 +919,7 @@ export default function NoteDetail() {
   const transcribeAudio = async (audioUri: string) => {
     try {
       if (!process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY) {
-        Alert.alert('Error', 'Deepgram API key not found. Please check your configuration.');
+        Alert.alert(t('alerts.errorTitle'), t('alerts.deepgramApiKeyMissing'));
         return;
       }
 
@@ -1195,7 +1195,7 @@ export default function NoteDetail() {
       }
     } catch (error) {
       console.error('Camera Error:', error);
-      Alert.alert('Error', 'Failed to access camera. Please try again.');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.cameraAccessError'));
     }
   };
 
@@ -1212,7 +1212,7 @@ export default function NoteDetail() {
       }
     } catch (error) {
       console.error('Image Picker Error:', error);
-      Alert.alert('Error', 'Failed to pick image. Please try again.');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.imagePickError'));
     }
   };
 
@@ -2383,7 +2383,7 @@ export default function NoteDetail() {
       />
 
       {/* AdMob Banner at bottom */}
-      {/* <View style={styles.bannerContainer}>
+      <View style={styles.bannerContainer}>
         <BannerAd
           unitId={TestIds.BANNER}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
@@ -2391,7 +2391,7 @@ export default function NoteDetail() {
             requestNonPersonalizedAdsOnly: false,
           }}
         />
-      </View> */}
+      </View>
     </SafeAreaView>
   );
 }

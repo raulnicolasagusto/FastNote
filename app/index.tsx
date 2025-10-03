@@ -119,7 +119,7 @@ export default function Home() {
     try {
       const permission = await Audio.requestPermissionsAsync();
       if (permission.status !== 'granted') {
-        Alert.alert('Permission Required', 'Microphone permission is required to record audio.');
+        Alert.alert(t('alerts.permissionsRequired'), t('alerts.microphonePermissionRequired'));
         return;
       }
 
@@ -136,7 +136,7 @@ export default function Home() {
       setIsRecording(true);
     } catch (err) {
       console.error('Failed to start recording', err);
-      Alert.alert('Error', 'Failed to start recording. Please try again.');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.recordingStartError'));
     }
   };
 
@@ -155,7 +155,7 @@ export default function Home() {
       }
     } catch (err) {
       console.error('Failed to stop recording', err);
-      Alert.alert('Error', 'Failed to stop recording. Please try again.');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.recordingStopError'));
     }
   };
 
@@ -369,7 +369,7 @@ export default function Home() {
   const transcribeAudio = async (audioUri: string) => {
     try {
       if (!process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY) {
-        Alert.alert('Error', 'Deepgram API key not found. Please check your configuration.');
+        Alert.alert(t('alerts.errorTitle'), t('alerts.deepgramApiKeyMissing'));
         return;
       }
 

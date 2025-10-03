@@ -15,7 +15,7 @@ interface NoteCardProps {
   isMultiSelectMode?: boolean; // Show empty circle indicator
 }
 
-export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLongPress, isPressed, isSelected, isMultiSelectMode }) => {
+export const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onPress, onEdit, onLongPress, isPressed, isSelected, isMultiSelectMode }) => {
   const { colors } = useThemeStore();
   
   // Helper function to get text colors for notes with custom backgrounds
@@ -206,7 +206,9 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, onPress, onEdit, onLon
       )}
     </TouchableOpacity>
   );
-};
+});
+
+NoteCard.displayName = 'NoteCard';
 
 const styles = StyleSheet.create({
   card: {

@@ -357,7 +357,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
       )}
 
       {/* AdMob Banner at bottom */}
-      {/* <View style={styles.bannerContainer}>
+      <View style={styles.bannerContainer}>
         <BannerAd
           unitId={TestIds.BANNER}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
@@ -365,7 +365,7 @@ export const MainScreen: React.FC<MainScreenProps> = ({
             requestNonPersonalizedAdsOnly: false,
           }}
         />
-      </View> */}
+      </View>
 
     </SafeAreaView>
   );

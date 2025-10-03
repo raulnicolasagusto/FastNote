@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Alert } from 'react-native';
 import { Note } from '../types';
+import i18n from './i18n';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -50,9 +51,9 @@ export class NotificationService {
 
       if (finalStatus !== 'granted') {
         Alert.alert(
-          'Permisos requeridos',
-          'Se necesitan permisos de notificaciones para recibir recordatorios.',
-          [{ text: 'Entendido' }]
+          i18n.t('alerts.permissionsRequired'),
+          i18n.t('alerts.notificationPermissionRequired'),
+          [{ text: i18n.t('alerts.understood') }]
         );
         return false;
       }
@@ -65,16 +66,13 @@ export class NotificationService {
   }
 
   static async scheduleNoteReminder(note: Note, reminderDate: Date): Promise<string | null> {
-    // Test alert to verify build version
-    Alert.alert('DEBUG', 'BUILD ACTUALIZADO - Función scheduleNoteReminder ejecutándose');
-
     try {
       const hasPermission = await this.requestPermissions();
       if (!hasPermission) {
         Alert.alert(
-          'Recordatorio guardado',
-          'El recordatorio se guardó pero no recibirás notificaciones sin permisos.',
-          [{ text: 'Entendido' }]
+          i18n.t('alerts.reminderSaved'),
+          i18n.t('alerts.reminderSavedNoPermission'),
+          [{ text: i18n.t('alerts.understood') }]
         );
         return `reminder_${note.id}_${Date.now()}`;
       }
@@ -116,9 +114,13 @@ export class NotificationService {
       });
 
       Alert.alert(
-        '✅ Recordatorio programado',
-        `Recibirás una notificación el ${reminderDate.toLocaleDateString()} a las ${reminderDate.toLocaleTimeString().substring(0, 5)}.\n\nDebug: En ${minutesUntil} minutos`,
-        [{ text: 'Perfecto' }]
+        i18n.t('alerts.reminderScheduled'),
+        i18n.t('alerts.reminderScheduledMessage', {
+          date: reminderDate.toLocaleDateString(),
+          time: reminderDate.toLocaleTimeString().substring(0, 5),
+          minutes: minutesUntil
+        }),
+        [{ text: i18n.t('alerts.perfect') }]
       );
 
       console.log('✅ Notification scheduled:', notificationId, 'for:', reminderDate);
@@ -135,9 +137,9 @@ export class NotificationService {
     } catch (error) {
       console.error('❌ Error scheduling notification:', error);
       Alert.alert(
-        'Error',
-        'No se pudo programar la notificación. Inténtalo de nuevo.',
-        [{ text: 'OK' }]
+        i18n.t('alerts.errorTitle'),
+        i18n.t('alerts.reminderError'),
+        [{ text: i18n.t('alerts.ok') }]
       );
       return null;
     }

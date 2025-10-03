@@ -56,6 +56,17 @@ export const NotesGrid: React.FC<NotesGridProps> = ({
         styles.container,
         { paddingBottom: LAYOUT.fabSize + LAYOUT.fabMargin * 2 },
       ]}
+      // 🚀 LAZY LOADING OPTIMIZATIONS
+      initialNumToRender={8}           // Renderiza solo 8 notas al inicio (4 filas de 2 columnas)
+      maxToRenderPerBatch={8}          // Carga 8 notas más por batch al hacer scroll
+      windowSize={5}                   // Mantiene buffer de 5 pantallas (2.5 arriba, 2.5 abajo)
+      removeClippedSubviews={true}     // Remueve componentes fuera de vista (Android)
+      updateCellsBatchingPeriod={50}   // Actualiza en batches cada 50ms
+      getItemLayout={(data, index) => ({
+        length: cardWidth,              // Altura aproximada de cada card
+        offset: cardWidth * Math.floor(index / LAYOUT.gridColumns),
+        index,
+      })}
     />
   );
 };

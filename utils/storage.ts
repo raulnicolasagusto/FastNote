@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Note, Category } from '../types';
 import { DEFAULT_CATEGORIES } from '../constants/theme';
+import i18n from './i18n';
 
 const STORAGE_KEYS = {
   NOTES: 'fastnote_notes',
@@ -78,9 +79,154 @@ export class StorageService {
   // Create some default notes matching the design
   private static getDefaultNotes(): Note[] {
     const categories = DEFAULT_CATEGORIES;
+    const currentLanguage = i18n.locale || 'en';
+    const now = new Date();
 
-    return [
-      {
+    // Welcome notes (first 2 notes, pinned at top)
+    const welcomeNotes: Note[] = [];
+
+    if (currentLanguage.startsWith('es')) {
+      // Spanish Welcome Notes
+      welcomeNotes.push({
+        id: this.generateId(),
+        title: 'Crea notas con el poder de la voz y la IA',
+        content: '<p>Presiona <b>Nota Rápida</b> y di:</p><p>"<i>Nueva lista de supermercado: azúcar, huevos, y leche. Recuérdame mañana a las 7 de la tarde</i>"</p><p>Se creará un checklist con los items para hacer las compras y además se guarda el recordatorio.</p><p>Además puedes agregar items a la lista ya creada diciendo en la nota:</p><p>"<i>Agregar a esta lista pan</i>" o "<i>agregar pan</i>"</p><p>Y automáticamente se agregará a ese checklist.</p>',
+        category: categories[1], // Personal
+        type: 'text',
+        createdAt: new Date(now.getTime() - 10000),
+        updatedAt: new Date(now.getTime() - 10000),
+        images: [],
+        isArchived: false,
+        isPinned: true,
+        isLocked: false,
+        backgroundColor: '#FFF9C4', // Yellow
+      });
+
+      welcomeNotes.push({
+        id: this.generateId(),
+        title: 'Transcribe imágenes con texto usando IA',
+        content: '<p>Puedes transcribir imágenes que contengan texto, o puedes sacar foto de algún texto y la IA te lo transcribirá a la nota.</p><p>Usa la opción de <b>cámara</b> 📷 dentro de la nota para capturar texto automáticamente.</p>',
+        category: categories[1], // Personal
+        type: 'text',
+        createdAt: new Date(now.getTime() - 8000),
+        updatedAt: new Date(now.getTime() - 8000),
+        images: [],
+        isArchived: false,
+        isPinned: true,
+        isLocked: false,
+        backgroundColor: '#E1F5FE', // Sky blue
+      });
+    } else if (currentLanguage.startsWith('pt')) {
+      // Portuguese Welcome Notes
+      welcomeNotes.push({
+        id: this.generateId(),
+        title: 'Crie notas com o poder da voz e IA',
+        content: '<p>Pressione <b>Nota Rápida</b> e diga:</p><p>"<i>Nova lista de supermercado: açúcar, ovos e leite. Lembre-me amanhã às 7 da tarde</i>"</p><p>Será criada uma lista de tarefas com os itens para fazer as compras e além disso o lembrete será salvo.</p><p>Além disso, você pode adicionar itens à lista já criada dizendo na nota:</p><p>"<i>Adicionar a esta lista pão</i>" ou "<i>adicionar pão</i>"</p><p>E automaticamente será adicionado a essa lista.</p>',
+        category: categories[1], // Personal
+        type: 'text',
+        createdAt: new Date(now.getTime() - 10000),
+        updatedAt: new Date(now.getTime() - 10000),
+        images: [],
+        isArchived: false,
+        isPinned: true,
+        isLocked: false,
+        backgroundColor: '#FFF9C4', // Yellow
+      });
+
+      welcomeNotes.push({
+        id: this.generateId(),
+        title: 'Transcreva imagens com texto usando IA',
+        content: '<p>Você pode transcrever imagens que contenham texto, ou pode tirar foto de algum texto e a IA irá transcrevê-lo para a nota.</p><p>Use a opção de <b>câmera</b> 📷 dentro da nota para capturar texto automaticamente.</p>',
+        category: categories[1], // Personal
+        type: 'text',
+        createdAt: new Date(now.getTime() - 8000),
+        updatedAt: new Date(now.getTime() - 8000),
+        images: [],
+        isArchived: false,
+        isPinned: true,
+        isLocked: false,
+        backgroundColor: '#E1F5FE', // Sky blue
+      });
+    } else {
+      // English Welcome Notes (default)
+      welcomeNotes.push({
+        id: this.generateId(),
+        title: 'Create notes with voice and AI power',
+        content: '<p>Press <b>Quick Note</b> and say:</p><p>"<i>New grocery list: sugar, eggs, and milk. Remind me tomorrow at 7 PM</i>"</p><p>A checklist will be created with the shopping items and the reminder will be saved.</p><p>You can also add items to an existing list by saying in the note:</p><p>"<i>Add bread to this list</i>" or "<i>add bread</i>"</p><p>And it will be automatically added to that checklist.</p>',
+        category: categories[1], // Personal
+        type: 'text',
+        createdAt: new Date(now.getTime() - 10000),
+        updatedAt: new Date(now.getTime() - 10000),
+        images: [],
+        isArchived: false,
+        isPinned: true,
+        isLocked: false,
+        backgroundColor: '#FFF9C4', // Yellow
+      });
+
+      welcomeNotes.push({
+        id: this.generateId(),
+        title: 'Transcribe images with text using AI',
+        content: '<p>You can transcribe images that contain text, or you can take a photo of some text and AI will transcribe it to the note.</p><p>Use the <b>camera</b> 📷 option inside the note to automatically capture text.</p>',
+        category: categories[1], // Personal
+        type: 'text',
+        createdAt: new Date(now.getTime() - 8000),
+        updatedAt: new Date(now.getTime() - 8000),
+        images: [],
+        isArchived: false,
+        isPinned: true,
+        isLocked: false,
+        backgroundColor: '#E1F5FE', // Sky blue
+      });
+    }
+
+    // Sample notes (existing notes, translated)
+    const sampleNotes: Note[] = [];
+
+    if (currentLanguage.startsWith('es')) {
+      sampleNotes.push({
+        id: this.generateId(),
+        title: 'Supermercado',
+        content: '',
+        category: categories.find((c) => c.id === 'grocery')!,
+        type: 'checklist',
+        createdAt: new Date('2022-07-28'),
+        updatedAt: new Date('2022-07-28'),
+        images: [],
+        isArchived: false,
+        isPinned: false,
+        isLocked: false,
+        checklistItems: [
+          { id: this.generateId(), text: 'Naranjas', completed: false, order: 0 },
+          { id: this.generateId(), text: 'Huevos', completed: false, order: 1 },
+          { id: this.generateId(), text: 'Papas', completed: false, order: 2 },
+          { id: this.generateId(), text: 'Leche', completed: false, order: 3 },
+          { id: this.generateId(), text: 'Zanahorias', completed: false, order: 4 },
+        ],
+      });
+    } else if (currentLanguage.startsWith('pt')) {
+      sampleNotes.push({
+        id: this.generateId(),
+        title: 'Supermercado',
+        content: '',
+        category: categories.find((c) => c.id === 'grocery')!,
+        type: 'checklist',
+        createdAt: new Date('2022-07-28'),
+        updatedAt: new Date('2022-07-28'),
+        images: [],
+        isArchived: false,
+        isPinned: false,
+        isLocked: false,
+        checklistItems: [
+          { id: this.generateId(), text: 'Laranjas', completed: false, order: 0 },
+          { id: this.generateId(), text: 'Ovos', completed: false, order: 1 },
+          { id: this.generateId(), text: 'Batatas', completed: false, order: 2 },
+          { id: this.generateId(), text: 'Leite', completed: false, order: 3 },
+          { id: this.generateId(), text: 'Cenouras', completed: false, order: 4 },
+        ],
+      });
+    } else {
+      sampleNotes.push({
         id: this.generateId(),
         title: 'Grocery',
         content: '',
@@ -99,7 +245,11 @@ export class StorageService {
           { id: this.generateId(), text: 'Milk', completed: false, order: 3 },
           { id: this.generateId(), text: 'Carrots', completed: false, order: 4 },
         ],
-      },
+      });
+    }
+
+    // Rest of sample notes (same for all languages)
+    sampleNotes.push(
       {
         id: this.generateId(),
         title: 'Projects',
@@ -180,7 +330,10 @@ export class StorageService {
           { id: this.generateId(), text: 'Milk', completed: false, order: 5 },
           { id: this.generateId(), text: 'Carrots', completed: false, order: 6 },
         ],
-      },
-    ];
+      }
+    );
+
+    // Combine welcome notes (pinned at top) + sample notes
+    return [...welcomeNotes, ...sampleNotes];
   }
 }
