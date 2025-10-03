@@ -4,10 +4,12 @@ import {
   TouchableOpacity,
   Text,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
+import { t } from '../../utils/i18n';
 
 interface AudioPlayerProps {
   audioUri: string;
@@ -44,7 +46,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       );
       setSound(sound);
     } catch (error) {
-      console.error('Error loading audio:', error);
+      Alert.alert(t('alerts.errorTitle'), t('alerts.audioLoadError'));
     }
   };
 

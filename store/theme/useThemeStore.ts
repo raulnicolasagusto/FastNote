@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LIGHT_COLORS, DARK_COLORS } from '../../constants/theme';
 import { ColorScheme } from '../../types';
+import { changeLanguage } from '../../utils/i18n';
 
 interface ThemeState {
   isDarkMode: boolean;
@@ -54,6 +55,14 @@ const store = create<ThemeState>()(
         removeItem: async (name: string) => {
           await AsyncStorage.removeItem(name);
         },
+      },
+      onRehydrateStorage: () => {
+        return (state) => {
+          if (state && state.currentLanguage) {
+            // Sincronizar idioma con i18n después de hidratar
+            changeLanguage(state.currentLanguage);
+          }
+        };
       },
     }
   )

@@ -13,6 +13,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { Note } from '../../types';
+import { t } from '../../utils/i18n';
+import { useLanguage } from '../../utils/useLanguage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -42,6 +44,7 @@ export default function ShareMenu({
   onExportAsMarkdown,
   onShareWithSomeone,
 }: ShareMenuProps) {
+  useLanguage(); // Re-render on language change
   const { colors } = useThemeStore();
   const insets = useSafeAreaInsets();
   const slideAnim = React.useState(new Animated.Value(0))[0];
@@ -66,27 +69,27 @@ export default function ShareMenu({
     {
       id: 'text',
       icon: 'text-fields',
-      label: 'Compartir como texto',
+      label: t('share.shareAsText'),
       action: onShareAsText,
     },
     {
       id: 'image',
       icon: 'image',
-      label: 'Compartir como imagen',
+      label: t('share.shareAsImage'),
       action: onShareAsImage,
     },
-    {
-      id: 'markdown',
-      icon: 'description',
-      label: 'Exportar como Markdown',
-      action: onExportAsMarkdown,
-    },
-    {
-      id: 'share',
-      icon: 'person-add',
-      label: 'Compartir con alguien',
-      action: onShareWithSomeone,
-    },
+    // {
+    //   id: 'markdown',
+    //   icon: 'description',
+    //   label: t('share.shareAsMarkdown'),
+    //   action: onExportAsMarkdown,
+    // },
+    // {
+    //   id: 'share',
+    //   icon: 'person-add',
+    //   label: t('share.shareWithSomeone'),
+    //   action: onShareWithSomeone,
+    // },
   ];
 
   const translateY = slideAnim.interpolate({
@@ -127,7 +130,7 @@ export default function ShareMenu({
           {/* Menu title */}
           <Text
             style={[styles.menuTitle, { color: colors.textPrimary }]}>
-            Compartir Nota
+            {t('share.shareNote')}
           </Text>
 
           {/* Note title */}

@@ -18,8 +18,11 @@ import { useThemeStore } from '../store/theme/useThemeStore';
 import { useFoldersStore } from '../store/folders/useFoldersStore';
 import { SPACING, TYPOGRAPHY } from '../constants/theme';
 import { Folder } from '../types';
+import { t } from '../utils/i18n';
+import { useLanguage } from '../utils/useLanguage';
 
 export default function Folders() {
+  useLanguage(); // Re-render on language change
   const { colors, isDarkMode } = useThemeStore();
   const { folders, addFolder, updateFolder, deleteFolder, togglePinFolder } = useFoldersStore();
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
@@ -41,7 +44,7 @@ export default function Folders() {
     const trimmedName = newFolderName.trim();
 
     if (!trimmedName) {
-      Alert.alert('Error', 'El nombre de la carpeta no puede estar vacío');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.emptyTitleMessage'));
       return;
     }
 
@@ -50,7 +53,7 @@ export default function Folders() {
       setNewFolderName('');
       setShowNewFolderModal(false);
     } catch (error) {
-      Alert.alert('Error', (error as Error).message);
+      Alert.alert(t('alerts.errorTitle'), (error as Error).message);
     }
   };
 
@@ -88,14 +91,14 @@ export default function Folders() {
     const trimmedName = editedFolderName.trim();
 
     if (!trimmedName) {
-      Alert.alert('Error', 'El nombre de la carpeta no puede estar vacío');
+      Alert.alert(t('alerts.errorTitle'), t('alerts.emptyTitleMessage'));
       return;
     }
 
     if (selectedFolder && trimmedName !== selectedFolder.name) {
       // Check for duplicate names (excluding current folder)
       if (folders.some(f => f.id !== selectedFolder.id && f.name.toLowerCase() === trimmedName.toLowerCase())) {
-        Alert.alert('Error', 'Ya existe una carpeta con ese nombre');
+        Alert.alert(t('alerts.errorTitle'), t('folders.duplicateFolderName'));
         return;
       }
 
@@ -119,12 +122,12 @@ export default function Folders() {
   const handleDeleteFolder = () => {
     if (selectedFolder) {
       Alert.alert(
-        'Eliminar Carpeta',
-        `¿Estás seguro de que deseas eliminar la carpeta "${selectedFolder.name}"?`,
+        t('folders.deleteFolder'),
+        t('folders.deleteFolderConfirmation', { name: selectedFolder.name }),
         [
-          { text: 'Cancelar', style: 'cancel' },
+          { text: t('common.cancel'), style: 'cancel' },
           {
-            text: 'Eliminar',
+            text: t('common.delete'),
             style: 'destructive',
             onPress: () => {
               deleteFolder(selectedFolder.id);
@@ -160,7 +163,7 @@ export default function Folders() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <MaterialIcons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>Carpetas</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>{t('folders.title')}</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -196,7 +199,7 @@ export default function Folders() {
           onPress={handleNewFolder}>
           <MaterialIcons name="add" size={24} color={colors.textPrimary} />
           <Text style={[styles.newFolderText, { color: colors.textPrimary }]}>
-            Nueva Carpeta
+            {t('folders.newFolder')}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -210,7 +213,7 @@ export default function Folders() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
             <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-              Nombre de la Carpeta
+              {t('folders.folderName')}
             </Text>
 
             <TextInput
@@ -221,7 +224,7 @@ export default function Folders() {
               }]}
               value={newFolderName}
               onChangeText={setNewFolderName}
-              placeholder="Ingresa el nombre..."
+              placeholder={t('folders.folderNamePlaceholder')}
               placeholderTextColor={colors.textSecondary}
               maxLength={50}
               autoFocus
@@ -232,7 +235,7 @@ export default function Folders() {
                 style={[styles.modalButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
                 onPress={handleCancelNewFolder}>
                 <Text style={[styles.modalButtonText, { color: colors.cardBackground }]}>
-                  Cancelar
+                  {t('common.cancel')}
                 </Text>
               </TouchableOpacity>
 
@@ -240,7 +243,7 @@ export default function Folders() {
                 style={[styles.modalButton, styles.confirmButton, { backgroundColor: colors.accent.blue }]}
                 onPress={handleCreateFolder}>
                 <Text style={[styles.modalButtonText, { color: colors.cardBackground }]}>
-                  Crear
+                  {t('folders.createFolder')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -257,7 +260,7 @@ export default function Folders() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
             <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-              Editar Carpeta
+              {t('folders.editFolder')}
             </Text>
 
             <TextInput
@@ -268,7 +271,7 @@ export default function Folders() {
               }]}
               value={editedFolderName}
               onChangeText={setEditedFolderName}
-              placeholder="Nuevo nombre..."
+              placeholder={t('folders.newFolderNamePlaceholder')}
               placeholderTextColor={colors.textSecondary}
               maxLength={50}
               autoFocus
@@ -279,7 +282,7 @@ export default function Folders() {
                 style={[styles.modalButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
                 onPress={handleCancelEdit}>
                 <Text style={[styles.modalButtonText, { color: colors.cardBackground }]}>
-                  Cancelar
+                  {t('common.cancel')}
                 </Text>
               </TouchableOpacity>
 
@@ -287,7 +290,7 @@ export default function Folders() {
                 style={[styles.modalButton, styles.confirmButton, { backgroundColor: colors.accent.blue }]}
                 onPress={handleSaveEdit}>
                 <Text style={[styles.modalButtonText, { color: colors.cardBackground }]}>
-                  Guardar
+                  {t('common.save')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -330,7 +333,7 @@ export default function Folders() {
                     />
                   </View>
                   <Text style={[styles.bottomMenuButtonLabel, { color: colors.textPrimary }]}>
-                    {selectedFolder.isPinned ? 'Desanclar' : 'Anclar'}
+                    {selectedFolder.isPinned ? t('menu.unpin') : t('menu.pin')}
                   </Text>
                 </TouchableOpacity>
 
@@ -340,7 +343,7 @@ export default function Folders() {
                     <MaterialIcons name="edit" size={24} color={colors.textPrimary} />
                   </View>
                   <Text style={[styles.bottomMenuButtonLabel, { color: colors.textPrimary }]}>
-                    Editar
+                    {t('common.edit')}
                   </Text>
                 </TouchableOpacity>
 
@@ -350,7 +353,7 @@ export default function Folders() {
                     <MaterialIcons name="delete" size={24} color={colors.accent.red} />
                   </View>
                   <Text style={[styles.bottomMenuButtonLabel, { color: colors.accent.red }]}>
-                    Eliminar
+                    {t('common.delete')}
                   </Text>
                 </TouchableOpacity>
               </View>

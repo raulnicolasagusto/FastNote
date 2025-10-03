@@ -201,18 +201,28 @@ export default function NoteDetail() {
   useEffect(() => {
     if (currentMatchIndex >= 0 && matchViewRefs.current[currentMatchIndex]) {
       setTimeout(() => {
-        matchViewRefs.current[currentMatchIndex]?.measureLayout(
-          (scrollViewRef.current as any)?._nativeTag || 0,
-          (x, y, width, height) => {
-            scrollViewRef.current?.scrollTo({
-              y: Math.max(0, y - 150),
-              animated: true
-            });
-          },
-          (error: any) => {
-            console.warn('Failed to measure:', error);
+        try {
+          const matchRef = matchViewRefs.current[currentMatchIndex];
+          const scrollRef = scrollViewRef.current;
+
+          // Validar que ambas refs existan y sean componentes nativos
+          if (matchRef && scrollRef && (scrollRef as any)?._nativeTag) {
+            matchRef.measureLayout(
+              (scrollRef as any)._nativeTag,
+              (x, y, width, height) => {
+                scrollRef.scrollTo({
+                  y: Math.max(0, y - 150),
+                  animated: true
+                });
+              },
+              () => {
+                // Silently ignore measurement errors
+              }
+            );
           }
-        );
+        } catch (error) {
+          // Silently ignore errors
+        }
       }, 200);
     }
   }, [currentMatchIndex]);
@@ -946,12 +956,12 @@ export default function NoteDetail() {
         await insertTranscribedText(transcribedText);
       } else {
         // Transcription failed - show user-friendly error
-        Alert.alert(t('alerts.errorTitle'), t('alerts.transcriptionError'));
+        Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.transcriptionError'));
       }
     } catch (error) {
       // Network or other error - show user-friendly error
       console.warn('Transcription failed:', error instanceof Error ? error.message : 'Unknown error');
-      Alert.alert(t('alerts.errorTitle'), t('alerts.transcriptionError'));
+      Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.transcriptionError'));
     } finally {
       setRecording(null);
       setShowRecordingModal(false);
@@ -993,18 +1003,60 @@ export default function NoteDetail() {
   const detectAddToListKeywords = (text: string): boolean => {
     const lowerText = text.toLowerCase().trim();
     const addToListKeywords = [
+      // Español
+      'agrega a esta lista',
+      'agregar a esta lista',
       'agregar a la lista',
       'añadir a la lista',
       'agregar también',
       'añadir también',
       'agregar tambien',
       'añadir tambien',
-      'add to list',
-      'add also',
+      'también necesito',
+      'tambien necesito',
+      'también agrega',
+      'tambien agrega',
       'también',
       'tambien',
-      'agregar'
+      'agregar',
+      'agrega',
+      // Inglés
+      'add to this list',
+      'add to the list',
+      'add to list',
+      'i also need',
+      'also add',
+      'add also',
+      'add',
+      // Portugués
+      'adicione a esta lista',
+      'adicionar a esta lista',
+      'adicionar à lista',
+      'adicionar na lista',
+      'adicionar também',
+      'adicionar tambem',
+      'também preciso',
+      'tambem preciso',
+      'também adicione',
+      'tambem adicione',
+      'adicionar',
+      'adicione'
     ];
+
+    // Detectar si el texto empieza con "add" seguido de una palabra (ej: "add bread")
+    if (lowerText.match(/^add\s+\w+/i)) {
+      return true;
+    }
+
+    // Detectar si el texto empieza con "agrega" seguido de una palabra (ej: "agrega pan")
+    if (lowerText.match(/^agrega\s+\w+/i)) {
+      return true;
+    }
+
+    // Detectar si el texto empieza con "adicione" seguido de una palabra (ej: "adicione pão")
+    if (lowerText.match(/^adicione\s+\w+/i)) {
+      return true;
+    }
 
     return addToListKeywords.some(keyword => lowerText.includes(keyword));
   };
@@ -1209,7 +1261,20 @@ export default function NoteDetail() {
         
         // Parse the new items (remove the add command keywords first)
         let cleanTextForParsing = textToProcess;
-        const addKeywords = ['agregar a la lista', 'añadir a la lista', 'agregar también', 'añadir también', 'agregar tambien', 'añadir tambien', 'add to list', 'add also', 'también', 'tambien', 'agregar'];
+        const addKeywords = [
+          // Español
+          'agrega a esta lista', 'agregar a esta lista', 'agregar a la lista', 'añadir a la lista',
+          'agregar también', 'añadir también', 'agregar tambien', 'añadir tambien',
+          'también necesito', 'tambien necesito', 'también agrega', 'tambien agrega',
+          'también', 'tambien', 'agregar', 'agrega',
+          // Inglés
+          'add to this list', 'add to the list', 'add to list', 'i also need',
+          'also add', 'add also', 'add',
+          // Portugués
+          'adicione a esta lista', 'adicionar a esta lista', 'adicionar à lista', 'adicionar na lista',
+          'adicionar também', 'adicionar tambem', 'também preciso', 'tambem preciso',
+          'também adicione', 'tambem adicione', 'adicionar', 'adicione'
+        ];
         
         for (const keyword of addKeywords) {
           cleanTextForParsing = cleanTextForParsing.toLowerCase().replace(keyword, '').trim();
@@ -1300,7 +1365,20 @@ export default function NoteDetail() {
         
         // Parse the new items (remove the add command keywords first)
         let cleanTextForParsing = transcribedText;
-        const addKeywords = ['agregar a la lista', 'añadir a la lista', 'agregar también', 'añadir también', 'agregar tambien', 'añadir tambien', 'add to list', 'add also', 'también', 'tambien', 'agregar'];
+        const addKeywords = [
+          // Español
+          'agrega a esta lista', 'agregar a esta lista', 'agregar a la lista', 'añadir a la lista',
+          'agregar también', 'añadir también', 'agregar tambien', 'añadir tambien',
+          'también necesito', 'tambien necesito', 'también agrega', 'tambien agrega',
+          'también', 'tambien', 'agregar', 'agrega',
+          // Inglés
+          'add to this list', 'add to the list', 'add to list', 'i also need',
+          'also add', 'add also', 'add',
+          // Portugués
+          'adicione a esta lista', 'adicionar a esta lista', 'adicionar à lista', 'adicionar na lista',
+          'adicionar também', 'adicionar tambem', 'também preciso', 'tambem preciso',
+          'também adicione', 'tambem adicione', 'adicionar', 'adicione'
+        ];
         
         for (const keyword of addKeywords) {
           cleanTextForParsing = cleanTextForParsing.toLowerCase().replace(keyword, '').trim();
@@ -1462,6 +1540,7 @@ export default function NoteDetail() {
                       source={{ uri: imageUri }}
                       style={styles.noteImage}
                       resizeMode="contain"
+                      onError={() => Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.imageLoadError'))}
                     />
                     {selectedImageIndex === index && (
                       <TouchableOpacity
@@ -1534,6 +1613,7 @@ export default function NoteDetail() {
                       source={{ uri: block.uri }}
                       style={styles.noteImage}
                       resizeMode="contain"
+                      onError={() => Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.imageLoadError'))}
                     />
                     {/* Delete button - only show if selected */}
                     {selectedBlockIndex === index && (
@@ -1600,6 +1680,7 @@ export default function NoteDetail() {
                     source={{ uri: imageUri }}
                     style={styles.noteImage}
                     resizeMode="contain"
+                    onError={() => Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.imageLoadError'))}
                   />
                   {/* Delete button - only show if selected */}
                   {selectedImageIndex === index && (
@@ -2058,6 +2139,7 @@ export default function NoteDetail() {
                         source={{ uri: imageUri }}
                         style={styles.noteImage}
                         resizeMode="contain"
+                        onError={() => Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.imageLoadError'))}
                       />
                       {/* Delete button - only show if selected */}
                       {selectedImageIndex === index && (
@@ -2301,7 +2383,7 @@ export default function NoteDetail() {
       />
 
       {/* AdMob Banner at bottom */}
-      <View style={styles.bannerContainer}>
+      {/* <View style={styles.bannerContainer}>
         <BannerAd
           unitId={TestIds.BANNER}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
@@ -2309,7 +2391,7 @@ export default function NoteDetail() {
             requestNonPersonalizedAdsOnly: false,
           }}
         />
-      </View>
+      </View> */}
     </SafeAreaView>
   );
 }

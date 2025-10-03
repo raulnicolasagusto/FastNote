@@ -30,7 +30,8 @@
     "charactersCount": "{{count}} caracteres",
     "pinned": "Fixada",
     "locked": "Bloqueada",
-    "archived": "Arquivada"
+    "archived": "Arquivada",
+    "notesSelected": "{{count}} notas selecionadas"
   },
   "noteDetail": {
     "titlePlaceholder": "Título",
@@ -68,7 +69,11 @@
     "selectFolder": "Selecione uma pasta",
     "createFolder": "Criar Pasta",
     "deleteFolder": "Excluir Pasta",
-    "folderNamePlaceholder": "Digite o nome da pasta..."
+    "folderNamePlaceholder": "Digite o nome da pasta...",
+    "editFolder": "Editar Pasta",
+    "newFolderNamePlaceholder": "Novo nome...",
+    "duplicateFolderName": "Já existe uma pasta com esse nome",
+    "deleteFolderConfirmation": "Tem certeza de que deseja excluir a pasta \"{{name}}\"?"
   },
   "reminders": {
     "title": "Lembrete",
@@ -87,7 +92,8 @@
     "shareAsImage": "Compartilhar como Imagem",
     "shareAsMarkdown": "Compartilhar como Markdown",
     "shareNote": "Compartilhar Nota",
-    "exportNote": "Exportar Nota"
+    "exportNote": "Exportar Nota",
+    "shareWithSomeone": "Compartilhar com alguém"
   },
   "recording": {
     "title": "Gravando",
@@ -141,7 +147,9 @@
     "ocrNoText": "Sem Texto",
     "ocrNoTextMessage": "Nenhum texto detectado na imagem. Tente com uma imagem mais clara.",
     "ocrError": "Erro ao processar imagem. Verifique sua conexão com a internet.",
-    "cameraPermissionRequired": "Permissão de câmera é necessária para escanear texto."
+    "cameraPermissionRequired": "Permissão de câmera é necessária para escanear texto.",
+    "imageLoadError": "Não foi possível carregar a imagem",
+    "audioLoadError": "Não foi possível carregar o áudio"
   },
   "callouts": {
     "pinNotes": "Fixe notas importantes para mantê-las no topo!",
@@ -154,7 +162,8 @@
     "reminders": "Defina lembretes para nunca esquecer tarefas importantes.",
     "search": "Encontre rapidamente qualquer nota com busca poderosa.",
     "multiSelect": "Pressione e segure para selecionar várias notas.",
-    "voiceListKeywords": "Diga: nova lista de compras e sua lista será criada automaticamente. Depois adicione: lembre-me amanhã às 9 da manhã e você terá um lembrete nessa mesma nota."
+    "voiceListKeywords": "Diga: nova lista de compras e sua lista será criada automaticamente. Depois adicione: lembre-me amanhã às 9 da manhã e você terá um lembrete nessa mesma nota.",
+    "addToListKeywords": "Se você tem uma lista criada, adicione itens dizendo: adicione a esta lista, adicione, também preciso, também adicione."
   },
   "quickActions": {
     "newNote": "Nova Nota",

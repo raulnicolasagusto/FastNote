@@ -30,7 +30,8 @@
     "charactersCount": "{{count}} characters",
     "pinned": "Pinned",
     "locked": "Locked",
-    "archived": "Archived"
+    "archived": "Archived",
+    "notesSelected": "{{count}} notes selected"
   },
   "noteDetail": {
     "titlePlaceholder": "Title",
@@ -68,7 +69,11 @@
     "selectFolder": "Select a folder",
     "createFolder": "Create Folder",
     "deleteFolder": "Delete Folder",
-    "folderNamePlaceholder": "Enter folder name..."
+    "folderNamePlaceholder": "Enter folder name...",
+    "editFolder": "Edit Folder",
+    "newFolderNamePlaceholder": "New name...",
+    "duplicateFolderName": "A folder with that name already exists",
+    "deleteFolderConfirmation": "Are you sure you want to delete the folder \"{{name}}\"?"
   },
   "reminders": {
     "title": "Reminder",
@@ -87,7 +92,8 @@
     "shareAsImage": "Share as Image",
     "shareAsMarkdown": "Share as Markdown",
     "shareNote": "Share Note",
-    "exportNote": "Export Note"
+    "exportNote": "Export Note",
+    "shareWithSomeone": "Share with someone"
   },
   "recording": {
     "title": "Recording",
@@ -141,7 +147,9 @@
     "ocrNoText": "No Text",
     "ocrNoTextMessage": "No text detected in the image. Try with a clearer image.",
     "ocrError": "Error processing image. Check your internet connection.",
-    "cameraPermissionRequired": "Camera permission is required to scan text."
+    "cameraPermissionRequired": "Camera permission is required to scan text.",
+    "imageLoadError": "Could not load image",
+    "audioLoadError": "Could not load audio"
   },
   "callouts": {
     "pinNotes": "Pin important notes to keep them at the top!",
@@ -154,7 +162,8 @@
     "reminders": "Set reminders to never forget important tasks.",
     "search": "Quickly find any note with powerful search.",
     "multiSelect": "Long press to select multiple notes.",
-    "voiceListKeywords": "Say: new shopping list and your list will be automatically created. Then add: remind me tomorrow at 9 am and you'll have a reminder on that same note."
+    "voiceListKeywords": "Say: new shopping list and your list will be automatically created. Then add: remind me tomorrow at 9 am and you'll have a reminder on that same note.",
+    "addToListKeywords": "If you have a list created, add items by saying: add to this list, add, I also need, also add."
   },
   "quickActions": {
     "newNote": "New Note",

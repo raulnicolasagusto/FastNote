@@ -17,7 +17,7 @@ import Sidebar from '../components/ui/Sidebar';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
 import { interstitialAdService } from '../utils/interstitialAdService';
-import { t } from '../utils/i18n';
+import { t, getCurrentLanguage } from '../utils/i18n';
 import { useLanguage } from '../utils/useLanguage';
 
 export default function Home() {
@@ -184,11 +184,18 @@ export default function Home() {
       'checklist',
       'check list',
       // Inglés
-      'shopping list',
-      'to do list',
       'new list',
+      'new shopping list',
+      'new grocery list',
+      'new todo list',
+      'new task list',
+      'shopping list',
+      'grocery list',
+      'to do list',
+      'task list',
       // Portugués
       'nova lista',
+      'lista nova',
       'lista do',
       'lista da',
       'lista para',
@@ -198,18 +205,40 @@ export default function Home() {
       'lista de tarefas'
     ];
 
+    // También detectar patrón "new [word] list"
+    if (lowerText.match(/^new \w+ list/i)) {
+      return true;
+    }
+
     return listKeywords.some(keyword => lowerText.startsWith(keyword));
   };
 
   const extractListName = (text: string): { listName: string | null; remainingText: string } => {
     const lowerText = text.toLowerCase().trim();
 
+    // Helper para capitalizar primera letra de cada palabra
+    const capitalizeWords = (str: string): string => {
+      return str.split(' ').map(word =>
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' ');
+    };
+
+    // Detectar "new [nombre] list" (inglés) - PRIMERO para tener prioridad
+    const newListMatch = lowerText.match(/^new ([^,\.]+?) list/i);
+    if (newListMatch) {
+      const extractedName = text.substring('new '.length, newListMatch[0].length - ' list'.length).trim();
+      const listName = capitalizeWords(extractedName);
+      const remainingText = text.substring(newListMatch[0].length).trim();
+      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
+      return { listName, remainingText: cleanRemaining };
+    }
+
     // Detectar "lista de [nombre]"
     const listaDeMatch = lowerText.match(/^lista de ([^,\.]+)/i);
     if (listaDeMatch) {
-      const listName = text.substring('lista de '.length, listaDeMatch[0].length).trim();
+      const extractedName = text.substring('lista de '.length, listaDeMatch[0].length).trim();
+      const listName = capitalizeWords(extractedName);
       const remainingText = text.substring(listaDeMatch[0].length).trim();
-      // Remover coma o punto inicial si existe
       const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
       return { listName, remainingText: cleanRemaining };
     }
@@ -217,7 +246,8 @@ export default function Home() {
     // Detectar "lista del [nombre]"
     const listaDelMatch = lowerText.match(/^lista del ([^,\.]+)/i);
     if (listaDelMatch) {
-      const listName = text.substring('lista del '.length, listaDelMatch[0].length).trim();
+      const extractedName = text.substring('lista del '.length, listaDelMatch[0].length).trim();
+      const listName = capitalizeWords(extractedName);
       const remainingText = text.substring(listaDelMatch[0].length).trim();
       const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
       return { listName, remainingText: cleanRemaining };
@@ -226,17 +256,9 @@ export default function Home() {
     // Detectar "lista para [nombre]"
     const listaParaMatch = lowerText.match(/^lista para ([^,\.]+)/i);
     if (listaParaMatch) {
-      const listName = text.substring('lista para '.length, listaParaMatch[0].length).trim();
+      const extractedName = text.substring('lista para '.length, listaParaMatch[0].length).trim();
+      const listName = capitalizeWords(extractedName);
       const remainingText = text.substring(listaParaMatch[0].length).trim();
-      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
-      return { listName, remainingText: cleanRemaining };
-    }
-
-    // Detectar "new [nombre] list" (inglés)
-    const newListMatch = lowerText.match(/^new ([^,\.]+?) list/i);
-    if (newListMatch) {
-      const listName = text.substring('new '.length, newListMatch[0].length - ' list'.length).trim();
-      const remainingText = text.substring(newListMatch[0].length).trim();
       const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
       return { listName, remainingText: cleanRemaining };
     }
@@ -244,8 +266,19 @@ export default function Home() {
     // Detectar "lista do [nombre]" (portugués)
     const listaDoMatch = lowerText.match(/^lista do ([^,\.]+)/i);
     if (listaDoMatch) {
-      const listName = text.substring('lista do '.length, listaDoMatch[0].length).trim();
+      const extractedName = text.substring('lista do '.length, listaDoMatch[0].length).trim();
+      const listName = capitalizeWords(extractedName);
       const remainingText = text.substring(listaDoMatch[0].length).trim();
+      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
+      return { listName, remainingText: cleanRemaining };
+    }
+
+    // Detectar "nova lista de [nombre]" (portugués)
+    const novaListaDeMatch = lowerText.match(/^nova lista de ([^,\.]+)/i);
+    if (novaListaDeMatch) {
+      const extractedName = text.substring('nova lista de '.length, novaListaDeMatch[0].length).trim();
+      const listName = capitalizeWords(extractedName);
+      const remainingText = text.substring(novaListaDeMatch[0].length).trim();
       const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
       return { listName, remainingText: cleanRemaining };
     }
@@ -385,26 +418,31 @@ export default function Home() {
     }
   };
 
+  // Helper para generar formato de fecha según idioma
+  const formatDateByLanguage = (date: Date): string => {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear().toString().slice(-2);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+
+    // USA usa MM/DD/YY, el resto usa DD/MM/YY
+    const currentLang = getCurrentLanguage();
+    const dateFormat = currentLang === 'en'
+      ? `${month}/${day}/${year}` // MM/DD/YY para inglés (USA)
+      : `${day}/${month}/${year}`; // DD/MM/YY para español y portugués
+
+    return `${dateFormat} ${hours}:${minutes}`;
+  };
+
   const generateVoiceNoteTitle = (): string => {
     const now = new Date();
-    const day = now.getDate();
-    const month = now.getMonth() + 1; // getMonth() returns 0-11
-    const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-
-    return `${t('notes.quickNote')} ${day}/${month}/${year} ${hours}:${minutes}`;
+    return `${t('notes.quickNote')} ${formatDateByLanguage(now)}`;
   };
 
   const generateNewNoteTitle = (): string => {
     const now = new Date();
-    const day = now.getDate();
-    const month = now.getMonth() + 1; // getMonth() returns 0-11
-    const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-
-    return `${t('notes.newNote')} ${day}/${month}/${year} ${hours}:${minutes}`;
+    return `${t('notes.newNote')} ${formatDateByLanguage(now)}`;
   };
 
   const createVoiceNote = async (transcribedText: string) => {
@@ -430,12 +468,7 @@ export default function Home() {
         // Override title with list name if available
         if (listName) {
           const now = new Date();
-          const day = now.getDate();
-          const month = now.getMonth() + 1;
-          const year = now.getFullYear().toString().slice(-2);
-          const hours = now.getHours().toString().padStart(2, '0');
-          const minutes = now.getMinutes().toString().padStart(2, '0');
-          noteTitle = `${listName} ${day}/${month}/${year} ${hours}:${minutes}`;
+          noteTitle = `${listName} ${formatDateByLanguage(now)}`;
         }
 
         // Convert to checklist using remaining text (without list name)

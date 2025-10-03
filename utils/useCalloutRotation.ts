@@ -15,6 +15,11 @@ const CALLOUTS: CalloutData[] = [
     iconName: 'mic',
   },
   {
+    id: 'add-to-list',
+    messageKey: 'callouts.addToListKeywords',
+    iconName: 'playlist-add',
+  },
+  {
     id: 'camera-ocr',
     messageKey: 'callouts.richText',
     iconName: 'photo-camera',

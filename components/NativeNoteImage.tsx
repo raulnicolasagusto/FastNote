@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, Alert } from 'react-native';
 import { Note } from '../types';
+import { t } from '../utils/i18n';
 
 interface NativeNoteImageProps {
   note: Note;
@@ -229,19 +230,6 @@ export const NativeNoteImage: React.FC<NativeNoteImageProps> = ({
 
   const { title, richContent, checklistItems, images } = formatNoteContent(note);
 
-  // Log for debugging
-  React.useEffect(() => {
-    console.log('📸 NativeNoteImage rendering:', {
-      noteId: note.id,
-      title: note.title,
-      hasContent: !!note.content,
-      hasContentBlocks: !!(note.contentBlocks && note.contentBlocks.length > 0),
-      hasLegacyImages: !!(note.images && note.images.length > 0),
-      totalImagesFound: images.length,
-      imageUris: images.map(uri => uri.substring(0, 50) + '...')
-    });
-  }, [note, images]);
-
   return (
     <View style={[styles.container, { width }]}>
       {/* Background with border */}
@@ -266,19 +254,15 @@ export const NativeNoteImage: React.FC<NativeNoteImageProps> = ({
             {/* Images (excluding audio) */}
             {images.length > 0 && (
               <View style={styles.imagesContainer}>
-                {images.slice(0, 2).map((imageUri, index) => {
-                  console.log(`🖼️ Rendering image ${index}:`, imageUri.substring(0, 80));
-                  return (
-                    <Image
-                      key={index}
-                      source={{ uri: imageUri }}
-                      style={styles.noteImage}
-                      resizeMode="contain"
-                      onLoad={() => console.log(`✅ Image ${index} loaded successfully`)}
-                      onError={(error) => console.error(`❌ Image ${index} failed to load:`, error.nativeEvent.error)}
-                    />
-                  );
-                })}
+                {images.slice(0, 2).map((imageUri, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri: imageUri }}
+                    style={styles.noteImage}
+                    resizeMode="contain"
+                    onError={() => Alert.alert(t('alerts.errorTitle'), t('alerts.imageLoadError'))}
+                  />
+                ))}
               </View>
             )}
 

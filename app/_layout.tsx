@@ -21,11 +21,11 @@ export default function Layout() {
     // Initialize Google Mobile Ads SDK
     mobileAds()
       .initialize()
-      .then(adapterStatuses => {
-        console.log('🎯 AdMob SDK initialized:', adapterStatuses);
+      .then(() => {
+        // AdMob initialized successfully
       })
-      .catch(error => {
-        console.error('❌ AdMob SDK initialization failed:', error);
+      .catch(() => {
+        // AdMob initialization failed
       });
 
     // Configure quick actions (actualizar cuando cambie el idioma)

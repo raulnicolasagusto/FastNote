@@ -14,6 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { Note } from '../../types';
+import { t } from '../../utils/i18n';
+import { useLanguage } from '../../utils/useLanguage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -47,6 +49,7 @@ export default function BottomMenu({
   onDelete,
   isMultiSelectMode = false,
 }: BottomMenuProps) {
+  useLanguage(); // Re-render on language change
   const { colors } = useThemeStore();
   const insets = useSafeAreaInsets();
   const slideAnim = React.useState(new Animated.Value(0))[0];
@@ -90,25 +93,25 @@ export default function BottomMenu({
     {
       id: 'pin',
       icon: allPinned ? 'star' : 'star-border',
-      label: allPinned ? 'Desanclar' : 'Anclar',
+      label: allPinned ? t('menu.unpin') : t('menu.pin'),
       action: onPin,
     },
     {
       id: 'move',
       icon: 'folder',
-      label: 'Mover a',
+      label: t('menu.moveToFolder'),
       action: onMoveTo,
     },
     {
       id: 'reminder',
       icon: firstNote?.reminderDate ? 'edit-notifications' : 'schedule',
-      label: firstNote?.reminderDate ? 'Editar' : 'Recordar',
+      label: firstNote?.reminderDate ? t('common.edit') : t('menu.setReminder'),
       action: onReminder,
     },
     {
       id: 'delete',
       icon: 'delete',
-      label: 'Eliminar',
+      label: t('common.delete'),
       action: onDelete,
     },
   ];
@@ -144,7 +147,7 @@ export default function BottomMenu({
         <Text
           style={[styles.noteTitle, { color: colors.textPrimary }]}
           numberOfLines={1}>
-          {`${notes.length} notas seleccionadas`}
+          {t('notes.notesSelected', { count: notes.length })}
         </Text>
 
         {/* Menu buttons */}
@@ -236,7 +239,7 @@ export default function BottomMenu({
           <Text
             style={[styles.noteTitle, { color: colors.textPrimary }]}
             numberOfLines={1}>
-            {isMultiSelect ? `${notes.length} notas seleccionadas` : firstNote.title}
+            {isMultiSelect ? t('notes.notesSelected', { count: notes.length }) : firstNote.title}
           </Text>
 
           {/* Menu buttons */}
