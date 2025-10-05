@@ -2,20 +2,63 @@ import { Alert, Share } from 'react-native';
 import { Note } from '../types';
 
 /**
+ * Convert HTML content to plain text, preserving bullets and line breaks
+ */
+const htmlToPlainText = (html: string): string => {
+  if (!html || !html.trim()) return '';
+
+  // If it's already plain text (no HTML tags), return as is
+  if (!html.includes('<') || !html.includes('>')) {
+    return html;
+  }
+
+  let text = html;
+
+  // Preserve bullet points - convert colored bullet spans (with or without font-size) to plain bullets
+  text = text.replace(/<span[^>]*>•<\/span>/g, '•');
+
+  // Replace block elements with line breaks
+  text = text.replace(/<\/?(h[1-6]|p|div|br)[^>]*>/gi, '\n');
+
+  // Remove all other HTML tags
+  text = text.replace(/<[^>]*>/g, '');
+
+  // Decode HTML entities
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+  // Remove multiple consecutive line breaks (keep max 2)
+  text = text.replace(/\n\s*\n\s*\n/g, '\n\n');
+
+  // Trim whitespace from start and end
+  text = text.replace(/^\s+|\s+$/g, '');
+
+  return text;
+};
+
+/**
  * Format note content as plain text for sharing
  */
 export const formatNoteAsText = (note: Note): string => {
   let textContent = '';
-  
+
   // Add title
   if (note.title && note.title.trim()) {
     textContent += `${note.title.trim()}\n`;
     textContent += '='.repeat(note.title.length) + '\n\n';
   }
-  
-  // Add text content
+
+  // Add text content (convert HTML to plain text)
   if (note.content && note.content.trim()) {
-    textContent += `${note.content.trim()}\n\n`;
+    const plainContent = htmlToPlainText(note.content);
+    if (plainContent) {
+      textContent += `${plainContent}\n\n`;
+    }
   }
   
   // Add checklist items

@@ -1,5 +1,6 @@
 import { I18n } from 'i18n-js';
 import { getLocales } from 'expo-localization';
+import { useEffect, useState } from 'react';
 import en from '../i18n/en.json';
 import es from '../i18n/es.json';
 import pt from '../i18n/pt.json';
@@ -101,6 +102,24 @@ export const getAvailableLanguages = (): Array<{ code: string; name: string; abb
     { code: 'es', name: 'Español', abbreviation: 'Es' },
     { code: 'pt', name: 'Português', abbreviation: 'Pt' },
   ];
+};
+
+/**
+ * Hook de React para forzar re-render cuando cambia el idioma
+ * Útil para componentes que usan traducciones dinámicas
+ */
+export const useLanguage = (): string => {
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.locale);
+
+  useEffect(() => {
+    const unsubscribe = onLanguageChange(() => {
+      setCurrentLanguage(i18n.locale);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  return currentLanguage;
 };
 
 export default i18n;

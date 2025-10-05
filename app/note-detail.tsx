@@ -498,6 +498,16 @@ export default function NoteDetail() {
     setActiveFormats(prev => ({ ...prev, highlight: !prev.highlight }));
   };
 
+  const handleBulletPress = () => {
+    console.log('Bullet pressed');
+    // Insert a bullet point (•) with proper color and larger size (2x) based on theme
+    // Only the bullet is large, space after is outside the span so text remains normal
+    const bulletColor = isDarkMode ? '#FFFFFF' : '#000000';
+    richTextRef.current?.commandDOM(`
+      document.execCommand('insertHTML', false, '<span style="color: ${bulletColor}; font-size: 2em;">•</span> ');
+    `);
+  };
+
   // Rich text functions no longer needed - using RichEditor
   
   // Display rich text content - simple HTML to Text conversion
@@ -540,6 +550,50 @@ export default function NoteDetail() {
 
       // Process content line by line to handle complex structures
       const processText = (text: string, baseStyle: any = [styles.contentText, { color: textColors.primary }]) => {
+        // Handle bullet points with font-size (• with specific size and color)
+        if (text.includes('<span') && text.includes('font-size') && text.includes('•')) {
+          const regex = /<span[^>]*color:\s*(#[A-Fa-f0-9]{6}|#[A-Fa-f0-9]{3}|[a-z]+)[^>]*font-size:\s*([^;]+)[^>]*>(•)<\/span>/gs;
+          const parts: any[] = [];
+          let lastIndex = 0;
+          let match;
+
+          while ((match = regex.exec(text)) !== null) {
+            // Add text before the span
+            if (match.index > lastIndex) {
+              const beforeText = decodeHtmlEntities(text.substring(lastIndex, match.index).replace(/<[^>]*>/g, ''));
+              if (beforeText) {
+                parts.push(beforeText);
+              }
+            }
+
+            // Add large bullet with color
+            const color = match[1];
+            const fontSize = match[2]; // e.g., "2em"
+            const bullet = match[3];
+            parts.push(
+              <Text key={`${key}-bullet-${parts.length}`} style={{ color, fontSize: fontSize === '2em' ? 32 : 16 }}>
+                {bullet}
+              </Text>
+            );
+
+            lastIndex = regex.lastIndex;
+          }
+
+          // Add remaining text after last span
+          if (lastIndex < text.length) {
+            const afterText = decodeHtmlEntities(text.substring(lastIndex).replace(/<[^>]*>/g, ''));
+            if (afterText) {
+              parts.push(afterText);
+            }
+          }
+
+          return (
+            <Text key={key} style={baseStyle}>
+              {parts}
+            </Text>
+          );
+        }
+
         // Handle inline formatting within text - detect both yellow and dark mode orange
         if (text.includes('<span') && (text.includes('background') || text.includes('yellow') || text.includes('#D97706') || text.includes('rgb(217, 119, 6)'))) {
           // More precise regex to capture ONLY the span content
@@ -1511,7 +1565,7 @@ export default function NoteDetail() {
         <View>
           {hasImages && (
             <View style={styles.imagesSection}>
-              {note.images.map((imageUri, index) => 
+              {note.images.map((imageUri, index) =>
                 isAudioUri(imageUri) ? (
                   // Render audio player for audio files
                   <AudioPlayer
@@ -1519,6 +1573,15 @@ export default function NoteDetail() {
                     audioUri={imageUri}
                     onDelete={() => {
                       removeImageFromLegacy(index);
+                    }}
+                    onTranscribe={(transcribedText) => {
+                      // Insertar texto transcrito al final del contenido
+                      const currentContent = editedContent || note.content || '';
+                      const newContent = currentContent
+                        ? `${currentContent}<br><br>${transcribedText}`
+                        : transcribedText;
+                      setEditedContent(newContent);
+                      updateNote(note.id, { content: newContent });
                     }}
                   />
                 ) : (
@@ -1590,6 +1653,15 @@ export default function NoteDetail() {
                     onDelete={() => {
                       removeImageFromBlocks(index);
                     }}
+                    onTranscribe={(transcribedText) => {
+                      // Insertar texto transcrito al final del contenido
+                      const currentContent = editedContent || note.content || '';
+                      const newContent = currentContent
+                        ? `${currentContent}<br><br>${transcribedText}`
+                        : transcribedText;
+                      setEditedContent(newContent);
+                      updateNote(note.id, { content: newContent });
+                    }}
                   />
                 </View>
               ) : (
@@ -1657,6 +1729,15 @@ export default function NoteDetail() {
                   audioUri={imageUri}
                   onDelete={() => {
                     removeImageFromLegacy(index);
+                  }}
+                  onTranscribe={(transcribedText) => {
+                    // Insertar texto transcrito al final del contenido
+                    const currentContent = editedContent || note.content || '';
+                    const newContent = currentContent
+                      ? `${currentContent}<br><br>${transcribedText}`
+                      : transcribedText;
+                    setEditedContent(newContent);
+                    updateNote(note.id, { content: newContent });
                   }}
                 />
               ) : (
@@ -2002,6 +2083,7 @@ export default function NoteDetail() {
         onH3Press={handleH3Press}
         onBoldPress={handleBoldPress}
         onHighlightPress={handleHighlightPress}
+        onBulletPress={handleBulletPress}
         // Active states for visual feedback
         activeFormats={activeFormats}
       />
@@ -2107,7 +2189,7 @@ export default function NoteDetail() {
             {/* Show images and audio during editing - RESTORED */}
             {note.images && note.images.length > 0 && (
               <View style={styles.imagesSection}>
-                {note.images.map((imageUri, index) => 
+                {note.images.map((imageUri, index) =>
                   isAudioUri(imageUri) ? (
                     // Render audio player for audio files
                     <AudioPlayer
@@ -2115,6 +2197,15 @@ export default function NoteDetail() {
                       audioUri={imageUri}
                       onDelete={() => {
                         removeImageFromLegacy(index);
+                      }}
+                      onTranscribe={(transcribedText) => {
+                        // Insertar texto transcrito al final del contenido
+                        const currentContent = editedContent || note.content || '';
+                        const newContent = currentContent
+                          ? `${currentContent}<br><br>${transcribedText}`
+                          : transcribedText;
+                        setEditedContent(newContent);
+                        updateNote(note.id, { content: newContent });
                       }}
                     />
                   ) : (

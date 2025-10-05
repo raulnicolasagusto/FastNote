@@ -47,8 +47,95 @@ export const NativeNoteImage: React.FC<NativeNoteImageProps> = ({
     const elements: React.ReactNode[] = [];
     let key = 0;
 
-    // Process text with inline formatting (bold, highlight, headers)
+    // Process text with inline formatting (bold, highlight, headers, bullets)
     const processText = (text: string, baseStyle: any = styles.content) => {
+      // Handle bullet points with font-size and color (• with specific size and color)
+      if (text.includes('<span') && text.includes('font-size') && text.includes('•')) {
+        const regex = /<span[^>]*color:\s*(#[A-Fa-f0-9]{6}|#[A-Fa-f0-9]{3}|[a-z]+)[^>]*font-size:\s*([^;]+)[^>]*>(•)<\/span>/gs;
+        const parts: any[] = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = regex.exec(text)) !== null) {
+          // Add text before the span
+          if (match.index > lastIndex) {
+            const beforeText = decodeHtmlEntities(text.substring(lastIndex, match.index).replace(/<[^>]*>/g, ''));
+            if (beforeText) {
+              parts.push(beforeText);
+            }
+          }
+
+          // Add large bullet with color
+          const color = match[1];
+          const fontSize = match[2]; // e.g., "2em"
+          const bullet = match[3];
+          parts.push(
+            <Text key={`bullet-${key++}`} style={{ color, fontSize: fontSize === '2em' ? 32 : 16 }}>
+              {bullet}
+            </Text>
+          );
+
+          lastIndex = regex.lastIndex;
+        }
+
+        // Add remaining text after last span
+        if (lastIndex < text.length) {
+          const afterText = decodeHtmlEntities(text.substring(lastIndex).replace(/<[^>]*>/g, ''));
+          if (afterText) {
+            parts.push(afterText);
+          }
+        }
+
+        return parts.length > 0 ? (
+          <Text key={key++} style={baseStyle}>
+            {parts}
+          </Text>
+        ) : null;
+      }
+
+      // Handle bullet points with only color (legacy, no font-size)
+      if (text.includes('<span') && text.includes('color') && text.includes('•')) {
+        const regex = /<span[^>]*color:\s*(#[A-Fa-f0-9]{6}|#[A-Fa-f0-9]{3}|[a-z]+)[^>]*>(.*?)<\/span>/gs;
+        const parts: any[] = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = regex.exec(text)) !== null) {
+          // Add text before the span
+          if (match.index > lastIndex) {
+            const beforeText = decodeHtmlEntities(text.substring(lastIndex, match.index).replace(/<[^>]*>/g, ''));
+            if (beforeText) {
+              parts.push(beforeText);
+            }
+          }
+
+          // Add colored text (bullet or any other colored text)
+          const color = match[1];
+          const innerText = decodeHtmlEntities(match[2].replace(/<[^>]*>/g, ''));
+          parts.push(
+            <Text key={`color-${key++}`} style={{ color }}>
+              {innerText}
+            </Text>
+          );
+
+          lastIndex = regex.lastIndex;
+        }
+
+        // Add remaining text after last span
+        if (lastIndex < text.length) {
+          const afterText = decodeHtmlEntities(text.substring(lastIndex).replace(/<[^>]*>/g, ''));
+          if (afterText) {
+            parts.push(afterText);
+          }
+        }
+
+        return parts.length > 0 ? (
+          <Text key={key++} style={baseStyle}>
+            {parts}
+          </Text>
+        ) : null;
+      }
+
       // Handle highlighted text with background color
       if (text.includes('<span') && text.includes('background')) {
         const regex = /<span[^>]*background[^>]*>(.*?)<\/span>/gs;

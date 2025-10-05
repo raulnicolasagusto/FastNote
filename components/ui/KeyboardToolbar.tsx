@@ -22,6 +22,7 @@ interface KeyboardToolbarProps {
   onH3Press?: () => void;
   onBoldPress?: () => void;
   onHighlightPress?: () => void;
+  onBulletPress?: () => void;
   // Active states
   activeFormats?: {
     bold: boolean;
@@ -45,6 +46,7 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
   onH3Press,
   onBoldPress,
   onHighlightPress,
+  onBulletPress,
   // Active states
   activeFormats = { bold: false, h1: false, h2: false, h3: false, highlight: false },
 }) => {
@@ -140,7 +142,7 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
             {/* Highlight (like a marker) */}
             <TouchableOpacity
               style={[
-                styles.toolButton, 
+                styles.toolButton,
                 { backgroundColor: activeFormats.highlight ? '#FFD700' : colors.background }
               ]}
               onPress={onHighlightPress}
@@ -150,6 +152,19 @@ const KeyboardToolbar: React.FC<KeyboardToolbarProps> = ({
                 name="highlight"
                 size={20}
                 color={activeFormats.highlight ? 'black' : '#FFD700'}
+              />
+            </TouchableOpacity>
+
+            {/* Bullet Point (•) */}
+            <TouchableOpacity
+              style={[styles.toolButton, { backgroundColor: colors.background }]}
+              onPress={onBulletPress}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons
+                name="fiber-manual-record"
+                size={20}
+                color={colors.textPrimary}
               />
             </TouchableOpacity>
 

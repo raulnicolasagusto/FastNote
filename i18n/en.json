@@ -103,6 +103,12 @@
     "transcribing": "Transcribing...",
     "processing": "Processing audio..."
   },
+  "audio": {
+    "transcribeToNote": "Transcribe to Note with AI",
+    "transcribing": "Transcribing audio...",
+    "transcribed": "Audio transcribed successfully",
+    "transcriptionFailed": "Failed to transcribe audio"
+  },
   "camera": {
     "title": "Capture Text",
     "takePhoto": "Take Photo",
