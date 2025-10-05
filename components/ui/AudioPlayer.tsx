@@ -93,31 +93,75 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   const handleLongPress = () => {
-    if (!onTranscribe) return;
+    if (!onTranscribe && !onDelete) return;
 
     if (Platform.OS === 'ios') {
+      // iOS - ActionSheet con 3 opciones
+      const options = [t('common.cancel')];
+
+      if (onTranscribe) options.push(t('audio.transcribe'));
+      if (onDelete) options.push(t('audio.deleteAudio'));
+
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: [t('common.cancel'), t('audio.transcribeToNote')],
+          title: t('audio.menuTitle'),
+          options,
+          destructiveButtonIndex: onDelete ? options.length - 1 : undefined, // Último botón (Delete) en rojo
           cancelButtonIndex: 0,
         },
         (buttonIndex) => {
-          if (buttonIndex === 1) {
+          if (buttonIndex === 1 && onTranscribe) {
             handleTranscribe();
+          } else if (buttonIndex === 2 && onDelete) {
+            handleDeleteWithConfirmation();
+          } else if (buttonIndex === 1 && !onTranscribe && onDelete) {
+            handleDeleteWithConfirmation();
           }
         }
       );
     } else {
-      // Android - usar Alert con botones
+      // Android - Alert con botones
+      const buttons = [];
+
+      if (onTranscribe) {
+        buttons.push({ text: t('audio.transcribe'), onPress: handleTranscribe });
+      }
+
+      if (onDelete) {
+        buttons.push({
+          text: t('audio.deleteAudio'),
+          onPress: handleDeleteWithConfirmation,
+          style: 'destructive' as const
+        });
+      }
+
+      buttons.push({ text: t('common.cancel'), style: 'cancel' as const });
+
       Alert.alert(
-        t('audio.transcribeToNote'),
+        t('audio.menuTitle'),
         '',
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          { text: t('audio.transcribeToNote'), onPress: handleTranscribe },
-        ]
+        buttons
       );
     }
+  };
+
+  const handleDeleteWithConfirmation = () => {
+    if (!onDelete) return;
+
+    Alert.alert(
+      t('audio.deleteConfirmTitle'),
+      t('audio.deleteConfirmMessage'),
+      [
+        { text: t('common.no'), style: 'cancel' },
+        {
+          text: t('common.yes'),
+          style: 'destructive',
+          onPress: () => {
+            onDelete();
+          }
+        }
+      ]
+    );
   };
 
   const handleTranscribe = async () => {

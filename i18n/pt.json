@@ -107,7 +107,12 @@
     "transcribeToNote": "Transcrever para a Nota com IA",
     "transcribing": "Transcrevendo áudio...",
     "transcribed": "Áudio transcrito com sucesso",
-    "transcriptionFailed": "Erro ao transcrever o áudio"
+    "transcriptionFailed": "Erro ao transcrever o áudio",
+    "menuTitle": "Transcrever com IA ou Excluir",
+    "transcribe": "Transcrever",
+    "deleteAudio": "Excluir",
+    "deleteConfirmTitle": "Excluir Áudio",
+    "deleteConfirmMessage": "Tem certeza de que deseja excluir este áudio? Esta ação não pode ser desfeita."
   },
   "camera": {
     "title": "Capturar Texto",

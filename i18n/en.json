@@ -107,7 +107,12 @@
     "transcribeToNote": "Transcribe to Note with AI",
     "transcribing": "Transcribing audio...",
     "transcribed": "Audio transcribed successfully",
-    "transcriptionFailed": "Failed to transcribe audio"
+    "transcriptionFailed": "Failed to transcribe audio",
+    "menuTitle": "Transcribe with AI or Delete",
+    "transcribe": "Transcribe",
+    "deleteAudio": "Delete",
+    "deleteConfirmTitle": "Delete Audio",
+    "deleteConfirmMessage": "Are you sure you want to delete this audio? This action cannot be undone."
   },
   "camera": {
     "title": "Capture Text",
