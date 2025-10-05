@@ -226,7 +226,15 @@
   },
   "instructions": {
     "title": "How to use the AI features",
-    "close": "Close"
+    "close": "Close",
+    "voiceNote": {
+      "title": "Quick Voice Note",
+      "description": "How do we transcribe a quick note with voice? You can press and hold the icon of your app until the option appears, press it and the voice recording that will be transcribed directly begins."
+    },
+    "voiceNoteInApp": {
+      "title": "Voice Note in App",
+      "description": "Or within the app, press on Quick Voice Note, and it will start recording and then transcribe it to the note. Remember that you can record a list and also save a reminder. Example: \"New Shopping list, milk, bread, cheese, tomatoes. and remind me tomorrow at 2pm\""
+    }
   },
   "timestamps": {
     "created": "Created",

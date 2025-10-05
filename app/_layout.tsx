@@ -9,8 +9,10 @@ import { useQuickActionRouting } from 'expo-quick-actions/router';
 import mobileAds from 'react-native-google-mobile-ads';
 import { useThemeStore } from '../store/theme/useThemeStore';
 import { t } from '../utils/i18n';
+import { useLanguage } from '../utils/useLanguage';
 
 export default function Layout() {
+  useLanguage(); // Force re-render on language change
   const router = useRouter();
   const { currentLanguage } = useThemeStore();
 

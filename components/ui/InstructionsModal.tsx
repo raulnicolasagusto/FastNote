@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Image,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
@@ -18,9 +19,57 @@ interface InstructionsModalProps {
   onClose: () => void;
 }
 
+// Componente de imagen simple
+interface InstructionImageProps {
+  source: any;
+  alignTop?: boolean;
+}
+
+function InstructionImage({ source, alignTop = false }: InstructionImageProps) {
+  if (alignTop) {
+    return (
+      <View style={styles.imageTopAlignedContainer}>
+        <Image
+          source={source}
+          style={styles.imageTopAligned}
+          resizeMode="cover"
+        />
+      </View>
+    );
+  }
+
+  return (
+    <Image
+      source={source}
+      style={styles.instructionImage}
+      resizeMode="cover"
+    />
+  );
+}
+
+// Imágenes pre-cargadas según idioma
+const IMAGES = {
+  en: {
+    voiceNote: require('../../assets/app-instructions/English/VoiceNote.png'),
+    voiceNote1: require('../../assets/app-instructions/English/VoiceNote1.png'),
+    voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.jpeg'),
+    voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.jpeg'),
+  },
+  es: {
+    // TODO: Agregar imágenes en español cuando estén disponibles
+    voiceNote: require('../../assets/app-instructions/English/VoiceNote.png'),
+    voiceNote1: require('../../assets/app-instructions/English/VoiceNote1.png'),
+    voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.jpeg'),
+    voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.jpeg'),
+  },
+};
+
 export default function InstructionsModal({ visible, onClose }: InstructionsModalProps) {
   useLanguage(); // Re-render on language change
-  const { colors } = useThemeStore();
+  const { colors, isDarkMode, currentLanguage } = useThemeStore();
+
+  // Obtener imágenes según idioma actual
+  const images = IMAGES[currentLanguage as 'en' | 'es'] || IMAGES.en;
 
   return (
     <Modal
@@ -46,10 +95,32 @@ export default function InstructionsModal({ visible, onClose }: InstructionsModa
           <ScrollView
             style={styles.content}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
           >
-            <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
-              Content coming soon...
-            </Text>
+            {/* Instrucción 1: Voice Note */}
+            <View style={styles.instructionSection}>
+              <Text style={[styles.instructionText, { color: colors.textPrimary }]}>
+                {t('instructions.voiceNote.description')}
+              </Text>
+              <InstructionImage source={images.voiceNote} />
+            </View>
+
+            {/* Instrucción 2: Voice Note In App */}
+            <View style={styles.instructionSection}>
+              <Text style={[styles.instructionText, { color: colors.textPrimary }]}>
+                {t('instructions.voiceNoteInApp.description')}
+              </Text>
+              <InstructionImage source={images.voiceNote1} />
+            </View>
+
+            {/* Imágenes adicionales sin texto */}
+            <View style={styles.instructionSection}>
+              <InstructionImage source={images.voiceNote2} />
+            </View>
+
+            <View style={styles.instructionSection}>
+              <InstructionImage source={images.voiceNote3} alignTop={true} />
+            </View>
           </ScrollView>
         </View>
       </View>
@@ -68,7 +139,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: '100%',
     maxWidth: 500,
-    maxHeight: '80%',
+    height: '85%',
     borderRadius: 16,
     overflow: 'hidden',
     elevation: 5,
@@ -94,12 +165,37 @@ const styles = StyleSheet.create({
     padding: SPACING.xs,
   },
   content: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    flex: 1,
   },
-  placeholderText: {
+  scrollContent: {
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.xl * 2,
+  },
+  instructionSection: {
+    marginBottom: SPACING.xl,
+  },
+  instructionText: {
     fontSize: TYPOGRAPHY.bodySize,
-    textAlign: 'center',
-    marginTop: SPACING.xl,
+    lineHeight: TYPOGRAPHY.bodySize * 1.5,
+    marginBottom: SPACING.md,
+  },
+  instructionImage: {
+    width: '100%',
+    height: 280,
+    borderRadius: 12,
+  },
+  imageTopAlignedContainer: {
+    width: '100%',
+    height: 320,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  imageTopAligned: {
+    width: '100%',
+    height: '200%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
 });

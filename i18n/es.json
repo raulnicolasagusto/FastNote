@@ -226,7 +226,15 @@
   },
   "instructions": {
     "title": "Cómo usar las funciones de IA",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "voiceNote": {
+      "title": "Nota de Voz Rápida",
+      "description": "¿Cómo transcribimos una nota rápida con voz? Puedes mantener presionado el ícono de tu app hasta que aparezca la opción, presiónala y comienza la grabación de voz que se transcribirá directamente."
+    },
+    "voiceNoteInApp": {
+      "title": "Nota de Voz en la App",
+      "description": "O dentro de la app, presiona en nota rápida, y comenzará a grabar y luego transcribirá a la nota. Recuerda que puedes grabar una lista y también guardar un recordatorio. Ejemplo: \"Nueva lista de compras, leche, pan, queso, tomates. y recuérdame mañana a las 2pm\""
+    }
   },
   "timestamps": {
     "created": "Creada",
