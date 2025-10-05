@@ -233,7 +233,15 @@
     },
     "voiceNoteInApp": {
       "title": "Voice Note in App",
-      "description": "Or within the app, press on Quick Voice Note, and it will start recording and then transcribe it to the note. Remember that you can record a list and also save a reminder. Example: \"New Shopping list, milk, bread, cheese, tomatoes. and remind me tomorrow at 2pm\""
+      "description": "Or within the app, press on Quick Voice Note, and it will start recording and then transcribe it to the note. Remember that you can record a list and also save a reminder. Example: \"New Shopping list, milk, bread, cheese, tomatoes. and remind me tomorrow at 2pm\". Also to an already created list you can add items by saying \"Add\", \"Add to this list\" and the item you want will be added to your list."
+    },
+    "ocrFeature": {
+      "title": "OCR Text Recognition",
+      "description": "Also with AI you can transcribe text directly to the note either by taking a photo of a text or uploading an image with text, just by pressing the camera icon."
+    },
+    "audioTranscription": {
+      "title": "Audio Transcription",
+      "description": "You can record long meetings and transcribe them with AI, first you record the meeting, then you will see that an audio will be recorded that you can play, and if you hold down the audio, the option to transcribe or delete it will be enabled, if you transcribe it it will automatically be added to that note."
     }
   },
   "timestamps": {

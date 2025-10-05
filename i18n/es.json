@@ -233,7 +233,15 @@
     },
     "voiceNoteInApp": {
       "title": "Nota de Voz en la App",
-      "description": "O dentro de la app, presiona en nota rápida, y comenzará a grabar y luego transcribirá a la nota. Recuerda que puedes grabar una lista y también guardar un recordatorio. Ejemplo: \"Nueva lista de compras, leche, pan, queso, tomates. y recuérdame mañana a las 2pm\""
+      "description": "O dentro de la app, presiona en nota rápida, y comenzará a grabar y luego transcribirá a la nota. Recuerda que puedes grabar una lista y también guardar un recordatorio. Ejemplo: \"Nueva lista de compras, leche, pan, queso, tomates. y recuérdame mañana a las 2pm\". También a una lista ya creada puedes agregar ítems diciendo \"Agrega\", \"Agrega a esta lista\" y el ítem que quieras se añadirá a tu lista."
+    },
+    "ocrFeature": {
+      "title": "Reconocimiento de Texto OCR",
+      "description": "También con IA puedes transcribir texto directamente a la nota ya sea tomando una foto de un texto o subiendo una imagen con texto, solo presionando el ícono de la cámara."
+    },
+    "audioTranscription": {
+      "title": "Transcripción de Audio",
+      "description": "Puedes grabar reuniones largas y transcribirlas con IA, primero grabas la reunión, luego verás que se grabará un audio que puedes reproducir, y si mantienes presionado el audio, se habilitará la opción de transcribir o eliminarlo, si lo transcribes se agregará automáticamente a esa nota."
     }
   },
   "timestamps": {

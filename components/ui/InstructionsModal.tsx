@@ -32,7 +32,6 @@ function InstructionImage({ source, alignTop = false }: InstructionImageProps) {
         <Image
           source={source}
           style={styles.imageTopAligned}
-          resizeMode="cover"
         />
       </View>
     );
@@ -54,6 +53,9 @@ const IMAGES = {
     voiceNote1: require('../../assets/app-instructions/English/VoiceNote1.png'),
     voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.jpeg'),
     voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.jpeg'),
+    voiceNote4_5: require('../../assets/app-instructions/English/VoiceNote4.5.png'),
+    voiceNote5: require('../../assets/app-instructions/English/VoiceNote5.png'),
+    voiceNote6: require('../../assets/app-instructions/English/VoiceNote6.png'),
   },
   es: {
     // TODO: Agregar imágenes en español cuando estén disponibles
@@ -61,6 +63,9 @@ const IMAGES = {
     voiceNote1: require('../../assets/app-instructions/English/VoiceNote1.png'),
     voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.jpeg'),
     voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.jpeg'),
+    voiceNote4_5: require('../../assets/app-instructions/English/VoiceNote4.5.png'),
+    voiceNote5: require('../../assets/app-instructions/English/VoiceNote5.png'),
+    voiceNote6: require('../../assets/app-instructions/English/VoiceNote6.png'),
   },
 };
 
@@ -120,6 +125,32 @@ export default function InstructionsModal({ visible, onClose }: InstructionsModa
 
             <View style={styles.instructionSection}>
               <InstructionImage source={images.voiceNote3} alignTop={true} />
+            </View>
+
+            {/* Instrucción 3: OCR Feature */}
+            <View style={styles.instructionSection}>
+              <Text style={[styles.instructionText, { color: colors.textPrimary }]}>
+                {t('instructions.ocrFeature.description')}
+              </Text>
+              <InstructionImage source={images.voiceNote4_5} alignTop={true} />
+            </View>
+
+            {/* Instrucción 4: Audio Transcription */}
+            <View style={styles.instructionSection}>
+              <Text style={[styles.instructionText, { color: colors.textPrimary }]}>
+                {t('instructions.audioTranscription.description')}
+              </Text>
+              <InstructionImage source={images.voiceNote5} />
+            </View>
+
+            {/* Imagen final - alignBottom para mostrar parte inferior */}
+            <View style={styles.instructionSection}>
+              <View style={styles.imageBottomAlignedContainer}>
+                <Image
+                  source={images.voiceNote6}
+                  style={styles.imageBottomAligned}
+                />
+              </View>
             </View>
           </ScrollView>
         </View>
@@ -190,12 +221,23 @@ const styles = StyleSheet.create({
     height: 320,
     borderRadius: 12,
     overflow: 'hidden',
+    justifyContent: 'flex-start',
   },
   imageTopAligned: {
     width: '100%',
-    height: '200%',
-    position: 'absolute',
-    top: 0,
-    left: 0,
+    height: undefined,
+    aspectRatio: 0.5,
+    resizeMode: 'cover',
+  },
+  imageBottomAlignedContainer: {
+    width: '100%',
+    height: 350,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  imageBottomAligned: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
 });
