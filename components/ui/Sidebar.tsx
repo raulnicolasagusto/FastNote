@@ -13,6 +13,7 @@ import { useThemeStore } from '../../store/theme/useThemeStore';
 import { SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { t, changeLanguage, getAvailableLanguages } from '../../utils/i18n';
 import { useLanguage } from '../../utils/useLanguage';
+import InstructionsModal from './InstructionsModal';
 
 interface SidebarProps {
   visible: boolean;
@@ -24,6 +25,7 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
   const { isDarkMode, colors, calloutsEnabled, currentLanguage, toggleTheme, toggleCallouts, setLanguage } = useThemeStore();
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
   const availableLanguages = getAvailableLanguages();
 
   const handleLanguageChange = async (newLang: 'en' | 'es' | 'pt') => {
@@ -126,6 +128,31 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
             />
           </View>
 
+          {/* Instructions Button */}
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => setShowInstructionsModal(true)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.settingInfo}>
+              <MaterialIcons
+                name="info-outline"
+                size={24}
+                color={colors.textPrimary}
+              />
+              <View style={styles.settingText}>
+                <Text style={[styles.settingTitle, { color: colors.textPrimary }]}>
+                  {t('sidebar.instructions')}
+                </Text>
+              </View>
+            </View>
+            <MaterialIcons
+              name="chevron-right"
+              size={24}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
+
           {/* Language Selector */}
           <View style={styles.settingItem}>
             <View style={styles.settingInfo}>
@@ -207,6 +234,12 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
           </View>
         </View>
       </View>
+
+      {/* Instructions Modal */}
+      <InstructionsModal
+        visible={showInstructionsModal}
+        onClose={() => setShowInstructionsModal(false)}
+      />
     </Modal>
   );
 }

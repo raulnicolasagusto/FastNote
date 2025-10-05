@@ -221,7 +221,12 @@
     "about": "Acerca de FastNote",
     "version": "Versión {{version}}",
     "callouts": "Mostrar Consejos",
-    "language": "Idioma"
+    "language": "Idioma",
+    "instructions": "Instrucciones"
+  },
+  "instructions": {
+    "title": "Cómo usar las funciones de IA",
+    "close": "Cerrar"
   },
   "timestamps": {
     "created": "Creada",

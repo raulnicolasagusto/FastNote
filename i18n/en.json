@@ -221,7 +221,12 @@
     "about": "About FastNote",
     "version": "Version {{version}}",
     "callouts": "Show Tips",
-    "language": "Language"
+    "language": "Language",
+    "instructions": "Instructions"
+  },
+  "instructions": {
+    "title": "How to use the AI features",
+    "close": "Close"
   },
   "timestamps": {
     "created": "Created",
