@@ -1582,6 +1582,11 @@ export default function NoteDetail() {
                         : transcribedText;
                       setEditedContent(newContent);
                       updateNote(note.id, { content: newContent });
+
+                      // Actualizar el RichEditor si estamos en modo edición
+                      if (richTextRef.current && editingElement === 'content') {
+                        richTextRef.current.setContentHTML(newContent);
+                      }
                     }}
                   />
                 ) : (
@@ -1661,6 +1666,11 @@ export default function NoteDetail() {
                         : transcribedText;
                       setEditedContent(newContent);
                       updateNote(note.id, { content: newContent });
+
+                      // Actualizar el RichEditor si estamos en modo edición
+                      if (richTextRef.current && editingElement === 'content') {
+                        richTextRef.current.setContentHTML(newContent);
+                      }
                     }}
                   />
                 </View>
@@ -1738,6 +1748,11 @@ export default function NoteDetail() {
                       : transcribedText;
                     setEditedContent(newContent);
                     updateNote(note.id, { content: newContent });
+
+                    // Actualizar el RichEditor si estamos en modo edición
+                    if (richTextRef.current && editingElement === 'content') {
+                      richTextRef.current.setContentHTML(newContent);
+                    }
                   }}
                 />
               ) : (
@@ -2206,6 +2221,11 @@ export default function NoteDetail() {
                           : transcribedText;
                         setEditedContent(newContent);
                         updateNote(note.id, { content: newContent });
+
+                        // Actualizar el RichEditor si estamos en modo edición
+                        if (richTextRef.current && editingElement === 'content') {
+                          richTextRef.current.setContentHTML(newContent);
+                        }
                       }}
                     />
                   ) : (
