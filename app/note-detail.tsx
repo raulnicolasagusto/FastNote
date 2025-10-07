@@ -22,7 +22,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { useThemeStore } from '../store/theme/useThemeStore';
-import { Note, ChecklistItem } from '../types';
+import { Note, ChecklistItem, AudioMetadata } from '../types';
 import { SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES, NOTE_BACKGROUND_COLORS } from '../constants/theme';
 import { StorageService } from '../utils/storage';
 import Callout from '../components/ui/Callout';
@@ -447,6 +447,25 @@ export default function NoteDetail() {
     return audioExtensions.some(ext => uri.toLowerCase().includes(ext));
   };
 
+  // Get audio metadata by URI
+  const getAudioMetadata = (uri: string): AudioMetadata | undefined => {
+    return note?.audioMetadata?.find(metadata => metadata.uri === uri);
+  };
+
+  // Update audio metadata (transcription count)
+  const updateAudioMetadata = (updatedMetadata: AudioMetadata) => {
+    if (!note) return;
+
+    const newAudioMetadata = note.audioMetadata?.map(metadata =>
+      metadata.uri === updatedMetadata.uri ? updatedMetadata : metadata
+    ) || [];
+
+    updateNote(note.id, {
+      audioMetadata: newAudioMetadata,
+      updatedAt: new Date(),
+    });
+  };
+
   // Keyboard Toolbar Functions
   const handleToolbarFormat = () => {
     console.log('🎨 Format toolbar pressed');
@@ -824,9 +843,16 @@ export default function NoteDetail() {
     if (!note) return;
 
     try {
-      // Add audio to note.images array for simplicity (like we do with drawings)
+      // Add audio with metadata (timestamp + transcription count)
+      const newAudioMetadata: AudioMetadata = {
+        uri: audioUri,
+        recordedAt: new Date(),
+        transcriptionCount: 0,
+      };
+
       updateNote(note.id, {
-        images: [...(note.images || []), audioUri],
+        images: [...(note.images || []), audioUri], // Keep for backward compatibility
+        audioMetadata: [...(note.audioMetadata || []), newAudioMetadata],
         updatedAt: new Date(),
       });
     } catch (error) {
@@ -1571,6 +1597,7 @@ export default function NoteDetail() {
                   <AudioPlayer
                     key={index}
                     audioUri={imageUri}
+                    audioMetadata={getAudioMetadata(imageUri)}
                     onDelete={() => {
                       removeImageFromLegacy(index);
                     }}
@@ -1588,6 +1615,7 @@ export default function NoteDetail() {
                         richTextRef.current.setContentHTML(newContent);
                       }
                     }}
+                    onUpdateMetadata={updateAudioMetadata}
                   />
                 ) : (
                   // Render image for image files
@@ -1737,6 +1765,7 @@ export default function NoteDetail() {
                 <AudioPlayer
                   key={index}
                   audioUri={imageUri}
+                  audioMetadata={getAudioMetadata(imageUri)}
                   onDelete={() => {
                     removeImageFromLegacy(index);
                   }}
@@ -1754,6 +1783,7 @@ export default function NoteDetail() {
                       richTextRef.current.setContentHTML(newContent);
                     }
                   }}
+                  onUpdateMetadata={updateAudioMetadata}
                 />
               ) : (
                 // Render image for image files
@@ -2210,6 +2240,7 @@ export default function NoteDetail() {
                     <AudioPlayer
                       key={index}
                       audioUri={imageUri}
+                      audioMetadata={getAudioMetadata(imageUri)}
                       onDelete={() => {
                         removeImageFromLegacy(index);
                       }}
@@ -2227,6 +2258,7 @@ export default function NoteDetail() {
                           richTextRef.current.setContentHTML(newContent);
                         }
                       }}
+                      onUpdateMetadata={updateAudioMetadata}
                     />
                   ) : (
                     // Render image for image files

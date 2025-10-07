@@ -4,6 +4,12 @@ export interface ContentBlock {
   uri?: string; // For image blocks
 }
 
+export interface AudioMetadata {
+  uri: string; // Audio file URI
+  recordedAt: Date; // Timestamp when audio was recorded
+  transcriptionCount: number; // Number of times this audio has been transcribed (max 2)
+}
+
 export interface Note {
   id: string;
   title: string;
@@ -15,6 +21,7 @@ export interface Note {
   images: string[]; // Image URIs (Base64 or file URIs) - LEGACY, use contentBlocks instead
   contentBlocks?: ContentBlock[]; // NEW: Blocks system for text/images
   textSegments?: string[]; // Text content segments between/after images - LEGACY
+  audioMetadata?: AudioMetadata[]; // Audio files with metadata (timestamp + transcription count)
   checklistItems?: ChecklistItem[];
   isArchived: boolean;
   isPinned: boolean; // For star functionality

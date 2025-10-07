@@ -12,20 +12,26 @@ import {
 import { Audio } from 'expo-av';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
-import { t, useLanguage } from '../../utils/i18n';
+import { useTranscriptionLimitsStore } from '../../store/transcription/useTranscriptionLimitsStore';
+import { AudioMetadata } from '../../types';
+import { t, useLanguage, getCurrentLanguage } from '../../utils/i18n';
 import { transcribeAudioFile } from '../../utils/audioTranscriptionService';
 
 interface AudioPlayerProps {
   audioUri: string;
+  audioMetadata?: AudioMetadata; // Optional metadata with timestamp and transcription count
   onDelete?: () => void;
   onTranscribe?: (transcribedText: string) => void;
+  onUpdateMetadata?: (updatedMetadata: AudioMetadata) => void; // Callback to update transcription count
   isSelected?: boolean;
 }
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   audioUri,
+  audioMetadata,
   onDelete,
   onTranscribe,
+  onUpdateMetadata,
   isSelected = false,
 }) => {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -34,6 +40,12 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const [position, setPosition] = useState(0);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const { colors } = useThemeStore();
+  const {
+    canTranscribe,
+    getRemainingMonthlyMinutes,
+    recordTranscription,
+    checkAndResetIfNeeded,
+  } = useTranscriptionLimitsStore();
   useLanguage(); // Re-render on language change
 
   useEffect(() => {
@@ -90,6 +102,26 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatRecordedDate = (): string => {
+    if (!audioMetadata?.recordedAt) return '';
+
+    const date = new Date(audioMetadata.recordedAt);
+    const currentLang = getCurrentLanguage();
+
+    // Format date according to language
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+
+    const dateStr = currentLang === 'en'
+      ? `${month}/${day}/${year}` // MM/DD/YYYY for English
+      : `${day}/${month}/${year}`; // DD/MM/YYYY for Spanish
+
+    return `${dateStr} ${hours}:${minutes}`;
   };
 
   const handleLongPress = () => {
@@ -167,12 +199,68 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const handleTranscribe = async () => {
     if (!onTranscribe || isTranscribing) return;
 
+    // Check if audio has been transcribed 2+ times already
+    const currentCount = audioMetadata?.transcriptionCount || 0;
+    if (currentCount >= 2) {
+      Alert.alert(
+        t('audio.transcriptionLimitTitle'),
+        t('audio.transcriptionLimitMessage'),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+
+    // Check limits before transcribing
+    await checkAndResetIfNeeded();
+
+    // Get audio duration in seconds
+    const audioDurationSeconds = Math.ceil(duration / 1000);
+    const remainingMinutes = getRemainingMonthlyMinutes();
+    const remainingSeconds = remainingMinutes * 60;
+
+    // Check if user has enough minutes left
+    if (audioDurationSeconds > remainingSeconds) {
+      Alert.alert(
+        t('recording.monthlyLimitReached'),
+        t('audio.insufficientMinutes', {
+          needed: Math.ceil(audioDurationSeconds / 60),
+          available: remainingMinutes,
+        }),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+
+    // Check daily limit
+    if (!canTranscribe()) {
+      Alert.alert(
+        t('recording.dailyLimitReached'),
+        t('audio.dailyLimitInfo', { minutes: remainingMinutes }),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+
     setIsTranscribing(true);
 
     try {
       const result = await transcribeAudioFile(audioUri);
 
       if (result.success && result.transcript) {
+        // Record transcription usage
+        await recordTranscription(audioDurationSeconds);
+        console.log(`🎤 Recorded audio transcription: ${audioDurationSeconds}s`);
+
+        // Update transcription count
+        if (audioMetadata && onUpdateMetadata) {
+          const updatedMetadata: AudioMetadata = {
+            ...audioMetadata,
+            transcriptionCount: audioMetadata.transcriptionCount + 1,
+          };
+          onUpdateMetadata(updatedMetadata);
+          console.log(`🎤 Updated transcription count: ${updatedMetadata.transcriptionCount}/2`);
+        }
+
         onTranscribe(result.transcript);
         Alert.alert(t('alerts.successTitle'), t('audio.transcribed'));
       } else {
@@ -216,20 +304,35 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
       {/* Audio Info */}
       <View style={styles.audioInfo}>
+        {/* Recorded Date/Time - if available */}
+        {audioMetadata?.recordedAt && (
+          <View style={styles.recordedDateContainer}>
+            <MaterialIcons name="access-time" size={12} color={colors.textSecondary} />
+            <Text style={[styles.recordedDateText, { color: colors.textSecondary }]}>
+              {formatRecordedDate()}
+            </Text>
+            {audioMetadata.transcriptionCount > 0 && (
+              <Text style={[styles.transcriptionCountBadge, { color: colors.accent.orange }]}>
+                ({audioMetadata.transcriptionCount}/2)
+              </Text>
+            )}
+          </View>
+        )}
+
         <View style={styles.progressContainer}>
           <View style={[styles.progressBar, { backgroundColor: colors.textSecondary + '20' }]}>
-            <View 
+            <View
               style={[
-                styles.progressFill, 
-                { 
+                styles.progressFill,
+                {
                   backgroundColor: colors.accent.blue,
                   width: `${progressPercentage}%`
                 }
-              ]} 
+              ]}
             />
           </View>
         </View>
-        
+
         <View style={styles.timeContainer}>
           <Text style={[styles.timeText, { color: colors.textSecondary }]}>
             {formatTime(position)}
@@ -287,6 +390,21 @@ const styles = StyleSheet.create({
   },
   audioInfo: {
     flex: 1,
+  },
+  recordedDateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
+  recordedDateText: {
+    fontSize: 10,
+    fontWeight: '500',
+  },
+  transcriptionCountBadge: {
+    fontSize: 10,
+    fontWeight: '600',
+    marginLeft: 4,
   },
   progressContainer: {
     marginBottom: 6,

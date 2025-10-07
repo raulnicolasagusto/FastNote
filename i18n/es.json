@@ -101,7 +101,13 @@
     "stop": "Detener",
     "cancel": "Cancelar",
     "transcribing": "Transcribiendo...",
-    "processing": "Procesando audio..."
+    "processing": "Procesando audio...",
+    "maxDuration": "Máx 1 min",
+    "transcriptionsLeft": "{{count}} restantes hoy",
+    "dailyLimitReached": "Límite diario alcanzado (3/día)",
+    "monthlyLimitReached": "Límite mensual alcanzado (90 min/mes)",
+    "timeWarning": "¡Quedan {{seconds}} segundos!",
+    "autoStopSoon": "La grabación se detendrá pronto"
   },
   "audio": {
     "transcribeToNote": "Transcribir a la Nota con IA",
@@ -112,7 +118,11 @@
     "transcribe": "Transcribir",
     "deleteAudio": "Eliminar",
     "deleteConfirmTitle": "Eliminar Audio",
-    "deleteConfirmMessage": "¿Estás seguro de que quieres eliminar este audio? Esta acción no se puede deshacer."
+    "deleteConfirmMessage": "¿Estás seguro de que quieres eliminar este audio? Esta acción no se puede deshacer.",
+    "insufficientMinutes": "Este audio necesita {{needed}} min pero solo te quedan {{available}} min este mes",
+    "dailyLimitInfo": "Te quedan {{minutes}} minutos este mes para transcribir",
+    "transcriptionLimitTitle": "Límite de Transcripciones Alcanzado",
+    "transcriptionLimitMessage": "Este audio ya ha sido transcrito 2 veces (máximo permitido en el tier gratuito)"
   },
   "camera": {
     "title": "Capturar Texto",

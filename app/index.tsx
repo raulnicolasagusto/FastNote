@@ -11,8 +11,10 @@ import { Note, ChecklistItem } from '../types';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { useThemeStore } from '../store/theme/useThemeStore';
 import { useAdsStore } from '../store/ads/useAdsStore';
+import { useTranscriptionLimitsStore } from '../store/transcription/useTranscriptionLimitsStore';
 import { StorageService } from '../utils/storage';
 import { SPACING, TYPOGRAPHY, DEFAULT_CATEGORIES } from '../constants/theme';
+import { FREE_TIER_LIMITS } from '../constants/limits';
 import Sidebar from '../components/ui/Sidebar';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
@@ -25,10 +27,19 @@ export default function Home() {
   const { addNote } = useNotesStore();
   const { colors } = useThemeStore();
   const { resetInterstitialSession } = useAdsStore();
+  const {
+    canTranscribe,
+    getRemainingTranscriptions,
+    recordTranscription,
+    checkAndResetIfNeeded,
+    loadLimits,
+  } = useTranscriptionLimitsStore();
   const [showRecordingModal, setShowRecordingModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0); // Seconds elapsed
+  const [recordingTimer, setRecordingTimer] = useState<NodeJS.Timeout | null>(null);
   const { voiceNote } = useLocalSearchParams();
 
   // Inicializar Interstitial Ad Service y resetear sesión al abrir la app
@@ -42,6 +53,9 @@ export default function Home() {
 
     // Recargar ad para nueva sesión
     interstitialAdService.reloadAd();
+
+    // Load transcription limits and check for reset
+    loadLimits();
   }, []);
 
   // Handle quick action for voice note
@@ -53,6 +67,14 @@ export default function Home() {
       }, 500); // Small delay to ensure UI is ready
     }
   }, [voiceNote]);
+
+  // Auto-stop recording at 60 seconds
+  useEffect(() => {
+    if (isRecording && recordingDuration >= FREE_TIER_LIMITS.MAX_DURATION_SECONDS) {
+      console.log('🎤 Auto-stopping recording at 60 seconds');
+      stopRecording();
+    }
+  }, [recordingDuration, isRecording]);
 
   const handleNotePress = (note: Note) => {
     console.log('🎯 NAVIGATION DEBUG - handleNotePress called with note:', note.title, note.id);
@@ -96,6 +118,18 @@ export default function Home() {
   };
 
   const handleVoiceNotePress = async () => {
+    // Check if user can transcribe before starting
+    await checkAndResetIfNeeded();
+
+    if (!canTranscribe()) {
+      Alert.alert(
+        t('recording.dailyLimitReached'),
+        t('recording.dailyLimitReached'),
+        [{ text: t('common.ok') }]
+      );
+      return;
+    }
+
     setShowRecordingModal(true);
     await startRecording();
   };
@@ -134,6 +168,14 @@ export default function Home() {
 
       setRecording(newRecording);
       setIsRecording(true);
+      setRecordingDuration(0);
+
+      // Start timer to track duration (auto-stop is handled by useEffect)
+      const timer = setInterval(() => {
+        setRecordingDuration((prev) => prev + 1);
+      }, 1000);
+
+      setRecordingTimer(timer);
     } catch (err) {
       console.error('Failed to start recording', err);
       Alert.alert(t('alerts.errorTitle'), t('alerts.recordingStartError'));
@@ -143,14 +185,25 @@ export default function Home() {
   const stopRecording = async () => {
     if (!recording) return;
 
+    // Clear timer
+    if (recordingTimer) {
+      clearInterval(recordingTimer);
+      setRecordingTimer(null);
+    }
+
     try {
       await recording.stopAndUnloadAsync();
       await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
 
       const uri = recording.getURI();
+      const duration = recordingDuration;
       setIsRecording(false);
 
       if (uri) {
+        // Record transcription usage
+        await recordTranscription(duration);
+        console.log(`🎤 Recorded transcription: ${duration}s`);
+
         await transcribeAudio(uri);
       }
     } catch (err) {
@@ -160,12 +213,19 @@ export default function Home() {
   };
 
   const cancelRecording = async () => {
+    // Clear timer
+    if (recordingTimer) {
+      clearInterval(recordingTimer);
+      setRecordingTimer(null);
+    }
+
     if (recording) {
       await recording.stopAndUnloadAsync();
       await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
       setRecording(null);
     }
     setIsRecording(false);
+    setRecordingDuration(0);
     setShowRecordingModal(false);
   };
 
@@ -618,6 +678,31 @@ export default function Home() {
                 <Text style={[styles.recordingText, { color: colors.textPrimary }]}>
                   {isRecording ? t('recording.recording') : t('recording.transcribing')}
                 </Text>
+
+                {/* Limits Info - Always visible */}
+                <View style={styles.limitsContainer}>
+                  <Text style={[styles.limitsText, { color: colors.textSecondary }]}>
+                    {t('recording.maxDuration')} • {t('recording.transcriptionsLeft', { count: getRemainingTranscriptions() })}
+                  </Text>
+                </View>
+
+                {/* Timer and Warning */}
+                {isRecording && (
+                  <View style={styles.timerContainer}>
+                    <Text style={[styles.timerText, {
+                      color: recordingDuration >= FREE_TIER_LIMITS.WARNING_THRESHOLD_SECONDS
+                        ? colors.accent.red
+                        : colors.textPrimary
+                    }]}>
+                      {recordingDuration}s / {FREE_TIER_LIMITS.MAX_DURATION_SECONDS}s
+                    </Text>
+                    {recordingDuration >= FREE_TIER_LIMITS.WARNING_THRESHOLD_SECONDS && (
+                      <Text style={[styles.warningText, { color: colors.accent.red }]}>
+                        {t('recording.autoStopSoon')}
+                      </Text>
+                    )}
+                  </View>
+                )}
               </View>
 
               <View style={styles.recordingActions}>
@@ -677,6 +762,27 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.titleSize,
     fontWeight: '600',
     marginTop: SPACING.md,
+  },
+  limitsContainer: {
+    marginTop: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+  },
+  limitsText: {
+    fontSize: TYPOGRAPHY.captionSize,
+    textAlign: 'center',
+  },
+  timerContainer: {
+    marginTop: SPACING.md,
+    alignItems: 'center',
+  },
+  timerText: {
+    fontSize: TYPOGRAPHY.bodySize,
+    fontWeight: '600',
+  },
+  warningText: {
+    fontSize: TYPOGRAPHY.captionSize,
+    marginTop: SPACING.xs,
+    fontWeight: '500',
   },
   recordingActions: {
     flexDirection: 'row',
