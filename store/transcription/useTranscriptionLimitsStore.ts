@@ -13,6 +13,7 @@ interface TranscriptionLimitsState {
   canTranscribe: () => boolean;
   getRemainingTranscriptions: () => number;
   getRemainingMonthlyMinutes: () => number;
+  getNextResetTime: () => string; // Returns formatted time until next reset
   recordTranscription: (durationSeconds: number) => Promise<void>;
   checkAndResetIfNeeded: () => Promise<void>;
   loadLimits: () => Promise<void>;
@@ -54,6 +55,22 @@ export const useTranscriptionLimitsStore = create<TranscriptionLimitsState>((set
     const monthlyMinutesUsed = Math.floor(state.transcriptionsThisMonth / 60);
     const remaining = FREE_TIER_LIMITS.MONTHLY_MINUTES - monthlyMinutesUsed;
     return Math.max(0, remaining);
+  },
+
+  getNextResetTime: () => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+
+    const diffMs = tomorrow.getTime() - now.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (diffHours > 0) {
+      return `${diffHours}h ${diffMinutes}m`;
+    }
+    return `${diffMinutes}m`;
   },
 
   recordTranscription: async (durationSeconds: number) => {

@@ -20,14 +20,6 @@ export interface TranscriptionResult {
  */
 export const transcribeAudioFile = async (audioUri: string): Promise<TranscriptionResult> => {
   try {
-    // Validar API key
-    if (!process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY) {
-      return {
-        success: false,
-        error: 'DEEPGRAM_API_KEY_MISSING',
-      };
-    }
-
     console.log('🎤 [AudioTranscription] Reading audio file from:', audioUri);
 
     // Usar la nueva API de File de Expo SDK 54
@@ -41,13 +33,12 @@ export const transcribeAudioFile = async (audioUri: string): Promise<Transcripti
 
     console.log('🎤 [AudioTranscription] Audio file size:', binaryAudio.length, 'bytes');
 
-    // Llamar a Deepgram API con detección automática de idioma
+    // 🔒 USANDO CLOUDFLARE WORKER (API keys protegidas)
     const response = await fetch(
-      'https://api.deepgram.com/v1/listen?model=nova-2&detect_language=true&punctuate=true&smart_format=true',
+      'https://fastnote-api-proxy.fastvoiceapp.workers.dev/api/transcribe',
       {
         method: 'POST',
         headers: {
-          'Authorization': `Token ${process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY}`,
           'Content-Type': 'audio/m4a',
         },
         body: binaryAudio,

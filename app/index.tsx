@@ -30,6 +30,7 @@ export default function Home() {
   const {
     canTranscribe,
     getRemainingTranscriptions,
+    getNextResetTime,
     recordTranscription,
     checkAndResetIfNeeded,
     loadLimits,
@@ -121,14 +122,19 @@ export default function Home() {
     // Check if user can transcribe before starting
     await checkAndResetIfNeeded();
 
+    // TEMPORALMENTE DESACTIVADO PARA TESTING DE API KEYS
+    // TODO: REACTIVAR ANTES DE SUBIR A PLAY STORE
+    /*
     if (!canTranscribe()) {
+      const resetTime = getNextResetTime();
       Alert.alert(
         t('recording.dailyLimitReached'),
-        t('recording.dailyLimitReached'),
+        t('recording.dailyLimitReachedMessage', { time: resetTime }),
         [{ text: t('common.ok') }]
       );
       return;
     }
+    */
 
     setShowRecordingModal(true);
     await startRecording();
@@ -428,11 +434,6 @@ export default function Home() {
 
   const transcribeAudio = async (audioUri: string) => {
     try {
-      if (!process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY) {
-        Alert.alert(t('alerts.errorTitle'), t('alerts.deepgramApiKeyMissing'));
-        return;
-      }
-
       console.log('🎤 Reading audio file from:', audioUri);
 
       // Leer el archivo de audio como string de bytes
@@ -445,10 +446,10 @@ export default function Home() {
 
       console.log('🎤 Audio file size:', binaryAudio.length, 'bytes');
 
-      const response = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&detect_language=true&punctuate=true&smart_format=true', {
+      // 🔒 USANDO CLOUDFLARE WORKER (API keys protegidas)
+      const response = await fetch('https://fastnote-api-proxy.fastvoiceapp.workers.dev/api/transcribe', {
         method: 'POST',
         headers: {
-          'Authorization': `Token ${process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY}`,
           'Content-Type': 'audio/m4a',
         },
         body: binaryAudio,
@@ -505,6 +506,18 @@ export default function Home() {
     return `${t('notes.newNote')} ${formatDateByLanguage(now)}`;
   };
 
+  // Helper function to clean HTML entities from content
+  const cleanHtmlContent = (html: string): string => {
+    return html
+      .replace(/&nbsp;/g, ' ')  // Replace non-breaking spaces with regular spaces
+      .replace(/&amp;/g, '&')   // Decode ampersands
+      .replace(/&lt;/g, '<')    // Decode less than
+      .replace(/&gt;/g, '>')    // Decode greater than
+      .replace(/&quot;/g, '"')  // Decode quotes
+      .replace(/&#39;/g, "'")   // Decode apostrophes
+      .trim();
+  };
+
   const createVoiceNote = async (transcribedText: string) => {
     console.log('🎤 VOICE NOTE CREATION - Starting analysis for:', transcribedText);
 
@@ -514,7 +527,7 @@ export default function Home() {
       console.log('🎤 VOICE NOTE CREATION - Reminder analysis result:', JSON.stringify(reminderAnalysis, null, 2));
 
       // Use the cleaned text (without reminder commands) for note content
-      const noteContent = reminderAnalysis.cleanText;
+      const noteContent = cleanHtmlContent(reminderAnalysis.cleanText);
 
       // Generate default title (will be overridden if it's a list with custom name)
       let noteTitle = generateVoiceNoteTitle();
@@ -628,11 +641,11 @@ export default function Home() {
 
     } catch (error) {
       console.error('🎤 VOICE NOTE CREATION - Error analyzing reminder:', error);
-      
+
       // Fallback: create note normally without reminder analysis
       const newNote: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> = {
         title: noteTitle,
-        content: transcribedText,
+        content: cleanHtmlContent(transcribedText),
         type: 'text',
         category: DEFAULT_CATEGORIES[0],
         checklistItems: [],

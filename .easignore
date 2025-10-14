@@ -1,0 +1,75 @@
+# ==========================================
+# EAS BUILD IGNORE FILE
+# Archivos que NO se incluyen en el build de producción
+# ==========================================
+
+# Documentación de desarrollo (NO necesaria en producción)
+CLAUDE.md
+PLAYSTORE_DEPLOYMENT_GUIDE.md
+implementation-cloudflareWorker.md
+INTERSTITIAL_ADS_SETUP.md
+I18N_IMPLEMENTATION_GUIDE.md
+OCR_IMPLEMENTATION.md
+GUIA_MIGRACION_DEVELOPMENT_BUILD.md
+
+# Carpeta de documentación LLM
+llm/
+
+# Variables de entorno locales (API keys están en Cloudflare Workers)
+.env
+.env.local
+.env.*.local
+
+# Archivos de desarrollo
+.vscode/
+.idea/
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Tests (si tienes carpeta de tests)
+__tests__/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# macOS
+.DS_Store
+
+# Carpetas de build locales
+node_modules/
+.expo/
+dist/
+web-build/
+ios/
+android/
+
+# Archivos temporales
+*.tmp
+*.temp
+.metro-health-check*
+
+# Screenshots y assets de desarrollo (NO los de producción)
+screenshots-dev/
+assets/play-store/drafts/
+
+# Linters y formatters config (ya aplicados antes del build)
+.eslintrc*
+.prettierrc*
+eslint.config.js
+prettier.config.js
+
+# TypeScript config (ya compilado)
+tsconfig.json
+
+# Otras configs de desarrollo
+babel.config.js
+metro.config.js
+tailwind.config.js

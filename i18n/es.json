@@ -105,6 +105,7 @@
     "maxDuration": "Máx 1 min",
     "transcriptionsLeft": "{{count}} restantes hoy",
     "dailyLimitReached": "Límite diario alcanzado (3/día)",
+    "dailyLimitReachedMessage": "Has alcanzado el límite de 3 transcripciones por día. Se renueva en {{time}}",
     "monthlyLimitReached": "Límite mensual alcanzado (90 min/mes)",
     "timeWarning": "¡Quedan {{seconds}} segundos!",
     "autoStopSoon": "La grabación se detendrá pronto"
@@ -140,8 +141,8 @@
     "unarchive": "Desarchivar",
     "delete": "Eliminar",
     "share": "Compartir",
-    "moveToFolder": "Mover a Carpeta",
-    "setReminder": "Establecer Recordatorio",
+    "moveToFolder": "Mover Nota",
+    "setReminder": "Recordatorio",
     "changeColor": "Cambiar Color",
     "settings": "Configuración",
     "theme": "Tema",

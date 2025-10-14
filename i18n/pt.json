@@ -221,7 +221,28 @@
     "about": "Sobre FastNote",
     "version": "Versão {{version}}",
     "callouts": "Mostrar Dicas",
-    "language": "Idioma"
+    "language": "Idioma",
+    "instructions": "Instruções"
+  },
+  "instructions": {
+    "title": "Como usar os recursos de IA",
+    "close": "Fechar",
+    "voiceNote": {
+      "title": "Nota de Voz Rápida",
+      "description": "Como transcrevemos uma nota rápida com voz? Você pode pressionar e segurar o ícone do seu aplicativo até que a opção apareça, pressione-a e comece a gravação de voz que será transcrita diretamente."
+    },
+    "voiceNoteInApp": {
+      "title": "Nota de Voz no Aplicativo",
+      "description": "Ou dentro do aplicativo, pressione em nota rápida, e começará a gravar e depois transcreverá para a nota. Lembre-se de que você pode gravar uma lista e também salvar um lembrete. Exemplo: \"Nova lista de compras, leite, pão, queijo, tomates. e lembre-me amanhã às 14h\". Também a uma lista já criada você pode adicionar itens dizendo \"Adicione\", \"Adicione a esta lista\" e o item que você quiser será adicionado à sua lista."
+    },
+    "ocrFeature": {
+      "title": "Reconhecimento de Texto OCR",
+      "description": "Também com IA você pode transcrever texto diretamente para a nota, seja tirando uma foto de um texto ou carregando uma imagem com texto, apenas pressionando o ícone da câmera."
+    },
+    "audioTranscription": {
+      "title": "Transcrição de Áudio",
+      "description": "Você pode gravar reuniões longas e transcrevê-las com IA, primeiro você grava a reunião, depois verá que será gravado um áudio que você pode reproduzir, e se você pressionar e segurar o áudio, a opção de transcrever ou excluí-lo será habilitada, se você transcrevê-lo, ele será adicionado automaticamente a essa nota."
+    }
   },
   "timestamps": {
     "created": "Criada",

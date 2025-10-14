@@ -235,11 +235,13 @@ export default function Sidebar({ visible, onClose }: SidebarProps) {
         </View>
       </View>
 
-      {/* Instructions Modal */}
-      <InstructionsModal
-        visible={showInstructionsModal}
-        onClose={() => setShowInstructionsModal(false)}
-      />
+      {/* Instructions Modal - Lazy loaded: solo se monta cuando se abre */}
+      {showInstructionsModal && (
+        <InstructionsModal
+          visible={showInstructionsModal}
+          onClose={() => setShowInstructionsModal(false)}
+        />
+      )}
     </Modal>
   );
 }

@@ -35,18 +35,13 @@ export const extractReminderDetails = async (text: string): Promise<{
   originalReminderPhrase?: string;
 }> => {
   try {
-    if (!process.env.EXPO_PUBLIC_OPENAI_API_KEY) {
-      throw new Error('OpenAI API key not found');
-    }
-
     console.log('🤖 AI REMINDER ANALYSIS - Starting analysis of text:', text);
-    console.log('🤖 AI REMINDER ANALYSIS - OpenAI API Key available:', !!process.env.EXPO_PUBLIC_OPENAI_API_KEY);
     console.log('🤖 AI REMINDER ANALYSIS - Basic keyword detection:', detectReminderCommand(text));
 
     const now = new Date();
     const currentDate = now.toLocaleDateString('es-ES');
     const currentTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    
+
     const prompt = `Analiza este texto transcrito por voz para detectar comandos de recordatorio:
 
 TEXTO: "${text}"
@@ -71,11 +66,11 @@ EJEMPLOS:
 "Reunión con cliente. Avisar hoy 15:30" → hasReminder: true, reminderDateTime: hoy 15:30
 "Solo una nota normal" → hasReminder: false`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // 🔒 USANDO CLOUDFLARE WORKER (API keys protegidas)
+    const response = await fetch('https://fastnote-api-proxy.fastvoiceapp.workers.dev/api/analyze-reminder', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.EXPO_PUBLIC_OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
         model: 'gpt-4o',

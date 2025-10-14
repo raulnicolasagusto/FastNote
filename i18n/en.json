@@ -105,6 +105,7 @@
     "maxDuration": "Max 1 min",
     "transcriptionsLeft": "{{count}} left today",
     "dailyLimitReached": "Daily limit reached (3/day)",
+    "dailyLimitReachedMessage": "You've reached the limit of 3 transcriptions per day. Resets in {{time}}",
     "monthlyLimitReached": "Monthly limit reached (90 min/month)",
     "timeWarning": "{{seconds}} seconds remaining!",
     "autoStopSoon": "Recording will stop soon"

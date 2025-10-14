@@ -280,16 +280,29 @@ export default function NoteDetail() {
     setEditingElement('checklist');
   };
 
+  // Helper function to clean HTML entities from content
+  const cleanHtmlContent = (html: string): string => {
+    return html
+      .replace(/&nbsp;/g, ' ')  // Replace non-breaking spaces with regular spaces
+      .replace(/&amp;/g, '&')   // Decode ampersands
+      .replace(/&lt;/g, '<')    // Decode less than
+      .replace(/&gt;/g, '>')    // Decode greater than
+      .replace(/&quot;/g, '"')  // Decode quotes
+      .replace(/&#39;/g, "'")   // Decode apostrophes
+      .trim();
+  };
+
   const handleSaveEdit = () => {
     if (!note) return;
 
     if (editedTitle.trim() === '') {
       Alert.alert(t('alerts.errorTitle'), t('alerts.emptyTitleMessage'));
       return;
-    }
+    };
 
     // Determine note type based on content
-    const hasText = editedContent.trim();
+    const cleanedContent = cleanHtmlContent(editedContent);
+    const hasText = cleanedContent.trim();
     const hasChecklist = editedChecklistItems.length > 0;
     let noteType: 'text' | 'checklist' | 'mixed' = 'text';
 
@@ -303,7 +316,7 @@ export default function NoteDetail() {
 
     const updates: Partial<Note> = {
       title: editedTitle.trim(),
-      content: editedContent.trim(),
+      content: cleanedContent,
       checklistItems: editedChecklistItems,
       type: noteType,
     };
@@ -1419,7 +1432,8 @@ export default function NoteDetail() {
 
       // If not a list, insert as regular text
       const updatedContent = editedContent ? `${editedContent}\n\n${textToProcess}` : textToProcess;
-      setEditedContent(updatedContent);
+      const cleanedContent = cleanHtmlContent(updatedContent);
+      setEditedContent(cleanedContent);
 
       // Determine note type based on content
       const hasChecklist = note.checklistItems && note.checklistItems.length > 0;
@@ -1428,7 +1442,7 @@ export default function NoteDetail() {
       // Auto-save the transcribed text, preserving existing checklist
       const updates: Partial<Note> = {
         type: noteType,
-        content: updatedContent.trim(),
+        content: cleanedContent,
         // Preserve existing checklist items
         checklistItems: note.checklistItems || [],
       };
@@ -1515,14 +1529,15 @@ export default function NoteDetail() {
 
       // If not a list, insert as regular text (fallback)
       const updatedContent = editedContent ? `${editedContent}\n\n${transcribedText}` : transcribedText;
-      setEditedContent(updatedContent);
+      const cleanedContent = cleanHtmlContent(updatedContent);
+      setEditedContent(cleanedContent);
 
       const hasChecklist = note.checklistItems && note.checklistItems.length > 0;
       const noteType = hasChecklist ? 'mixed' : 'text';
 
       const updates: Partial<Note> = {
         type: noteType,
-        content: updatedContent.trim(),
+        content: cleanedContent,
         checklistItems: note.checklistItems || [],
       };
       updateNote(note.id, updates);
@@ -1607,12 +1622,13 @@ export default function NoteDetail() {
                       const newContent = currentContent
                         ? `${currentContent}<br><br>${transcribedText}`
                         : transcribedText;
-                      setEditedContent(newContent);
-                      updateNote(note.id, { content: newContent });
+                      const cleanedContent = cleanHtmlContent(newContent);
+                      setEditedContent(cleanedContent);
+                      updateNote(note.id, { content: cleanedContent });
 
                       // Actualizar el RichEditor si estamos en modo edición
                       if (richTextRef.current && editingElement === 'content') {
-                        richTextRef.current.setContentHTML(newContent);
+                        richTextRef.current.setContentHTML(cleanedContent);
                       }
                     }}
                     onUpdateMetadata={updateAudioMetadata}
@@ -1692,12 +1708,13 @@ export default function NoteDetail() {
                       const newContent = currentContent
                         ? `${currentContent}<br><br>${transcribedText}`
                         : transcribedText;
-                      setEditedContent(newContent);
-                      updateNote(note.id, { content: newContent });
+                      const cleanedContent = cleanHtmlContent(newContent);
+                      setEditedContent(cleanedContent);
+                      updateNote(note.id, { content: cleanedContent });
 
                       // Actualizar el RichEditor si estamos en modo edición
                       if (richTextRef.current && editingElement === 'content') {
-                        richTextRef.current.setContentHTML(newContent);
+                        richTextRef.current.setContentHTML(cleanedContent);
                       }
                     }}
                   />

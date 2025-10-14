@@ -24,5 +24,15 @@ android
 .metro-health-check*
 
 # Environment variables with sensitive data
+.env
 .env.local
 .env.*.local
+
+# Archivos de documentación interna (opcional - comentar si quieres versionar)
+# implementation-cloudflareWorker.md
+# PLAYSTORE_DEPLOYMENT_GUIDE.md
+
+# Build outputs
+*.aab
+*.apk
+*.ipa

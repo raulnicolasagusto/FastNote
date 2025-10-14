@@ -67,6 +67,16 @@ const IMAGES = {
     voiceNote5: require('../../assets/app-instructions/English/VoiceNote5.png'),
     voiceNote6: require('../../assets/app-instructions/English/VoiceNote6.png'),
   },
+  pt: {
+    // TODO: Agregar imágenes en portugués cuando estén disponibles
+    voiceNote: require('../../assets/app-instructions/English/VoiceNote.png'),
+    voiceNote1: require('../../assets/app-instructions/English/VoiceNote1.png'),
+    voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.jpeg'),
+    voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.jpeg'),
+    voiceNote4_5: require('../../assets/app-instructions/English/VoiceNote4.5.png'),
+    voiceNote5: require('../../assets/app-instructions/English/VoiceNote5.png'),
+    voiceNote6: require('../../assets/app-instructions/English/VoiceNote6.png'),
+  },
 };
 
 export default function InstructionsModal({ visible, onClose }: InstructionsModalProps) {
@@ -74,7 +84,7 @@ export default function InstructionsModal({ visible, onClose }: InstructionsModa
   const { colors, isDarkMode, currentLanguage } = useThemeStore();
 
   // Obtener imágenes según idioma actual
-  const images = IMAGES[currentLanguage as 'en' | 'es'] || IMAGES.en;
+  const images = IMAGES[currentLanguage as 'en' | 'es' | 'pt'] || IMAGES.en;
 
   return (
     <Modal
