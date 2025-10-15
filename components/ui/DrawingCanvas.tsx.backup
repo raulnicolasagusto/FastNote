@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
   Modal,
   TouchableOpacity,
   Text,
+  PanResponder,
   Dimensions,
   SafeAreaView,
 } from 'react-native';
-import { Canvas, Path, Skia } from '@shopify/react-native-skia';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useSharedValue, useDerivedValue, runOnJS } from 'react-native-reanimated';
 import ViewShot from 'react-native-view-shot';
+import Svg, { Path } from 'react-native-svg';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { t, useLanguage } from '../../utils/i18n';
@@ -22,12 +21,6 @@ interface DrawingCanvasProps {
   onSaveDrawing: (imageUri: string) => void;
 }
 
-interface PathData {
-  path: any; // SkPath
-  color: string;
-  strokeWidth: number;
-}
-
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
@@ -35,37 +28,22 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   onClose,
   onSaveDrawing,
 }) => {
-  const [paths, setPaths] = useState<PathData[]>([]);
+  const [paths, setPaths] = useState<Array<{id: string, data: string}>>([]);
+  const [currentPath, setCurrentPath] = useState('');
   const [currentColor, setCurrentColor] = useState('#000000');
   const [brushSize, setBrushSize] = useState(3);
   const [isEraserMode, setIsEraserMode] = useState(false);
   const [eraserSize, setEraserSize] = useState(8);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Use shared values for current path (UI thread)
-  const currentPathPoints = useSharedValue<{x: number, y: number}[]>([]);
-  const isDrawing = useSharedValue(false);
-  const viewShotRef = React.useRef<ViewShot>(null);
-
-  // Derived value that creates the path in real-time
-  const currentPath = useDerivedValue(() => {
-    const points = currentPathPoints.value;
-    if (points.length === 0) {
-      return Skia.Path.Make();
-    }
-
-    const path = Skia.Path.Make();
-    path.moveTo(points[0].x, points[0].y);
-
-    for (let i = 1; i < points.length; i++) {
-      path.lineTo(points[i].x, points[i].y);
-    }
-
-    return path;
-  }, [currentPathPoints]);
+  // Use refs to avoid excessive re-renders during drawing
+  const currentPointsRef = useRef<{x: number, y: number}[]>([]);
+  const pathIdCounter = useRef(0);
+  const viewShotRef = useRef<ViewShot>(null);
+  const updateCounter = useRef(0);
 
   const { colors } = useThemeStore();
-  useLanguage();
+  useLanguage(); // Re-render on language change
 
   const colorOptions = [
     '#000000', '#ff6b6b', '#4ecdc4', '#45b7d1',
@@ -75,46 +53,98 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   const brushSizes = [1, 3, 5, 8, 12];
   const eraserSizes = [5, 10, 15, 20, 30];
 
+  // Calculate drawing area dimensions
   const drawingWidth = screenWidth - 32;
   const drawingHeight = Math.min(screenHeight - 280, drawingWidth * (400/350));
 
-  // Functions to be called from UI thread via runOnJS
-  const addPathToState = (pathData: PathData) => {
-    setPaths(prev => [...prev, pathData]);
-    // Clear points AFTER state has been updated (next frame)
-    requestAnimationFrame(() => {
-      currentPathPoints.value = [];
-    });
+  // Create smooth quadratic bezier curve from points
+  const createSmoothPath = (points: {x: number, y: number}[]) => {
+    if (points.length < 2) return '';
+
+    let path = `M${points[0].x.toFixed(2)},${points[0].y.toFixed(2)}`;
+
+    // For only 2 points, draw a line
+    if (points.length === 2) {
+      path += ` L${points[1].x.toFixed(2)},${points[1].y.toFixed(2)}`;
+      return path;
+    }
+
+    // Use quadratic bezier curves for smooth drawing
+    for (let i = 1; i < points.length - 1; i++) {
+      const currentPoint = points[i];
+      const nextPoint = points[i + 1];
+
+      // Control point is the current point, end point is midpoint to next
+      const midX = (currentPoint.x + nextPoint.x) / 2;
+      const midY = (currentPoint.y + nextPoint.y) / 2;
+
+      path += ` Q${currentPoint.x.toFixed(2)},${currentPoint.y.toFixed(2)} ${midX.toFixed(2)},${midY.toFixed(2)}`;
+    }
+
+    // Add final point
+    const lastPoint = points[points.length - 1];
+    path += ` L${lastPoint.x.toFixed(2)},${lastPoint.y.toFixed(2)}`;
+
+    return path;
   };
 
-  // Create pan gesture for drawing
-  const pan = Gesture.Pan()
-    .onStart((event) => {
-      isDrawing.value = true;
-      currentPathPoints.value = [{x: event.x, y: event.y}];
-    })
-    .onUpdate((event) => {
-      currentPathPoints.value = [...currentPathPoints.value, {x: event.x, y: event.y}];
-    })
-    .onEnd(() => {
-      isDrawing.value = false;
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
 
-      const effectiveColor = isEraserMode ? '#FFFFFF' : currentColor;
-      const effectiveSize = isEraserMode ? eraserSize : brushSize;
+    onPanResponderGrant: (evt) => {
+      const { locationX, locationY } = evt.nativeEvent;
+      // Convert coordinates to SVG viewBox coordinates (350x400)
+      const svgX = (locationX / drawingWidth) * 350;
+      const svgY = (locationY / drawingHeight) * 400;
+      const newPoint = { x: svgX, y: svgY };
 
-      const pathData: PathData = {
-        path: currentPath.value.copy(),
-        color: effectiveColor,
-        strokeWidth: effectiveSize,
-      };
+      currentPointsRef.current = [newPoint];
+      setCurrentPath(`M${svgX.toFixed(2)},${svgY.toFixed(2)}`);
+      updateCounter.current = 0;
+    },
 
-      // Add to state (will clear points inside that function after next frame)
-      runOnJS(addPathToState)(pathData);
-    });
+    onPanResponderMove: (evt) => {
+      const { locationX, locationY } = evt.nativeEvent;
+      // Convert coordinates to SVG viewBox coordinates (350x400)
+      const svgX = (locationX / drawingWidth) * 350;
+      const svgY = (locationY / drawingHeight) * 400;
+
+      // Add point to ref
+      currentPointsRef.current.push({ x: svgX, y: svgY });
+
+      // Update every 2 points for smooth but performant drawing
+      updateCounter.current++;
+      if (updateCounter.current >= 2) {
+        const smoothPath = createSmoothPath(currentPointsRef.current);
+        setCurrentPath(smoothPath);
+        updateCounter.current = 0;
+      }
+    },
+
+    onPanResponderRelease: () => {
+      // Final update with all points
+      if (currentPointsRef.current.length > 0) {
+        const smoothPath = createSmoothPath(currentPointsRef.current);
+        setCurrentPath(smoothPath);
+
+        const pathId = `path-${pathIdCounter.current++}`;
+        // Si está en modo borrador, usar blanco; sino el color actual
+        const effectiveColor = isEraserMode ? '#FFFFFF' : currentColor;
+        const effectiveSize = isEraserMode ? eraserSize : brushSize;
+
+        setPaths(prev => [...prev, { id: pathId, data: `${smoothPath}|${effectiveColor}|${effectiveSize}` }]);
+        setCurrentPath('');
+        currentPointsRef.current = [];
+        updateCounter.current = 0;
+      }
+    },
+  });
 
   const clearCanvas = () => {
     setPaths([]);
-    currentPathPoints.value = [];
+    setCurrentPath('');
+    currentPointsRef.current = [];
   };
 
   const saveDrawing = async () => {
@@ -125,12 +155,12 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
 
     try {
       setIsSaving(true);
-
+      
       if (viewShotRef.current?.capture) {
         const uri = await viewShotRef.current.capture();
         onSaveDrawing(uri);
       }
-
+      
       onClose();
     } catch (error) {
       console.error('Error saving drawing:', error);
@@ -140,9 +170,43 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
     }
   };
 
+  const renderPaths = () => {
+    return (
+      <>
+        {paths.map((pathObj) => {
+          const [pathString, color, size] = pathObj.data.split('|');
+          return (
+            <Path
+              key={pathObj.id}
+              d={pathString}
+              stroke={color}
+              strokeWidth={parseFloat(size)}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          );
+        })}
+        {currentPath && (
+          <Path
+            key="current-path"
+            d={currentPath}
+            stroke={isEraserMode ? '#FFFFFF' : currentColor}
+            strokeWidth={isEraserMode ? eraserSize : brushSize}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+        )}
+      </>
+    );
+  };
+
   const handleClose = () => {
     setPaths([]);
-    currentPathPoints.value = [];
+    setCurrentPath('');
+    currentPointsRef.current = [];
+    updateCounter.current = 0;
     onClose();
   };
 
@@ -171,47 +235,29 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
 
         {/* Drawing Canvas */}
         <View style={styles.canvasContainer}>
-          <ViewShot
+          <ViewShot 
             ref={viewShotRef}
-            options={{
-              format: 'png',
-              quality: 0.9,
+            options={{ 
+              format: 'png', 
+              quality: 0.9, 
               result: 'data-uri',
               width: drawingWidth,
               height: drawingHeight
             }}
             style={[styles.drawingArea, { width: drawingWidth, height: drawingHeight }]}
           >
-            <View style={[{ width: drawingWidth, height: drawingHeight, backgroundColor: 'white', borderRadius: 12, overflow: 'hidden' }]}>
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <GestureDetector gesture={pan}>
-                  <Canvas
-                    style={{ width: drawingWidth, height: drawingHeight }}
-                  >
-                    {/* Render all completed paths */}
-                    {paths.map((pathData, index) => (
-                      <Path
-                        key={index}
-                        path={pathData.path}
-                        color={pathData.color}
-                        style="stroke"
-                        strokeWidth={pathData.strokeWidth}
-                        strokeCap="round"
-                        strokeJoin="round"
-                      />
-                    ))}
-                    {/* Render current path being drawn */}
-                    <Path
-                      path={currentPath}
-                      color={isEraserMode ? '#FFFFFF' : currentColor}
-                      style="stroke"
-                      strokeWidth={isEraserMode ? eraserSize : brushSize}
-                      strokeCap="round"
-                      strokeJoin="round"
-                    />
-                  </Canvas>
-                </GestureDetector>
-              </GestureHandlerRootView>
+            <View
+              style={[{ width: drawingWidth, height: drawingHeight, backgroundColor: 'white', borderRadius: 12 }]}
+              {...panResponder.panHandlers}
+            >
+              <Svg
+                width={drawingWidth}
+                height={drawingHeight}
+                viewBox="0 0 350 400"
+                preserveAspectRatio="none"
+              >
+                {renderPaths()}
+              </Svg>
             </View>
           </ViewShot>
         </View>
@@ -227,14 +273,11 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
               {colorOptions.map((color) => (
                 <TouchableOpacity
                   key={color}
-                  onPress={() => {
-                    setCurrentColor(color);
-                    setIsEraserMode(false);
-                  }}
+                  onPress={() => setCurrentColor(color)}
                   style={[
                     styles.colorOption,
                     { backgroundColor: color },
-                    currentColor === color && !isEraserMode && {
+                    currentColor === color && {
                       borderColor: colors.accent.blue,
                       borderWidth: 3,
                     }
@@ -381,6 +424,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   drawingArea: {
+    width: screenWidth - 32,
+    height: Math.min(screenHeight - 280, (screenWidth - 32) * (400/350)), // Maintain aspect ratio
     borderRadius: 12,
     elevation: 3,
     shadowColor: '#000',
@@ -391,7 +436,7 @@ const styles = StyleSheet.create({
   },
   controlsContainer: {
     padding: 16,
-    paddingBottom: 80,
+    paddingBottom: 80, // Extra padding for Android navigation bar
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.1)',
   },
@@ -441,10 +486,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 16, // Increased for easier tapping
     borderRadius: 8,
     gap: 8,
-    minHeight: 50,
+    minHeight: 50, // Minimum touch target size
   },
   clearButton: {
     backgroundColor: '#ff6b6b',
