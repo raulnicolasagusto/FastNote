@@ -2401,7 +2401,7 @@ export default function NoteDetail() {
                 style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
                 onPress={() => setShowCameraModal(false)}
                 disabled={isProcessingImage}>
-                <MaterialIcons name="close" size={16} color={colors.cardBackground} />
+                <MaterialIcons name="close" size={18} color={colors.cardBackground} />
                 <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Cancel</Text>
               </TouchableOpacity>
 
@@ -2409,7 +2409,7 @@ export default function NoteDetail() {
                 style={[styles.recordingButton, styles.confirmButton, { backgroundColor: colors.accent.green }]}
                 onPress={takePhotoAndProcess}
                 disabled={isProcessingImage}>
-                <MaterialIcons name="camera-alt" size={16} color={colors.cardBackground} />
+                <MaterialIcons name="camera-alt" size={18} color={colors.cardBackground} />
                 <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Take Photo</Text>
               </TouchableOpacity>
 
@@ -2417,7 +2417,7 @@ export default function NoteDetail() {
                 style={[styles.recordingButton, { backgroundColor: colors.accent.purple }]}
                 onPress={pickImageAndProcess}
                 disabled={isProcessingImage}>
-                <MaterialIcons name="photo" size={16} color={colors.cardBackground} />
+                <MaterialIcons name="photo" size={18} color={colors.cardBackground} />
                 <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Choose Image</Text>
               </TouchableOpacity>
             </View>
@@ -2882,18 +2882,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: SPACING.xs,
-    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.md,
     borderRadius: 8,
-    gap: 4,
+    gap: 6,
     flex: 1,
-    minWidth: 90,
-    maxWidth: 140,
+    minWidth: 100,
+    maxWidth: 150,
   },
   confirmButton: {
   },
   buttonText: {
-    fontSize: 11,
+    fontSize: 15,
     fontWeight: '600',
     textAlign: 'center',
   },

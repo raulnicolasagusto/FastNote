@@ -13,6 +13,7 @@ import ViewShot from 'react-native-view-shot';
 import Svg, { Path } from 'react-native-svg';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
+import { t, useLanguage } from '../../utils/i18n';
 
 interface DrawingCanvasProps {
   visible: boolean;
@@ -34,6 +35,7 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const viewShotRef = useRef<ViewShot>(null);
   const { colors } = useThemeStore();
+  useLanguage(); // Re-render on language change
 
   const colorOptions = [
     '#000000', '#ff6b6b', '#4ecdc4', '#45b7d1', 
@@ -149,7 +151,7 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
             <MaterialIcons name="close" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-            Crear Dibujo
+            {t('drawing.title')}
           </Text>
           <View style={{ width: 24 }} />
         </View>
@@ -188,7 +190,7 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
           {/* Color Picker */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-              Colores:
+              {t('drawing.colors')}
             </Text>
             <View style={styles.colorPicker}>
               {colorOptions.map((color) => (
@@ -211,7 +213,7 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
           {/* Brush Size */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
-              Tamaño: {brushSize}px
+              {t('drawing.size')} {brushSize}px
             </Text>
             <View style={styles.brushSizes}>
               {brushSizes.map((size) => (
@@ -247,13 +249,13 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
               style={[styles.button, styles.clearButton]}
             >
               <MaterialIcons name="clear" size={20} color="white" />
-              <Text style={styles.buttonText}>Limpiar</Text>
+              <Text style={styles.buttonText}>{t('drawing.clear')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={saveDrawing}
               style={[
-                styles.button, 
+                styles.button,
                 { backgroundColor: colors.accent.blue },
                 isSaving && { opacity: 0.6 }
               ]}
@@ -261,7 +263,7 @@ export const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
             >
               <MaterialIcons name="save" size={20} color="white" />
               <Text style={styles.buttonText}>
-                {isSaving ? 'Guardando...' : 'Guardar'}
+                {isSaving ? t('drawing.saving') : t('drawing.save')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -311,7 +313,7 @@ const styles = StyleSheet.create({
   },
   controlsContainer: {
     padding: 16,
-    paddingBottom: 32, // Extra padding for Android navigation
+    paddingBottom: 80, // Extra padding for Android navigation bar
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.1)',
   },

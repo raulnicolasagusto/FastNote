@@ -263,5 +263,13 @@
     "minutesAgo": "{{count}} min ago",
     "hoursAgo": "{{count}} hours ago",
     "daysAgo": "{{count}} days ago"
+  },
+  "drawing": {
+    "title": "Create Drawing",
+    "colors": "Colors:",
+    "size": "Size:",
+    "clear": "Clear",
+    "save": "Save",
+    "saving": "Saving..."
   }
 }

@@ -263,5 +263,13 @@
     "minutesAgo": "Hace {{count}} min",
     "hoursAgo": "Hace {{count}} horas",
     "daysAgo": "Hace {{count}} días"
+  },
+  "drawing": {
+    "title": "Crear Dibujo",
+    "colors": "Colores:",
+    "size": "Tamaño:",
+    "clear": "Limpiar",
+    "save": "Guardar",
+    "saving": "Guardando..."
   }
 }
