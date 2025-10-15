@@ -11,6 +11,15 @@ INTERSTITIAL_ADS_SETUP.md
 I18N_IMPLEMENTATION_GUIDE.md
 OCR_IMPLEMENTATION.md
 GUIA_MIGRACION_DEVELOPMENT_BUILD.md
+GOOGLE_PLAY_CONSOLE_STEP_BY_STEP.md
+READY_FOR_PLAYSTORE.md
+report-pre-playStore.md
+calculo-modelo-simple.md
+calculos-revenue.md
+new-revenue.md
+revenueCat.md
+implementation-canvas-rn.md
+app.json.backup
 
 # Carpeta de documentación LLM
 llm/
