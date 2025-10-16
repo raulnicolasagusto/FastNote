@@ -132,6 +132,18 @@
     "scanning": "Escaneando texto...",
     "processingImage": "Procesando imagen..."
   },
+  "imagePicker": {
+    "title": "Agregar Imagen",
+    "takePhoto": "Tomar Foto",
+    "chooseFromGallery": "Seleccionar de Galería",
+    "cancel": "Cancelar",
+    "permissionsRequired": "Permisos Requeridos",
+    "cameraPermissionMessage": "Necesitamos permisos de cámara para tomar fotos.",
+    "galleryPermissionMessage": "Necesitamos permisos de galería para seleccionar fotos.",
+    "error": "Error",
+    "cameraError": "No se pudo abrir la cámara.",
+    "galleryError": "No se pudo abrir la galería."
+  },
   "menu": {
     "pin": "Fijar",
     "unpin": "Desfijar",

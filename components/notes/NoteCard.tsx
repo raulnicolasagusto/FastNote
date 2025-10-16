@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Note } from '../../types';
 import { SPACING, TYPOGRAPHY, SHADOWS, BORDER_RADIUS } from '../../constants/theme';
@@ -99,32 +99,82 @@ export const NoteCard: React.FC<NoteCardProps> = React.memo(({ note, onPress, on
     return false;
   };
 
-  const renderContent = () => {
-    if (note.type === 'checklist' && note.checklistItems) {
-      // Show first 3 checklist items
-      return note.checklistItems.slice(0, 3).map((item, index) => (
-        <View key={item.id} style={styles.checklistItem}>
-          <Text style={[styles.bullet, { color: textColors.secondary }]}>•</Text>
-          <Text style={[styles.checklistText, { color: textColors.secondary }]} numberOfLines={1}>
-            {item.text}
-          </Text>
-        </View>
-      ));
-    }
+  // Helper to get first 1-2 images/drawings (excluding audio) for thumbnail preview
+  const getThumbnailImages = (): string[] => {
+    const thumbnails: string[] = [];
 
-    // Show text content preview - clean HTML tags
-    if (note.content.trim()) {
-      const cleanContent = cleanHtmlContent(note.content);
-      if (cleanContent) {
-        return (
-          <Text style={[styles.contentText, { color: textColors.secondary }]} numberOfLines={3}>
-            {cleanContent}
-          </Text>
-        );
+    // Check contentBlocks first (NEW system)
+    if (note.contentBlocks) {
+      for (const block of note.contentBlocks) {
+        if (block.type === 'image' && block.uri && !isAudioUri(block.uri)) {
+          thumbnails.push(block.uri);
+          if (thumbnails.length === 2) break; // Max 2 thumbnails
+        }
       }
     }
 
-    return null;
+    // If no thumbnails yet, check legacy images array
+    if (thumbnails.length === 0 && note.images && note.images.length > 0) {
+      for (const uri of note.images) {
+        if (!isAudioUri(uri)) {
+          thumbnails.push(uri);
+          if (thumbnails.length === 2) break; // Max 2 thumbnails
+        }
+      }
+    }
+
+    return thumbnails;
+  };
+
+  const renderContent = () => {
+    const thumbnails = getThumbnailImages();
+    const hasThumbnails = thumbnails.length > 0;
+
+    return (
+      <>
+        {/* Thumbnail images preview (1 or 2 max) */}
+        {hasThumbnails && (
+          <View style={styles.thumbnailContainer}>
+            {thumbnails.map((uri, index) => (
+              <Image
+                key={`thumb-${index}`}
+                source={{ uri }}
+                style={[
+                  styles.thumbnail,
+                  thumbnails.length === 1 && styles.thumbnailSingle,
+                  thumbnails.length === 2 && styles.thumbnailDouble
+                ]}
+                resizeMode="cover"
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Text/Checklist preview below thumbnails */}
+        {note.type === 'checklist' && note.checklistItems && note.checklistItems.length > 0 ? (
+          <View style={styles.previewContent}>
+            {note.checklistItems.slice(0, 2).map((item, index) => (
+              <View key={item.id} style={styles.checklistItem}>
+                <Text style={[styles.bullet, { color: textColors.secondary }]}>•</Text>
+                <Text style={[styles.checklistText, { color: textColors.secondary }]} numberOfLines={1}>
+                  {item.text}
+                </Text>
+              </View>
+            ))}
+            {note.checklistItems.length > 2 && (
+              <Text style={[styles.ellipsis, { color: textColors.secondary }]}>...</Text>
+            )}
+          </View>
+        ) : note.content.trim() ? (
+          <View style={styles.previewContent}>
+            <Text style={[styles.contentText, { color: textColors.secondary }]} numberOfLines={2}>
+              {cleanHtmlContent(note.content)}
+            </Text>
+            <Text style={[styles.ellipsis, { color: textColors.secondary }]}>...</Text>
+          </View>
+        ) : null}
+      </>
+    );
   };
 
   return (
@@ -261,9 +311,36 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  thumbnailContainer: {
+    flexDirection: 'row',
+    gap: SPACING.xs,
+    marginBottom: SPACING.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  thumbnail: {
+    borderRadius: BORDER_RADIUS.small || 8,
+    backgroundColor: '#f0f0f0',
+  },
+  thumbnailSingle: {
+    width: '100%',
+    height: 100,
+  },
+  thumbnailDouble: {
+    width: '48%',
+    height: 80,
+  },
+  previewContent: {
+    flex: 1,
+  },
   contentText: {
     fontSize: TYPOGRAPHY.bodySize,
     lineHeight: TYPOGRAPHY.bodySize * 1.4,
+  },
+  ellipsis: {
+    fontSize: TYPOGRAPHY.bodySize,
+    textAlign: 'center',
+    marginTop: SPACING.xs / 2,
   },
   checklistItem: {
     flexDirection: 'row',

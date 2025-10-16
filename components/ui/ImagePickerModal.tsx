@@ -10,6 +10,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useThemeStore } from '../../store/theme/useThemeStore';
+import { t, useLanguage } from '../../utils/i18n';
 
 interface ImagePickerModalProps {
   visible: boolean;
@@ -23,6 +24,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
   onImageSelected,
 }) => {
   const { colors } = useThemeStore();
+  useLanguage(); // Re-render when language changes
 
   // Función para tomar foto con la cámara
   const handleCamera = async () => {
@@ -31,8 +33,8 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert(
-          'Permisos Requeridos',
-          'Necesitamos permisos de cámara para tomar fotos.'
+          t('imagePicker.permissionsRequired'),
+          t('imagePicker.cameraPermissionMessage')
         );
         return;
       }
@@ -51,7 +53,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
       }
     } catch (error) {
       console.error('Error opening camera:', error);
-      Alert.alert('Error', 'No se pudo abrir la cámara.');
+      Alert.alert(t('imagePicker.error'), t('imagePicker.cameraError'));
     }
   };
 
@@ -62,8 +64,8 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert(
-          'Permisos Requeridos',
-          'Necesitamos permisos de galería para seleccionar fotos.'
+          t('imagePicker.permissionsRequired'),
+          t('imagePicker.galleryPermissionMessage')
         );
         return;
       }
@@ -82,7 +84,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
       }
     } catch (error) {
       console.error('Error opening gallery:', error);
-      Alert.alert('Error', 'No se pudo abrir la galería.');
+      Alert.alert(t('imagePicker.error'), t('imagePicker.galleryError'));
     }
   };
 
@@ -110,7 +112,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
               { color: colors.textPrimary }
             ]}
           >
-            Agregar Imagen
+            {t('imagePicker.title')}
           </Text>
 
           {/* Opción Cámara */}
@@ -133,7 +135,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
                 { color: colors.textPrimary }
               ]}
             >
-              Tomar Foto
+              {t('imagePicker.takePhoto')}
             </Text>
           </TouchableOpacity>
 
@@ -154,7 +156,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
                 { color: colors.textPrimary }
               ]}
             >
-              Seleccionar de Galería
+              {t('imagePicker.chooseFromGallery')}
             </Text>
           </TouchableOpacity>
 
@@ -173,7 +175,7 @@ const ImagePickerModal: React.FC<ImagePickerModalProps> = ({
                 { color: colors.textSecondary }
               ]}
             >
-              Cancelar
+              {t('imagePicker.cancel')}
             </Text>
           </TouchableOpacity>
         </View>
