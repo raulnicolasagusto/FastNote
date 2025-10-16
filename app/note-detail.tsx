@@ -19,7 +19,8 @@ import { Audio } from 'expo-av';
 import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { ADMOB_CONFIG } from '../constants/admob';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { useThemeStore } from '../store/theme/useThemeStore';
 import { useTranscriptionLimitsStore } from '../store/transcription/useTranscriptionLimitsStore';
@@ -2572,7 +2573,7 @@ export default function NoteDetail() {
       {/* AdMob Banner at bottom */}
       <View style={styles.bannerContainer}>
         <BannerAd
-          unitId={TestIds.BANNER}
+          unitId={ADMOB_CONFIG.BANNER_NOTE_DETAIL}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
           requestOptions={{
             requestNonPersonalizedAdsOnly: false,

@@ -1,9 +1,6 @@
-import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
+import { InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
 import { useAdsStore } from '../store/ads/useAdsStore';
-
-const INTERSTITIAL_AD_UNIT_ID = __DEV__
-  ? TestIds.INTERSTITIAL
-  : 'ca-app-pub-1467750216848197/1470493448';
+import { ADMOB_CONFIG } from '../constants/admob';
 
 /**
  * Servicio Singleton para manejar Interstitial Ads
@@ -28,7 +25,7 @@ class InterstitialAdService {
     console.log('🎯 Initializing Interstitial Ad Service');
 
     // Crear instancia del Interstitial Ad
-    this.interstitial = InterstitialAd.createForAdRequest(INTERSTITIAL_AD_UNIT_ID, {
+    this.interstitial = InterstitialAd.createForAdRequest(ADMOB_CONFIG.INTERSTITIAL, {
       keywords: ['productivity', 'notes', 'organization', 'tools'],
     });
 
