@@ -191,6 +191,8 @@
     "reminderSavedNoPermission": "El recordatorio se guardó pero no recibirás notificaciones sin permisos.",
     "reminderScheduled": "✅ Recordatorio Programado",
     "reminderScheduledMessage": "Recibirás una notificación el {{date}} a las {{time}}.\n\nDebug: En {{minutes}} minutos",
+    "noteCreatedWithReminder": "📝 Nota creada con recordatorio",
+    "noteCreatedWithReminderMessage": "Nota guardada y recordatorio programado para {{date}} a las {{time}}.",
     "perfect": "Perfecto",
     "reminderError": "No se pudo programar la notificación. Inténtalo de nuevo.",
     "ok": "OK",

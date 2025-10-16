@@ -583,11 +583,14 @@ export default function Home() {
               // Update note with notification ID
               // TODO: Add method to update note with notification ID
               console.log('🎤 VOICE NOTE CREATION - Reminder scheduled with ID:', notificationId);
-              
+
+              const formattedDate = reminderAnalysis.reminderTime.toLocaleDateString(getCurrentLanguage() === 'en' ? 'en-US' : 'es-ES');
+              const formattedTime = reminderAnalysis.reminderTime.toLocaleTimeString(getCurrentLanguage() === 'en' ? 'en-US' : 'es-ES', { hour: '2-digit', minute: '2-digit' });
+
               Alert.alert(
-                '📝 Nota creada con recordatorio',
-                `Nota guardada y recordatorio programado para ${reminderAnalysis.reminderTime.toLocaleDateString('es-ES')} a las ${reminderAnalysis.reminderTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.`,
-                [{ text: 'Perfecto' }]
+                t('alerts.noteCreatedWithReminder'),
+                t('alerts.noteCreatedWithReminderMessage', { date: formattedDate, time: formattedTime }),
+                [{ text: t('alerts.perfect') }]
               );
             }
           }
@@ -628,11 +631,14 @@ export default function Home() {
         
         if (notificationId) {
           console.log('🎤 VOICE NOTE CREATION - Reminder scheduled with ID:', notificationId);
-          
+
+          const formattedDate = reminderAnalysis.reminderTime.toLocaleDateString(getCurrentLanguage() === 'en' ? 'en-US' : 'es-ES');
+          const formattedTime = reminderAnalysis.reminderTime.toLocaleTimeString(getCurrentLanguage() === 'en' ? 'en-US' : 'es-ES', { hour: '2-digit', minute: '2-digit' });
+
           Alert.alert(
-            '📝 Nota creada con recordatorio',
-            `Nota guardada y recordatorio programado para ${reminderAnalysis.reminderTime.toLocaleDateString('es-ES')} a las ${reminderAnalysis.reminderTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.`,
-            [{ text: 'Perfecto' }]
+            t('alerts.noteCreatedWithReminder'),
+            t('alerts.noteCreatedWithReminderMessage', { date: formattedDate, time: formattedTime }),
+            [{ text: t('alerts.perfect') }]
           );
         }
       } else if (!reminderAnalysis.hasReminder) {

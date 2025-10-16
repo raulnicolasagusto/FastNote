@@ -191,6 +191,8 @@
     "reminderSavedNoPermission": "The reminder was saved but you won't receive notifications without permissions.",
     "reminderScheduled": "✅ Reminder Scheduled",
     "reminderScheduledMessage": "You will receive a notification on {{date}} at {{time}}.\n\nDebug: In {{minutes}} minutes",
+    "noteCreatedWithReminder": "📝 Note Created with Reminder",
+    "noteCreatedWithReminderMessage": "Note saved and reminder scheduled for {{date}} at {{time}}.",
     "perfect": "Perfect",
     "reminderError": "Could not schedule the notification. Please try again.",
     "ok": "OK",
