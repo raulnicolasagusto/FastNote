@@ -18,7 +18,10 @@
       "Bash(npm run typecheck:*)",
       "Bash(npm run:*)",
       "Bash(copy:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

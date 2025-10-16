@@ -24,6 +24,10 @@ app.json.backup
 # Carpeta de documentación LLM
 llm/
 
+# Archivos .md adicionales (carpetas ocultas)
+.claude/
+.expo/README.md
+
 # Variables de entorno locales (API keys están en Cloudflare Workers)
 .env
 .env.local

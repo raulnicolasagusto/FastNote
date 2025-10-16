@@ -53,7 +53,6 @@
 - **expo-haptics**: 15.0.7 (Vibración táctil)
 - **react-native-pell-rich-editor**: 1.10.0 (Editor de texto enriquecido)
 - **react-native-webview**: 13.15.0 (Rich text rendering)
-- **openai**: 5.23.1 (Transcripción con Whisper)
 
 ### Storage & Media
 - **@react-native-async-storage/async-storage**: 2.2.0
@@ -108,16 +107,20 @@
 - Formato relativo: "Hoy 15:30", "Mañana 9:00", "En 3 días 10:00"
 - Funciona tanto en nota existente como al crear nota por voz
 
-### 5. Notas de Voz (Whisper API)
+### 5. Notas de Voz (Deepgram API)
 - **Grabación de audio** con expo-av (HIGH_QUALITY)
-- **Transcripción automática** con OpenAI Whisper API (modelo whisper-1)
+- **Transcripción automática** con Deepgram API (modelo nova-2)
+  - Protección de API keys mediante Cloudflare Worker
+  - Detección automática de idioma
+  - Puntuación y formato inteligente (smart_format)
 - **Detección inteligente**:
   - Listas vs texto normal
-  - Comandos de recordatorio
+  - Comandos de recordatorio (con GPT-4o-mini)
   - Comandos de "agregar a lista existente"
 - Creación automática de notas con timestamp: "Nota Rápida DD/MM/YY HH:MM"
 - Quick Action para iniciar grabación desde home screen
 - Modal de grabación con indicador visual y botones Cancel/Stop
+- Servicio: [audioTranscriptionService.ts](utils/audioTranscriptionService.ts)
 
 ### 6. OCR (Reconocimiento de Texto)
 - **OCR.space API** (gratis 25,000 requests/mes)
@@ -285,7 +288,8 @@ utils/
 ├── notifications.ts              # Servicio notificaciones (wrapper)
 ├── notifications.production.ts   # Implementación para production build
 ├── notifications.expo-go.ts      # Mock para Expo Go
-├── voiceReminderAnalyzer.ts      # IA análisis comandos voz (OpenAI)
+├── audioTranscriptionService.ts  # Transcripción con Deepgram API (via Cloudflare Worker)
+├── voiceReminderAnalyzer.ts      # IA análisis comandos voz (GPT-4o-mini)
 ├── storage.ts                    # AsyncStorage utilities + generateId()
 ├── shareTextUtils.ts             # Compartir texto con expo-sharing
 ├── shareImageUtils.ts            # Captura + compartir imagen
@@ -435,23 +439,29 @@ interface ColorScheme {
 
 ## APIs Utilizadas
 
-### 1. OpenAI Whisper API
-- **Endpoint**: `https://api.openai.com/v1/audio/transcriptions`
-- **Modelo**: `whisper-1`
-- **Formato**: `multipart/form-data` con audio m4a
-- **Variable**: `EXPO_PUBLIC_OPENAI_API_KEY` (**REQUERIDO**)
-- **Uso**: Transcripción de notas de voz en [note-detail.tsx](app/note-detail.tsx:687) e [index.tsx](app/index.tsx:224)
+### 1. Deepgram API (Transcripción de Audio)
+- **Endpoint (via Cloudflare Worker)**: `https://fastnote-api-proxy.fastvoiceapp.workers.dev/api/transcribe`
+- **Endpoint directo (fallback)**: `https://api.deepgram.com/v1/listen`
+- **Modelo**: `nova-2` con detección automática de idioma
+- **Formato**: Binary audio (Uint8Array) con Content-Type: `audio/m4a`
+- **Características**: `detect_language=true`, `punctuate=true`, `smart_format=true`
+- **Variable (solo para fallback directo)**: `EXPO_PUBLIC_DEEPGRAM_API_KEY` (OPCIONAL)
+- **Ventaja**: API keys protegidas en Cloudflare Worker (no expuestas en cliente)
+- **Costo**: Mucho más económico que OpenAI Whisper
+- **Servicio**: [audioTranscriptionService.ts](utils/audioTranscriptionService.ts)
+- **Uso**: Transcripción de notas de voz en [note-detail.tsx](app/note-detail.tsx:1012) e [index.tsx](app/index.tsx)
 
-### 2. OpenAI Chat Completions (para análisis de recordatorios)
+### 2. OpenAI Chat Completions (Análisis de Recordatorios con IA)
 - **Endpoint**: `https://api.openai.com/v1/chat/completions`
 - **Modelo**: `gpt-4o-mini` (rápido y económico)
 - **Formato**: JSON con system prompt + user message
-- **Variable**: `EXPO_PUBLIC_OPENAI_API_KEY` (la misma)
+- **Variable**: `EXPO_PUBLIC_OPENAI_API_KEY` (**REQUERIDO** para recordatorios inteligentes)
 - **Uso**: Análisis inteligente de comandos de recordatorio en [voiceReminderAnalyzer.ts](utils/voiceReminderAnalyzer.ts)
   - Detecta fechas relativas ("hoy", "mañana", "en 2 horas")
   - Extrae hora y minutos
   - Limpia texto (quita comandos de recordatorio)
   - Retorna: `hasReminder`, `reminderTime`, `cleanText`, `originalReminderPhrase`
+- **Nota**: Solo se usa para análisis de comandos, NO para transcripción de audio
 
 ### 3. OCR.space API
 - **Endpoint**: `https://api.ocr.space/parse/image`
@@ -474,16 +484,21 @@ interface ColorScheme {
 Crear archivo `.env` en la raíz del proyecto:
 
 ```bash
-# OpenAI API (REQUERIDO para notas de voz y recordatorios inteligentes)
+# OpenAI API (REQUERIDO solo para recordatorios inteligentes - análisis de comandos de voz)
 EXPO_PUBLIC_OPENAI_API_KEY=sk-proj-...tu-clave-aqui...
+
+# Deepgram API (OPCIONAL - solo si no usas Cloudflare Worker)
+# EXPO_PUBLIC_DEEPGRAM_API_KEY=tu-clave-deepgram
 
 # OCR.space (OPCIONAL - usa clave gratuita "helloworld" por defecto)
 # EXPO_PUBLIC_OCR_API_KEY=tu-clave-personalizada
 ```
 
 **IMPORTANTE**:
-- Sin `EXPO_PUBLIC_OPENAI_API_KEY` las funciones de voz y recordatorios inteligentes no funcionarán
-- OCR funciona sin API key adicional (usa "helloworld" gratis)
+- **Transcripción de audio**: Funciona sin variables de entorno (usa Cloudflare Worker que protege las API keys)
+- **Recordatorios inteligentes**: Requiere `EXPO_PUBLIC_OPENAI_API_KEY` para análisis de comandos con GPT-4o-mini
+- **Deepgram directo**: Solo necesario si quieres usar Deepgram directamente sin Cloudflare Worker (fallback)
+- **OCR**: Funciona sin API key adicional (usa "helloworld" gratis)
 
 ## Flujo de Datos Principales
 
@@ -512,7 +527,9 @@ startRecording() con expo-av
   ↓
 stopRecording() → transcribeAudio()
   ↓
-OpenAI Whisper API → texto transcrito
+audioTranscriptionService.transcribeAudioFile()
+  ↓
+Cloudflare Worker → Deepgram API (nova-2) → texto transcrito
   ↓
 extractReminderDetails(texto) con GPT-4o-mini
   ↓
@@ -651,8 +668,12 @@ Renderiza resultados en NotesGrid
 - Conversión de imágenes a base64 con Expo FileSystem v54 (File API)
 
 ### Notas de Voz con IA
-- Integración completa con OpenAI Whisper API (transcripción)
-- Integración con GPT-4o-mini (análisis de comandos)
+- **Migración de OpenAI Whisper a Deepgram API** (Octubre 2025)
+  - Motivo: Reducción significativa de costos
+  - Implementación con Cloudflare Worker para proteger API keys
+  - Modelo nova-2 con detección automática de idioma
+  - Smart formatting y puntuación automática
+- Integración con GPT-4o-mini (análisis de comandos de recordatorio)
 - Detección automática de listas vs texto normal
 - Creación automática de checklists desde comandos de voz
 - Sistema de recordatorios por voz
@@ -857,9 +878,10 @@ Cuando el usuario diga:
 
 ---
 
-**Última actualización**: 02/10/2025
+**Última actualización**: 16/10/2025
 **Mantenedor**: Claude Code Assistant
-**Revisión**: Completa basada en lectura de codebase + Protocolo de implementación agregado
+**Revisión**: Actualización de documentación de APIs - Deepgram reemplaza OpenAI Whisper
 **Últimas features**:
 - Sistema de Interstitial Ads (Octubre 2025) ✅
 - Sistema de Internacionalización i18n (Octubre 2025) 🟡
+- Migración a Deepgram API con Cloudflare Worker (Octubre 2025) ✅
