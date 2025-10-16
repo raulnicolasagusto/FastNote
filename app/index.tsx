@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { Alert } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system/legacy';
 import { MainScreen } from '../components/layout/MainScreen';
+import { VoiceRecordingModal } from '../components/ui/VoiceRecordingModal';
 import { Note, ChecklistItem } from '../types';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { useThemeStore } from '../store/theme/useThemeStore';
 import { useAdsStore } from '../store/ads/useAdsStore';
 import { useTranscriptionLimitsStore } from '../store/transcription/useTranscriptionLimitsStore';
 import { StorageService } from '../utils/storage';
-import { SPACING, TYPOGRAPHY, DEFAULT_CATEGORIES } from '../constants/theme';
+import { DEFAULT_CATEGORIES } from '../constants/theme';
 import { FREE_TIER_LIMITS } from '../constants/limits';
 import Sidebar from '../components/ui/Sidebar';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
@@ -35,6 +33,7 @@ export default function Home() {
     checkAndResetIfNeeded,
     loadLimits,
   } = useTranscriptionLimitsStore();
+  const [quickVoiceMode, setQuickVoiceMode] = useState(false); // 🚀 Quick Voice Mode
   const [showRecordingModal, setShowRecordingModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -45,29 +44,45 @@ export default function Home() {
 
   // Inicializar Interstitial Ad Service y resetear sesión al abrir la app
   useEffect(() => {
-    // Inicializar el servicio (solo una vez)
-    interstitialAdService.initialize();
+    // 🚀 QUICK VOICE MODE: Skip initialization if coming from Quick Action
+    if (voiceNote === 'true') {
+      console.log('🚀 QUICK VOICE MODE - Skipping full app initialization');
+      setQuickVoiceMode(true);
+      // Load transcription limits first (required for validation)
+      loadLimits().then(async () => {
+        // ⚠️ CRITICAL: Check transcription limits BEFORE starting recording
+        await checkAndResetIfNeeded();
 
-    // Resetear sesión
+        if (!canTranscribe()) {
+          const resetTime = getNextResetTime();
+          Alert.alert(
+            t('recording.dailyLimitReached'),
+            t('recording.dailyLimitReachedMessage', { time: resetTime }),
+            [{ text: t('common.ok') }]
+          );
+          // Exit Quick Voice Mode and load full app (limit reached)
+          setQuickVoiceMode(false);
+          interstitialAdService.initialize();
+          resetInterstitialSession();
+          interstitialAdService.reloadAd();
+          return;
+        }
+
+        // Limit OK - show modal and start recording
+        setShowRecordingModal(true);
+        requestAnimationFrame(() => {
+          startRecording();
+        });
+      });
+      return; // Exit early, skip heavy initialization
+    }
+
+    // Normal initialization for regular app open
+    interstitialAdService.initialize();
     resetInterstitialSession();
     console.log('🔄 Interstitial Ad session reset - new app session started');
-
-    // Recargar ad para nueva sesión
     interstitialAdService.reloadAd();
-
-    // Load transcription limits and check for reset
     loadLimits();
-  }, []);
-
-  // Handle quick action for voice note
-  useEffect(() => {
-    if (voiceNote === 'true') {
-      // Activar grabación de voz automáticamente SIN DELAY
-      // Usar requestAnimationFrame para ejecutar inmediatamente después del primer render
-      requestAnimationFrame(() => {
-        handleVoiceNotePress();
-      });
-    }
   }, [voiceNote]);
 
   // Auto-stop recording at 60 seconds
@@ -230,6 +245,16 @@ export default function Home() {
     setIsRecording(false);
     setRecordingDuration(0);
     setShowRecordingModal(false);
+
+    // 🚀 QUICK VOICE MODE: Exit quick mode and load full app
+    if (quickVoiceMode) {
+      console.log('🚀 QUICK VOICE MODE - User cancelled, loading full app...');
+      setQuickVoiceMode(false);
+      // Trigger full app initialization
+      interstitialAdService.initialize();
+      resetInterstitialSession();
+      interstitialAdService.reloadAd();
+    }
   };
 
   const detectListKeywords = (text: string): boolean => {
@@ -247,6 +272,7 @@ export default function Home() {
       'checklist',
       'check list',
       // Inglés
+      'new checklist for',
       'new list',
       'new shopping list',
       'new grocery list',
@@ -268,8 +294,10 @@ export default function Home() {
       'lista de tarefas'
     ];
 
-    // También detectar patrón "new [word] list"
-    if (lowerText.match(/^new \w+ list/i)) {
+    // También detectar patrones:
+    // - "new [word] list"
+    // - "new checklist for [word]"
+    if (lowerText.match(/^new \w+ list/i) || lowerText.match(/^new checklist for/i)) {
       return true;
     }
 
@@ -286,7 +314,17 @@ export default function Home() {
       ).join(' ');
     };
 
-    // Detectar "new [nombre] list" (inglés) - PRIMERO para tener prioridad
+    // Detectar "new checklist for [nombre]" (inglés) - PRIMERO para tener máxima prioridad
+    const newChecklistForMatch = lowerText.match(/^new checklist for ([^,\.]+)/i);
+    if (newChecklistForMatch) {
+      const extractedName = text.substring('new checklist for '.length, newChecklistForMatch[0].length).trim();
+      const listName = capitalizeWords(extractedName);
+      const remainingText = text.substring(newChecklistForMatch[0].length).trim();
+      const cleanRemaining = remainingText.replace(/^[,\.]?\s*/, '');
+      return { listName, remainingText: cleanRemaining };
+    }
+
+    // Detectar "new [nombre] list" (inglés) - SEGUNDO para tener prioridad
     const newListMatch = lowerText.match(/^new ([^,\.]+?) list/i);
     if (newListMatch) {
       const extractedName = text.substring('new '.length, newListMatch[0].length - ' list'.length).trim();
@@ -386,7 +424,8 @@ export default function Home() {
       'lista de',
       'checklist',
       'check list',
-      // Inglés
+      // Inglés - específicas primero
+      'new checklist for',
       'shopping list',
       'to do list',
       'new list',
@@ -473,6 +512,16 @@ export default function Home() {
     } finally {
       setRecording(null);
       setShowRecordingModal(false);
+
+      // 🚀 QUICK VOICE MODE: Exit quick mode and load full app after transcription
+      if (quickVoiceMode) {
+        console.log('🚀 QUICK VOICE MODE - Transcription complete, loading full app...');
+        setQuickVoiceMode(false);
+        // Trigger full app initialization
+        interstitialAdService.initialize();
+        resetInterstitialSession();
+        interstitialAdService.reloadAd();
+      }
     }
   };
 
@@ -662,6 +711,23 @@ export default function Home() {
     }
   };
 
+  // 🚀 QUICK VOICE MODE: Render only recording modal (maximum speed)
+  if (quickVoiceMode) {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: false }} />
+        <VoiceRecordingModal
+          visible={showRecordingModal}
+          isRecording={isRecording}
+          recordingDuration={recordingDuration}
+          onCancel={cancelRecording}
+          onStop={stopRecording}
+        />
+      </>
+    );
+  }
+
+  // Normal render with full app
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -680,146 +746,15 @@ export default function Home() {
       />
 
       {/* Recording Modal */}
-      {showRecordingModal && (
-        <View style={styles.modalOverlay}>
-          <StatusBar style="dark" backgroundColor="rgba(0, 0, 0, 0.5)" />
-          <SafeAreaView style={styles.modalContainer}>
-            <View style={[styles.recordingModal, { backgroundColor: colors.cardBackground }]}>
-              <View style={styles.recordingIndicator}>
-                <MaterialIcons
-                  name="mic"
-                  size={48}
-                  color={isRecording ? colors.accent.red : colors.textSecondary}
-                />
-                <Text style={[styles.recordingText, { color: colors.textPrimary }]}>
-                  {isRecording ? t('recording.recording') : t('recording.transcribing')}
-                </Text>
-
-                {/* Limits Info - Always visible */}
-                <View style={styles.limitsContainer}>
-                  <Text style={[styles.limitsText, { color: colors.textSecondary }]}>
-                    {t('recording.maxDuration')} • {t('recording.transcriptionsLeft', { count: getRemainingTranscriptions() })}
-                  </Text>
-                </View>
-
-                {/* Timer and Warning */}
-                {isRecording && (
-                  <View style={styles.timerContainer}>
-                    <Text style={[styles.timerText, {
-                      color: recordingDuration >= FREE_TIER_LIMITS.WARNING_THRESHOLD_SECONDS
-                        ? colors.accent.red
-                        : colors.textPrimary
-                    }]}>
-                      {recordingDuration}s / {FREE_TIER_LIMITS.MAX_DURATION_SECONDS}s
-                    </Text>
-                    {recordingDuration >= FREE_TIER_LIMITS.WARNING_THRESHOLD_SECONDS && (
-                      <Text style={[styles.warningText, { color: colors.accent.red }]}>
-                        {t('recording.autoStopSoon')}
-                      </Text>
-                    )}
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.recordingActions}>
-                <TouchableOpacity
-                  style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
-                  onPress={cancelRecording}>
-                  <MaterialIcons name="close" size={24} color={colors.cardBackground} />
-                  <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{t('common.cancel')}</Text>
-                </TouchableOpacity>
-
-                {isRecording && (
-                  <TouchableOpacity
-                    style={[styles.recordingButton, styles.confirmButton, { backgroundColor: colors.accent.green }]}
-                    onPress={stopRecording}>
-                    <MaterialIcons name="check" size={24} color={colors.cardBackground} />
-                    <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{t('recording.stop')}</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          </SafeAreaView>
-        </View>
-      )}
+      <VoiceRecordingModal
+        visible={showRecordingModal}
+        isRecording={isRecording}
+        recordingDuration={recordingDuration}
+        onCancel={cancelRecording}
+        onStop={stopRecording}
+      />
     </>
   );
 }
 
-const styles = StyleSheet.create({
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  recordingModal: {
-    borderRadius: 16,
-    padding: SPACING.xl,
-    margin: SPACING.lg,
-    alignItems: 'center',
-    minWidth: 280,
-  },
-  recordingIndicator: {
-    alignItems: 'center',
-    marginBottom: SPACING.xl,
-  },
-  recordingText: {
-    fontSize: TYPOGRAPHY.titleSize,
-    fontWeight: '600',
-    marginTop: SPACING.md,
-  },
-  limitsContainer: {
-    marginTop: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-  },
-  limitsText: {
-    fontSize: TYPOGRAPHY.captionSize,
-    textAlign: 'center',
-  },
-  timerContainer: {
-    marginTop: SPACING.md,
-    alignItems: 'center',
-  },
-  timerText: {
-    fontSize: TYPOGRAPHY.bodySize,
-    fontWeight: '600',
-  },
-  warningText: {
-    fontSize: TYPOGRAPHY.captionSize,
-    marginTop: SPACING.xs,
-    fontWeight: '500',
-  },
-  recordingActions: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-  },
-  recordingButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderRadius: 8,
-    gap: SPACING.xs,
-  },
-  cancelButton: {
-    backgroundColor: '#7F8C8D',
-  },
-  confirmButton: {
-    backgroundColor: '#27AE60',
-  },
-  buttonText: {
-    fontSize: TYPOGRAPHY.bodySize,
-    fontWeight: '600',
-  },
-});
+// Styles removed - now using VoiceRecordingModal component

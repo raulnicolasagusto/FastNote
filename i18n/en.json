@@ -258,7 +258,7 @@
     },
     "voiceNoteInApp": {
       "title": "Voice Note in App",
-      "description": "Or within the app, press on Quick Voice Note, and it will start recording and then transcribe it to the note. Remember that you can record a list and also save a reminder. Example: \"New Shopping list, milk, bread, cheese, tomatoes. and remind me tomorrow at 2pm\". Also to an already created list you can add items by saying \"Add\", \"Add to this list\" and the item you want will be added to your list."
+      "description": "Or within the app, press on Quick Voice Note, and it will start recording and then transcribe it to the note. Remember that you can record a list and also save a reminder.\n\n📋 CREATE CHECKLISTS WITH:\n• \"New checklist for [name]\" - Example: \"New checklist for groceries, milk, bread, eggs\" → Title: \"Groceries MM/DD/YY HH:MM\"\n• \"New [name] list\" - Example: \"New shopping list, apples, oranges\" → Title: \"Shopping MM/DD/YY HH:MM\"\n• \"New list\", \"Shopping list\", \"Grocery list\", \"To do list\", \"Task list\"\n\n✅ SEPARATORS: Use commas, periods, \"and\"\n\nExample: \"New checklist for work, send email, call client and finish report. Remind me tomorrow at 2pm\"\n\n➕ ADD TO EXISTING LIST: Say \"Add\", \"Add to this list\" + item name"
     },
     "ocrFeature": {
       "title": "OCR Text Recognition",

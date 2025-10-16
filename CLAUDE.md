@@ -89,9 +89,55 @@
 - Toggle de completado con checkbox visual
 - Auto-capitalización de items
 - Detección automática desde voz:
-  - "Nueva lista de...", "Lista de compras", "Shopping list"
+
+  **🇪🇸 Comandos en Español:**
+  - `"Nueva lista"` → Crea checklist genérico
+  - `"Lista nueva"` → Crea checklist genérico
+  - `"Lista de [nombre]"` → Ejemplo: "Lista de supermercado, leche, pan, huevos" → Título: "Supermercado DD/MM/YY HH:MM"
+  - `"Lista del [nombre]"` → Ejemplo: "Lista del gimnasio, pesas, cardio, yoga"
+  - `"Lista para [nombre]"` → Ejemplo: "Lista para el viaje, pasaporte, ropa, cámara"
+  - `"Lista de compras"` → Checklist específico
+  - `"Lista de supermercado"` → Checklist específico
+  - `"Lista de tareas"` → Checklist específico
+  - `"Checklist"` → Crea checklist genérico
+  - `"Check list"` → Crea checklist genérico
+
+  **🇬🇧 Comandos en Inglés:**
+  - `"New checklist for [name]"` → Ejemplo: "New checklist for groceries, milk, bread, eggs" → Título: "Groceries MM/DD/YY HH:MM"
+  - `"New [name] list"` → Ejemplo: "New shopping list, apples, oranges, bananas" → Título: "Shopping MM/DD/YY HH:MM"
+  - `"New list"` → Crea checklist genérico
+  - `"Shopping list"` → Checklist específico
+  - `"Grocery list"` → Checklist específico
+  - `"To do list"` → Checklist específico
+  - `"Task list"` → Checklist específico
+  - `"New shopping list"` → Checklist específico
+  - `"New grocery list"` → Checklist específico
+  - `"New todo list"` → Checklist específico
+  - `"New task list"` → Checklist específico
+
+  **🇧🇷 Comandos en Portugués:**
+  - `"Nova lista"` → Crea checklist genérico
+  - `"Lista nova"` → Crea checklist genérico
+  - `"Lista do [nome]"` → Ejemplo: "Lista do mercado, arroz, feijão, carne"
+  - `"Lista da [nome]"` → Ejemplo: "Lista da farmácia, remédio, curativo"
+  - `"Lista para [nome]"` → Ejemplo: "Lista para estudar, matemática, português"
+  - `"Nova lista de [nome]"` → Ejemplo: "Nova lista de compras, leite, pão"
+  - `"Lista de compras"` → Checklist específico
+  - `"Lista de supermercado"` → Checklist específico
+  - `"Lista do supermercado"` → Checklist específico
+  - `"Lista de tarefas"` → Checklist específico
+
+  **Separadores Inteligentes:**
+  - Comas (`,`), puntos (`.`), punto y coma (`;`)
+  - Conjunciones: `"y"`, `"and"`, `"e"` (portugués)
+
+  **Ejemplos de uso completo:**
+  - 🇪🇸 "Lista de compras, leche, pan, huevos y manteca" → Items: leche, pan, huevos, manteca
+  - 🇬🇧 "New checklist for work, send email, call client and finish report" → Título: "Work", Items: send email, call client, finish report
+  - 🇧🇷 "Lista do supermercado, arroz, feijão, carne e legumes" → Título: "Supermercado", Items: arroz, feijão, carne, legumes
+
   - "Agregar a la lista" para añadir items a checklist existente
-  - Parseo inteligente con separadores: comas, puntos, "y", "and"
+  - Parseo inteligente con separadores múltiples
 - Modo mixto: texto + checklist en la misma nota
 - Ordenamiento por estado y fecha
 

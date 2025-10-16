@@ -258,7 +258,7 @@
     },
     "voiceNoteInApp": {
       "title": "Nota de Voz en la App",
-      "description": "O dentro de la app, presiona en nota rápida, y comenzará a grabar y luego transcribirá a la nota. Recuerda que puedes grabar una lista y también guardar un recordatorio. Ejemplo: \"Nueva lista de compras, leche, pan, queso, tomates. y recuérdame mañana a las 2pm\". También a una lista ya creada puedes agregar ítems diciendo \"Agrega\", \"Agrega a esta lista\" y el ítem que quieras se añadirá a tu lista."
+      "description": "O dentro de la app, presiona en nota rápida, y comenzará a grabar y luego transcribirá a la nota. Recuerda que puedes grabar una lista y también guardar un recordatorio.\n\n📋 CREAR CHECKLISTS CON:\n• \"Lista de [nombre]\" - Ejemplo: \"Lista de supermercado, leche, pan, huevos\" → Título: \"Supermercado DD/MM/AA HH:MM\"\n• \"Lista del [nombre]\" - Ejemplo: \"Lista del gimnasio, pesas, cardio\"\n• \"Lista para [nombre]\" - Ejemplo: \"Lista para el viaje, pasaporte, ropa\"\n• \"Nueva lista\", \"Lista de compras\", \"Lista de tareas\", \"Checklist\"\n\n✅ SEPARADORES: Usa comas, puntos, \"y\"\n\nEjemplo: \"Lista de compras, leche, pan, huevos y manteca. Recuérdame mañana a las 2pm\"\n\n➕ AGREGAR A LISTA EXISTENTE: Di \"Agrega\", \"Agrega a esta lista\" + nombre del ítem"
     },
     "ocrFeature": {
       "title": "Reconocimiento de Texto OCR",
