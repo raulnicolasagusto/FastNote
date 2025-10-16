@@ -199,9 +199,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const handleTranscribe = async () => {
     if (!onTranscribe || isTranscribing) return;
 
-    // TEMPORALMENTE DESACTIVADO PARA TESTING DE API KEYS
-    // TODO: REACTIVAR ANTES DE SUBIR A PLAY STORE
-    /*
+    // ⚠️ CRITICAL: Check transcription limits BEFORE transcribing (costs money!)
     // Check if audio has been transcribed 2+ times already
     const currentCount = audioMetadata?.transcriptionCount || 0;
     if (currentCount >= 2) {
@@ -243,10 +241,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       );
       return;
     }
-    */
-
-    // Still check and reset (pero no bloquear)
-    await checkAndResetIfNeeded();
 
     setIsTranscribing(true);
 
@@ -254,7 +248,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       const result = await transcribeAudioFile(audioUri);
 
       if (result.success && result.transcript) {
-        // Record transcription usage
+        // ⚠️ CRITICAL: Record transcription usage (costs money!)
         await recordTranscription(audioDurationSeconds);
         console.log(`🎤 Recorded audio transcription: ${audioDurationSeconds}s`);
 

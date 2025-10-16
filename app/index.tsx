@@ -62,10 +62,11 @@ export default function Home() {
   // Handle quick action for voice note
   useEffect(() => {
     if (voiceNote === 'true') {
-      // Activar grabación de voz automáticamente
-      setTimeout(() => {
+      // Activar grabación de voz automáticamente SIN DELAY
+      // Usar requestAnimationFrame para ejecutar inmediatamente después del primer render
+      requestAnimationFrame(() => {
         handleVoiceNotePress();
-      }, 500); // Small delay to ensure UI is ready
+      });
     }
   }, [voiceNote]);
 
@@ -119,12 +120,9 @@ export default function Home() {
   };
 
   const handleVoiceNotePress = async () => {
-    // Check if user can transcribe before starting
+    // ⚠️ CRITICAL: Check transcription limits BEFORE starting recording (costs money!)
     await checkAndResetIfNeeded();
 
-    // TEMPORALMENTE DESACTIVADO PARA TESTING DE API KEYS
-    // TODO: REACTIVAR ANTES DE SUBIR A PLAY STORE
-    /*
     if (!canTranscribe()) {
       const resetTime = getNextResetTime();
       Alert.alert(
@@ -134,7 +132,6 @@ export default function Home() {
       );
       return;
     }
-    */
 
     setShowRecordingModal(true);
     await startRecording();

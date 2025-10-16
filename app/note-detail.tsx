@@ -22,6 +22,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import { useNotesStore } from '../store/notes/useNotesStore';
 import { useThemeStore } from '../store/theme/useThemeStore';
+import { useTranscriptionLimitsStore } from '../store/transcription/useTranscriptionLimitsStore';
 import { Note, ChecklistItem, AudioMetadata } from '../types';
 import { SPACING, TYPOGRAPHY, LAYOUT, DEFAULT_CATEGORIES, NOTE_BACKGROUND_COLORS } from '../constants/theme';
 import { StorageService } from '../utils/storage';
@@ -59,6 +60,13 @@ export default function NoteDetail() {
   const { noteId } = useLocalSearchParams<{ noteId: string }>();
   const { notes, updateNote, togglePinNote, toggleLockNote } = useNotesStore();
   const { colors, isDarkMode } = useThemeStore();
+  const {
+    canTranscribe,
+    getRemainingTranscriptions,
+    getNextResetTime,
+    recordTranscription,
+    checkAndResetIfNeeded,
+  } = useTranscriptionLimitsStore();
   const { currentCallout, isVisible, onCloseCallout, resetCallouts } = useCalloutRotation();
   const [note, setNote] = useState<Note | null>(null);
 
@@ -957,9 +965,23 @@ export default function NoteDetail() {
 
   const startRecording = async () => {
     try {
+      // ⚠️ CRITICAL: Check transcription limits BEFORE starting recording
+      await checkAndResetIfNeeded();
+
+      if (!canTranscribe()) {
+        const resetTime = getNextResetTime();
+        Alert.alert(
+          i18n.t('recording.dailyLimitReached'),
+          i18n.t('recording.dailyLimitReachedMessage', { time: resetTime }),
+          [{ text: i18n.t('common.ok') }]
+        );
+        setShowRecordingModal(false);
+        return;
+      }
+
       const permission = await Audio.requestPermissionsAsync();
       if (permission.status !== 'granted') {
-        Alert.alert(t('alerts.permissionsRequired'), t('alerts.microphonePermissionRequired'));
+        Alert.alert(i18n.t('alerts.permissionsRequired'), i18n.t('alerts.microphonePermissionRequired'));
         return;
       }
 
@@ -976,7 +998,7 @@ export default function NoteDetail() {
       setIsRecording(true);
     } catch (err) {
       console.error('Failed to start recording', err);
-      Alert.alert(t('alerts.errorTitle'), t('alerts.recordingStartError'));
+      Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.recordingStartError'));
     }
   };
 
@@ -1046,6 +1068,11 @@ export default function NoteDetail() {
         const detectedLanguage = result.results?.channels?.[0]?.detected_language;
         console.log('🎤 Detected language:', detectedLanguage);
         console.log('🎤 Transcribed text:', transcribedText);
+
+        // ⚠️ CRITICAL: Record transcription in limits store (costs money!)
+        recordTranscription(1); // 1 minute for quick voice notes
+        console.log('✅ Transcription recorded in limits. Remaining:', getRemainingTranscriptions());
+
         await insertTranscribedText(transcribedText);
       } else {
         // Transcription failed - show user-friendly error
