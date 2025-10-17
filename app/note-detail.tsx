@@ -41,6 +41,7 @@ import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
 import { interstitialAdService } from '../utils/interstitialAdService';
 import i18n from '../utils/i18n';
+import { useLanguage } from '../utils/i18n';
 
 /*
   VOICE REMINDER FEATURE:
@@ -58,6 +59,7 @@ import i18n from '../utils/i18n';
 */
 
 export default function NoteDetail() {
+  useLanguage(); // Re-render on language change
   const { noteId } = useLocalSearchParams<{ noteId: string }>();
   const { notes, updateNote, togglePinNote, toggleLockNote } = useNotesStore();
   const { colors, isDarkMode } = useThemeStore();
@@ -132,6 +134,9 @@ export default function NoteDetail() {
   // Scroll hint states
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
+
+  // More options menu modal
+  const [showMoreOptionsMenu, setShowMoreOptionsMenu] = useState(false);
 
   useEffect(() => {
     if (noteId) {
@@ -1959,27 +1964,7 @@ export default function NoteDetail() {
           />
         </TouchableOpacity>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.headerActionsScroll}
-          style={styles.headerActionsContainer}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}>
-          <View style={styles.headerActions}>
-          {/* Background color picker */}
-          <TouchableOpacity
-            onPress={() => setShowColorPicker(true)}
-            style={styles.actionIcon}
-            disabled={note.isLocked && !editingElement}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <MaterialIcons
-              name="palette"
-              size={24}
-              color={colors.textPrimary}
-            />
-          </TouchableOpacity>
-
+        <View style={styles.headerActions}>
           {/* Star/Pin icon */}
           <TouchableOpacity
             style={styles.actionIcon}
@@ -2023,46 +2008,18 @@ export default function NoteDetail() {
             </TouchableOpacity>
           )}
 
-          {/* Lock icon */}
+          {/* Background color picker */}
           <TouchableOpacity
+            onPress={() => setShowColorPicker(true)}
             style={styles.actionIcon}
-            onPress={handleToggleLock}
+            disabled={note.isLocked && !editingElement}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <MaterialIcons
-              name={note.isLocked ? "lock" : "lock-open"}
+              name="palette"
               size={24}
-              color={note.isLocked ? colors.accent.red : colors.textPrimary}
+              color={colors.textPrimary}
             />
           </TouchableOpacity>
-
-
-          {/* Checklist icon - only show when not editing checklist */}
-          {!editingElement && (
-            <TouchableOpacity
-              style={styles.actionIcon}
-              onPress={toggleChecklistMode}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <MaterialIcons
-                name="checklist"
-                size={24}
-                color={note.checklistItems && note.checklistItems.length > 0 ? colors.accent.blue : colors.textSecondary}
-              />
-            </TouchableOpacity>
-          )}
-
-          {/* Share icon - only show when not editing */}
-          {!editingElement && (
-            <TouchableOpacity
-              style={styles.actionIcon}
-              onPress={() => setShowShareMenu(true)}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <MaterialIcons
-                name="share"
-                size={24}
-                color={colors.textPrimary}
-              />
-            </TouchableOpacity>
-          )}
 
           {/* Search icon - only show when not editing */}
           {!editingElement && (
@@ -2074,6 +2031,20 @@ export default function NoteDetail() {
                 name="search"
                 size={24}
                 color={isSearchMode ? colors.accent.blue : colors.textPrimary}
+              />
+            </TouchableOpacity>
+          )}
+
+          {/* More options (3 dots) - only show when not editing */}
+          {!editingElement && (
+            <TouchableOpacity
+              style={styles.actionIcon}
+              onPress={() => setShowMoreOptionsMenu(true)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <MaterialIcons
+                name="more-vert"
+                size={24}
+                color={colors.textPrimary}
               />
             </TouchableOpacity>
           )}
@@ -2091,20 +2062,7 @@ export default function NoteDetail() {
               />
             </TouchableOpacity>
           )}
-          </View>
-        </ScrollView>
-
-        {/* Scroll hint indicator - always on right side */}
-        {!editingElement && (canScrollLeft || canScrollRight) && (
-          <View style={styles.scrollHintContainer}>
-            <MaterialIcons
-              name={canScrollLeft ? "chevron-left" : "chevron-right"}
-              size={20}
-              color={colors.textSecondary}
-              style={styles.scrollHintIcon}
-            />
-          </View>
-        )}
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -2569,6 +2527,91 @@ export default function NoteDetail() {
         onClose={() => setShowAudioRecorder(false)}
         onSaveAudio={handleAudioSaved}
       />
+
+      {/* More Options Menu Modal */}
+      {showMoreOptionsMenu && (
+        <View style={styles.modalOverlay}>
+          <TouchableWithoutFeedback onPress={() => setShowMoreOptionsMenu(false)}>
+            <View style={styles.modalBackdrop} />
+          </TouchableWithoutFeedback>
+          <View style={[styles.moreOptionsMenu, { backgroundColor: colors.cardBackground }]}>
+            <Text style={[styles.moreOptionsTitle, { color: colors.textPrimary }]}>
+              {i18n.t('menu.moreOptions')}
+            </Text>
+
+            {/* Checklist option */}
+            <TouchableOpacity
+              style={styles.menuOption}
+              onPress={() => {
+                setShowMoreOptionsMenu(false);
+                toggleChecklistMode();
+              }}>
+              <MaterialIcons
+                name="checklist"
+                size={24}
+                color={note.checklistItems && note.checklistItems.length > 0 ? colors.accent.blue : colors.textPrimary}
+              />
+              <Text style={[styles.menuOptionText, { color: colors.textPrimary }]}>
+                {i18n.t('menu.checklist')}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Lock option */}
+            <TouchableOpacity
+              style={styles.menuOption}
+              onPress={() => {
+                setShowMoreOptionsMenu(false);
+                handleToggleLock();
+              }}>
+              <MaterialIcons
+                name={note.isLocked ? "lock" : "lock-open"}
+                size={24}
+                color={note.isLocked ? colors.accent.red : colors.textPrimary}
+              />
+              <Text style={[styles.menuOptionText, { color: colors.textPrimary }]}>
+                {note.isLocked ? i18n.t('menu.unlock') : i18n.t('menu.lock')}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Share option */}
+            <TouchableOpacity
+              style={styles.menuOption}
+              onPress={() => {
+                setShowMoreOptionsMenu(false);
+                setShowShareMenu(true);
+              }}>
+              <MaterialIcons
+                name="share"
+                size={24}
+                color={colors.textPrimary}
+              />
+              <Text style={[styles.menuOptionText, { color: colors.textPrimary }]}>
+                {i18n.t('menu.share')}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Add to Home Screen option (Widget placeholder) */}
+            <TouchableOpacity
+              style={styles.menuOption}
+              onPress={() => {
+                setShowMoreOptionsMenu(false);
+                Alert.alert(
+                  'Widget',
+                  'Esta funcionalidad estará disponible próximamente'
+                );
+              }}>
+              <MaterialIcons
+                name="widgets"
+                size={24}
+                color={colors.textPrimary}
+              />
+              <Text style={[styles.menuOptionText, { color: colors.textPrimary }]}>
+                {i18n.t('menu.addToHomeScreen')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* AdMob Banner at bottom */}
       <View style={styles.bannerContainer}>
@@ -3085,5 +3128,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'transparent',
     paddingVertical: SPACING.xs,
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  moreOptionsMenu: {
+    borderRadius: 16,
+    padding: SPACING.lg,
+    margin: SPACING.lg,
+    minWidth: 280,
+    maxWidth: 320,
+    width: '85%',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  moreOptionsTitle: {
+    fontSize: TYPOGRAPHY.titleSize,
+    fontWeight: 'bold',
+    marginBottom: SPACING.lg,
+    textAlign: 'center',
+  },
+  menuOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: 8,
+    gap: SPACING.md,
+  },
+  menuOptionText: {
+    fontSize: TYPOGRAPHY.bodySize + 2,
+    fontWeight: '500',
+    flex: 1,
   },
 });

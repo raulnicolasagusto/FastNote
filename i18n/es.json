@@ -158,7 +158,10 @@
     "changeColor": "Cambiar Color",
     "settings": "Configuración",
     "theme": "Tema",
-    "about": "Acerca de"
+    "about": "Acerca de",
+    "moreOptions": "Más Opciones",
+    "checklist": "Checklist",
+    "addToHomeScreen": "Colocar en pantalla de inicio"
   },
   "alerts": {
     "deleteNoteTitle": "Eliminar Nota",
