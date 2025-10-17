@@ -1,0 +1,86 @@
+📝 Fast Voice Note - Your AI-Powered Note-Taking Assistant
+
+Fast Voice Note is the ultimate note-taking app that combines simplicity with AI technology to capture your ideas quickly and efficiently.
+
+✨ KEY FEATURES
+
+🎤 AI VOICE NOTES
+• Automatic transcription using cutting-edge technology
+• Smart detection of lists vs plain text
+• Voice command reminders
+• Example: "Shopping list: milk, bread. Remind me tomorrow at 9am"
+
+📸 OCR TEXT RECOGNITION
+• Extract text from images with AI
+• Capture from camera or gallery
+• Direct transcription to note
+• Perfect for documents, whiteboards, recipes
+
+✅ LISTS AND CHECKLISTS
+• Create lists by voice or text
+• Mark completed items with one tap
+• Add items with voice commands
+• Mixed mode: text + checklist in one note
+
+⏰ SMART REMINDERS
+• Schedule reminders by voice
+• Automatic date/time detection
+• Accurate and reliable notifications
+• Example: "Remind me today at 3pm"
+
+🎨 RICH TEXT EDITOR
+• H1, H2, H3 headings
+• Bold text
+• Text highlighting
+• Customizable background colors
+
+🎙️ AUDIO RECORDING AND TRANSCRIPTION
+• Record long meetings
+• Transcribe with AI directly in note
+• Built-in player
+• Audio attached to each note
+
+📁 ADVANCED ORGANIZATION
+• Custom folders
+• Pinned notes
+• Locked notes for privacy
+• Powerful search by content and date
+
+🌙 LIGHT AND DARK THEMES
+• Dark mode for your eyes
+• Automatic switching
+• Custom colors per note
+
+🌍 MULTILINGUAL
+• Spanish, English, Portuguese
+• Automatic device language detection
+• Complete translations
+
+📤 SHARE AND EXPORT
+• Share as text or image
+• Export complete notes
+• Compatible with all apps
+
+🔒 PRIVACY AND SECURITY
+• Your data stays on your device
+• No registration required
+• API keys protected with Cloudflare Workers
+• Locked notes with additional protection
+
+💡 USE CASES
+
+• Students: Class notes, transcribe whiteboards with OCR
+• Professionals: Meetings, to-do lists, important reminders
+• Home: Shopping lists, recipes, quick ideas
+• Creatives: Capture ideas instantly by voice
+
+🚀 CUTTING-EDGE TECHNOLOGY
+
+• Latest AI for transcription
+• Deepgram for fast processing
+• OCR.space for text recognition
+• React Native + Expo for native performance
+
+📲 DOWNLOAD FAST VOICE NOTE NOW AND TRANSFORM YOUR NOTE-TAKING
+
+Questions or suggestions? Contact us at morogodigital@gmail.com

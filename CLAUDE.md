@@ -20,10 +20,40 @@
 - `npm run format` - Formatear código con ESLint y Prettier
 - `npm run prebuild` - Generar carpetas nativas (android/ios)
 
-### EAS Build
-- `eas build --platform android --profile development` - Build para desarrollo
-- `eas build --platform android --profile preview` - Build preview
-- `eas build --platform android --profile production` - Build producción
+### EAS Build y Deploy a Play Store (PROCESO OFICIAL)
+
+**IMPORTANTE: Este es el proceso correcto que SIEMPRE se debe seguir**
+
+#### Para Testers Internos (Internal Testing Track):
+```bash
+# Paso 1: Crear build de producción
+eas build --platform android --profile production
+
+# Paso 2: Esperar a que termine el build (10-15 minutos)
+
+# Paso 3: Subir a Play Store Internal Testing
+eas submit --platform android --latest
+# Cuando pregunte el track, seleccionar: internal
+```
+
+#### Para Producción (Production Track):
+```bash
+# Paso 1: Crear build de producción
+eas build --platform android --profile production
+
+# Paso 2: Subir a Play Store Production
+eas submit --platform android --latest
+# Cuando pregunte el track, seleccionar: production
+```
+
+#### Notas Importantes:
+- ✅ **SIEMPRE usar profile `production`** - incluso para testers internos
+- ✅ El `versionCode` se incrementa **automáticamente** gracias a `autoIncrement: true` en eas.json
+- ✅ **NO modificar manualmente** el versionCode en app.json
+- ✅ El track se selecciona durante `eas submit`, NO durante el build
+- ✅ Los testers recibirán la actualización en 1-2 horas después del rollout
+- ❌ **NO usar profile `preview`** - solo si se necesita testing rápido sin Play Store
+- ❌ **NO usar profile `development`** - solo para development builds con expo-dev-client
 
 ## Stack Tecnológico
 

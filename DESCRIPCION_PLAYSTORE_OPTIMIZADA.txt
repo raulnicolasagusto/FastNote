@@ -1,0 +1,86 @@
+📝 Fast Voice Note - Tu Asistente de Notas con Inteligencia Artificial
+
+Fast Voice Note es la aplicación de notas definitiva que combina simplicidad con tecnología de IA para capturar tus ideas de forma rápida y eficiente.
+
+✨ CARACTERÍSTICAS PRINCIPALES
+
+🎤 NOTAS DE VOZ CON IA
+• Transcripción automática usando tecnología de última generación
+• Detección inteligente de listas vs texto normal
+• Recordatorios por comandos de voz
+• Ejemplo: "Lista de compras: leche, pan. Recuérdame mañana a las 9am"
+
+📸 OCR RECONOCIMIENTO DE TEXTO
+• Extrae texto de imágenes con IA
+• Captura desde cámara o galería
+• Transcripción directa a la nota
+• Perfecto para documentos, pizarras, recetas
+
+✅ LISTAS Y CHECKLISTS
+• Crea listas por voz o texto
+• Marca items completados con un toque
+• Agrega items con comandos de voz
+• Modo mixto: texto + checklist en una nota
+
+⏰ RECORDATORIOS INTELIGENTES
+• Programa recordatorios por voz
+• Detección automática de fecha/hora
+• Notificaciones exactas y confiables
+• Ejemplo: "Avisar hoy a las 3pm"
+
+🎨 EDITOR DE TEXTO ENRIQUECIDO
+• Encabezados H1, H2, H3
+• Texto en negrita
+• Resaltado de texto
+• Colores de fondo personalizables
+
+🎙️ GRABACIÓN Y TRANSCRIPCIÓN DE AUDIO
+• Graba reuniones largas
+• Transcribe con IA directamente en la nota
+• Reproductor integrado
+• Audio adjunto a cada nota
+
+📁 ORGANIZACIÓN AVANZADA
+• Carpetas personalizadas
+• Notas fijadas (pinned)
+• Notas bloqueadas para privacidad
+• Búsqueda potente por contenido y fecha
+
+🌙 TEMAS CLARO Y OSCURO
+• Modo oscuro para tus ojos
+• Cambio automático
+• Colores personalizados por nota
+
+🌍 MULTIIDIOMA
+• Español, Inglés, Portugués
+• Detección automática del idioma del dispositivo
+• Traducciones completas
+
+📤 COMPARTIR Y EXPORTAR
+• Comparte como texto o imagen
+• Exporta notas completas
+• Compatible con todas las apps
+
+🔒 PRIVACIDAD Y SEGURIDAD
+• Tus datos permanecen en tu dispositivo
+• Sin registro requerido
+• API keys protegidas con Cloudflare Workers
+• Notas bloqueadas con protección adicional
+
+💡 CASOS DE USO
+
+• Estudiantes: Notas de clase, transcribe pizarrones con OCR
+• Profesionales: Reuniones, listas de tareas, recordatorios importantes
+• Hogar: Listas de compras, recetas, ideas rápidas
+• Creativos: Captura ideas al instante por voz
+
+🚀 TECNOLOGÍA DE PUNTA
+
+• IA de última generación para transcripción
+• Deepgram para procesamiento rápido
+• OCR.space para reconocimiento de texto
+• React Native + Expo para rendimiento nativo
+
+📲 DESCARGA FAST VOICE NOTE AHORA Y TRANSFORMA TU FORMA DE TOMAR NOTAS
+
+¿Preguntas o sugerencias? Contáctanos en morogodigital@gmail.com

@@ -33,7 +33,6 @@ export default function Home() {
     checkAndResetIfNeeded,
     loadLimits,
   } = useTranscriptionLimitsStore();
-  const [quickVoiceMode, setQuickVoiceMode] = useState(false); // 🚀 Quick Voice Mode
   const [showRecordingModal, setShowRecordingModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -44,54 +43,12 @@ export default function Home() {
 
   // Inicializar Interstitial Ad Service y resetear sesión al abrir la app
   useEffect(() => {
-    // 🚀 QUICK VOICE MODE: Skip initialization if coming from Quick Action
-    if (voiceNote === 'true') {
-      console.log('🚀 QUICK VOICE MODE - Skipping full app initialization');
-      setQuickVoiceMode(true);
-      // Load transcription limits first (required for validation)
-      loadLimits().then(async () => {
-        // ⚠️ CRITICAL: Check transcription limits BEFORE starting recording
-        await checkAndResetIfNeeded();
-
-        if (!canTranscribe()) {
-          const resetTime = getNextResetTime();
-          Alert.alert(
-            t('recording.dailyLimitReached'),
-            t('recording.dailyLimitReachedMessage', { time: resetTime }),
-            [{ text: t('common.ok') }]
-          );
-          // Exit Quick Voice Mode and load full app (limit reached)
-          setQuickVoiceMode(false);
-          interstitialAdService.initialize();
-          resetInterstitialSession();
-          interstitialAdService.reloadAd();
-          return;
-        }
-
-        // Limit OK - show modal and start recording
-        setShowRecordingModal(true);
-        requestAnimationFrame(() => {
-          startRecording();
-        });
-      });
-      return; // Exit early, skip heavy initialization
-    }
-
-    // Normal initialization for regular app open
     interstitialAdService.initialize();
     resetInterstitialSession();
     console.log('🔄 Interstitial Ad session reset - new app session started');
     interstitialAdService.reloadAd();
     loadLimits();
-  }, [voiceNote]);
-
-  // Auto-stop recording at 60 seconds
-  useEffect(() => {
-    if (isRecording && recordingDuration >= FREE_TIER_LIMITS.MAX_DURATION_SECONDS) {
-      console.log('🎤 Auto-stopping recording at 60 seconds');
-      stopRecording();
-    }
-  }, [recordingDuration, isRecording]);
+  }, []);
 
   const handleNotePress = (note: Note) => {
     console.log('🎯 NAVIGATION DEBUG - handleNotePress called with note:', note.title, note.id);
@@ -135,6 +92,7 @@ export default function Home() {
   };
 
   const handleVoiceNotePress = async () => {
+    console.log('🎤 handleVoiceNotePress called');
     // ⚠️ CRITICAL: Check transcription limits BEFORE starting recording (costs money!)
     await checkAndResetIfNeeded();
 
@@ -245,16 +203,6 @@ export default function Home() {
     setIsRecording(false);
     setRecordingDuration(0);
     setShowRecordingModal(false);
-
-    // 🚀 QUICK VOICE MODE: Exit quick mode and load full app
-    if (quickVoiceMode) {
-      console.log('🚀 QUICK VOICE MODE - User cancelled, loading full app...');
-      setQuickVoiceMode(false);
-      // Trigger full app initialization
-      interstitialAdService.initialize();
-      resetInterstitialSession();
-      interstitialAdService.reloadAd();
-    }
   };
 
   const detectListKeywords = (text: string): boolean => {
@@ -512,16 +460,6 @@ export default function Home() {
     } finally {
       setRecording(null);
       setShowRecordingModal(false);
-
-      // 🚀 QUICK VOICE MODE: Exit quick mode and load full app after transcription
-      if (quickVoiceMode) {
-        console.log('🚀 QUICK VOICE MODE - Transcription complete, loading full app...');
-        setQuickVoiceMode(false);
-        // Trigger full app initialization
-        interstitialAdService.initialize();
-        resetInterstitialSession();
-        interstitialAdService.reloadAd();
-      }
     }
   };
 
@@ -695,8 +633,9 @@ export default function Home() {
       console.error('🎤 VOICE NOTE CREATION - Error analyzing reminder:', error);
 
       // Fallback: create note normally without reminder analysis
+      const fallbackTitle = generateVoiceNoteTitle();
       const newNote: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> = {
-        title: noteTitle,
+        title: fallbackTitle,
         content: cleanHtmlContent(transcribedText),
         type: 'text',
         category: DEFAULT_CATEGORIES[0],
@@ -711,23 +650,26 @@ export default function Home() {
     }
   };
 
-  // 🚀 QUICK VOICE MODE: Render only recording modal (maximum speed)
-  if (quickVoiceMode) {
-    return (
-      <>
-        <Stack.Screen options={{ headerShown: false }} />
-        <VoiceRecordingModal
-          visible={showRecordingModal}
-          isRecording={isRecording}
-          recordingDuration={recordingDuration}
-          onCancel={cancelRecording}
-          onStop={stopRecording}
-        />
-      </>
-    );
-  }
+  // Auto-stop recording at 60 seconds
+  useEffect(() => {
+    if (isRecording && recordingDuration >= FREE_TIER_LIMITS.MAX_DURATION_SECONDS) {
+      console.log('🎤 Auto-stopping recording at 60 seconds');
+      stopRecording();
+    }
+  }, [recordingDuration, isRecording]);
 
-  // Normal render with full app
+  // Handle Quick Action voice note trigger
+  useEffect(() => {
+    console.log('🎤 Quick Action useEffect triggered - voiceNote param:', voiceNote);
+    if (voiceNote === 'true') {
+      console.log('🎤 Quick Action detected - opening voice recording modal');
+      // Add small delay to ensure everything is initialized
+      setTimeout(() => {
+        handleVoiceNotePress();
+      }, 100);
+    }
+  }, [voiceNote]);
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
