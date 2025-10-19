@@ -42,6 +42,7 @@ import { NotificationService } from '../utils/notifications';
 import { interstitialAdService } from '../utils/interstitialAdService';
 import i18n from '../utils/i18n';
 import { useLanguage } from '../utils/i18n';
+import { WidgetService } from '../utils/widgetService';
 
 /*
   VOICE REMINDER FEATURE:
@@ -2590,15 +2591,12 @@ export default function NoteDetail() {
               </Text>
             </TouchableOpacity>
 
-            {/* Add to Home Screen option (Widget placeholder) */}
+            {/* Add to Home Screen option (Widget) */}
             <TouchableOpacity
               style={styles.menuOption}
               onPress={() => {
                 setShowMoreOptionsMenu(false);
-                Alert.alert(
-                  'Widget',
-                  'Esta funcionalidad estará disponible próximamente'
-                );
+                WidgetService.addNoteToHomeScreen(note);
               }}>
               <MaterialIcons
                 name="widgets"

@@ -21,7 +21,9 @@
       "Bash(powershell:*)",
       "Bash(dir:*)",
       "Bash(findstr:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(cat:*)",
+      "Bash(if exist modules rmdir /s /q modules)"
     ],
     "deny": [],
     "ask": []

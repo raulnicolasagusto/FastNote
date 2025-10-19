@@ -289,7 +289,42 @@ eas submit --platform android --latest
   - Con 1,000 usuarios activos/día: +$90/mes adicionales
   - Incremento estimado: +650% vs solo banners
 
-### 14. Internacionalización (i18n) - Octubre 2025 ✅
+### 14. Android Home Screen Widgets - Octubre 2025 ✅
+- **Direct Widget Pinning** con `requestPinAppWidget` API (Android 8.0+)
+  - 1 tap + confirmación del sistema para agregar widget
+  - Funcionalidad idéntica a Google Keep, ColorNote, Xiaomi Notes
+  - Fallback a instrucciones manuales en Android < 8.0
+- **Widget Nativo**: [NoteWidget.tsx](widgets/NoteWidget.tsx)
+  - Muestra título, contenido preview, items de checklist
+  - Fecha de creación, categoría, indicador de recordatorio
+  - Colores de fondo personalizados (igual que en app)
+  - Click en widget abre la nota directamente
+- **Auto-Configuración**: `configuration_optional` feature
+  - Widget se configura automáticamente con la nota seleccionada
+  - Sistema de "pending note" con AsyncStorage
+  - No requiere pantalla de configuración manual
+- **Módulo Nativo**: [WidgetPinModule.kt](android/app/src/main/java/com/raulnicolasagusto/fastnote/WidgetPinModule.kt)
+  - Bridge React Native → Android AppWidgetManager
+  - Implementa `isRequestPinAppWidgetSupported()` y `requestPinWidget()`
+  - Config Plugin: [withWidgetPin.js](plugins/withWidgetPin.js)
+- **Servicio**: [widgetService.ts](utils/widgetService.ts)
+  - Detección de soporte de plataforma
+  - Gestión de pending notes
+  - Actualización de widgets existentes
+- **Handler**: [widget-task-handler.tsx](widgets/widget-task-handler.tsx)
+  - Maneja lifecycle events: ADDED, UPDATE, RESIZED, DELETED, CLICK
+  - Carga data de notas desde AsyncStorage
+  - Renderiza widget con react-native-android-widget primitives
+- **Configuración**: [app.json](app.json) líneas 53-73
+  - Plugin `react-native-android-widget` con config de widgets
+  - Dimensiones, preview, update period, resize mode
+- **Experiencia de Usuario**:
+  - Android 8.0+: Presionar "Colocar en pantalla de inicio" → Sistema muestra popup → Confirmar → Widget aparece
+  - Android < 8.0: Instrucciones claras + auto-configuración
+  - ~10 segundos vs ~45 segundos (método manual)
+- **Librerías**: `react-native-android-widget` v0.17.2
+
+### 15. Internacionalización (i18n) - Octubre 2025 ✅
 - **Librerías**: `i18n-js` + `expo-localization`
 - **Idiomas Soportados**:
   - 🇺🇸 **Inglés (English)** - Idioma por defecto

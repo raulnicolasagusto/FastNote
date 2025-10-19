@@ -163,6 +163,13 @@
     "checklist": "Checklist",
     "addToHomeScreen": "Colocar en pantalla de inicio"
   },
+  "widgets": {
+    "readyTitle": "¡Nota Lista para Widget!",
+    "readyMessage": "Esta nota está lista para agregarse como widget.\n\nMantén presionada tu pantalla de inicio, toca Widgets, busca FastNote Widget y arrástralo a tu pantalla.\n\n¡El widget mostrará automáticamente esta nota!",
+    "openWidgets": "¡Entendido!",
+    "instructionsTitle": "Agregar Widget a la Pantalla de Inicio",
+    "instructionsMessage": "Para agregar esta nota a tu pantalla de inicio:\n\n1. Mantén presionada tu pantalla de inicio\n2. Toca 'Widgets'\n3. Busca 'FastNote Widget'\n4. Arrástral a tu pantalla de inicio\n\n¡El widget mostrará esta nota automáticamente!"
+  },
   "alerts": {
     "deleteNoteTitle": "Eliminar Nota",
     "deleteNoteMessage": "¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.",

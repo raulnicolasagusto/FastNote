@@ -163,6 +163,13 @@
     "checklist": "Checklist",
     "addToHomeScreen": "Add to Home Screen"
   },
+  "widgets": {
+    "readyTitle": "Note Ready for Widget!",
+    "readyMessage": "This note is ready to be added as a widget.\n\nLong press on your home screen, tap Widgets, find FastNote Widget, and drag it to your screen.\n\nThe widget will automatically display this note!",
+    "openWidgets": "Got it!",
+    "instructionsTitle": "Add Widget to Home Screen",
+    "instructionsMessage": "To add this note to your home screen:\n\n1. Long press on your home screen\n2. Tap 'Widgets'\n3. Find 'FastNote Widget'\n4. Drag it to your home screen\n\nThe widget will display this note automatically!"
+  },
   "alerts": {
     "deleteNoteTitle": "Delete Note",
     "deleteNoteMessage": "Are you sure you want to delete this note? This action cannot be undone.",
