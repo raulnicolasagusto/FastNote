@@ -23,7 +23,9 @@
       "Bash(findstr:*)",
       "Bash(test:*)",
       "Bash(cat:*)",
-      "Bash(if exist modules rmdir /s /q modules)"
+      "Bash(if exist modules rmdir /s /q modules)",
+      "Bash(curl -I \"https://fastvoicenote.blogspot.com/app-ads.txt\")",
+      "Bash(curl -L \"https://fastvoicenote.blogspot.com/app-ads.txt\")"
     ],
     "deny": [],
     "ask": []

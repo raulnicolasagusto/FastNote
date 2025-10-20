@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as QuickActions from 'expo-quick-actions';
 import { MainScreen } from '../components/layout/MainScreen';
 import { VoiceRecordingModal } from '../components/ui/VoiceRecordingModal';
 import { Note, ChecklistItem } from '../types';
@@ -41,13 +42,37 @@ export default function Home() {
   const [recordingTimer, setRecordingTimer] = useState<NodeJS.Timeout | null>(null);
   const { voiceNote } = useLocalSearchParams();
 
-  // Inicializar Interstitial Ad Service y resetear sesión al abrir la app
+  // Ref to track if quick action was already processed (avoid duplicates)
+  const quickActionProcessedRef = useRef(false);
+
+  // Inicializar Interstitial Ad Service, resetear sesión y manejar Cold Start Quick Action
   useEffect(() => {
-    interstitialAdService.initialize();
-    resetInterstitialSession();
-    console.log('🔄 Interstitial Ad session reset - new app session started');
-    interstitialAdService.reloadAd();
-    loadLimits();
+    const initializeApp = async () => {
+      // Initialize services
+      interstitialAdService.initialize();
+      resetInterstitialSession();
+      console.log('🔄 Interstitial Ad session reset - new app session started');
+      interstitialAdService.reloadAd();
+      await loadLimits();
+
+      // ✅ COLD START HANDLING: Check if app was opened via Quick Action
+      // QuickActions.initial is only populated on cold start and consumed once
+      const initialAction = QuickActions.initial;
+      console.log('🎤 COLD START CHECK - QuickActions.initial:', initialAction);
+
+      if (initialAction?.params?.action === 'voice_note' && !quickActionProcessedRef.current) {
+        console.log('🎤 COLD START DETECTED - Quick Action voice_note triggered on app launch');
+        quickActionProcessedRef.current = true;
+
+        // Wait for stores to fully initialize (longer delay for cold start)
+        setTimeout(() => {
+          console.log('🎤 COLD START - Starting voice recording after initialization delay');
+          handleVoiceNotePress();
+        }, 500); // 500ms to ensure all stores are ready
+      }
+    };
+
+    initializeApp();
   }, []);
 
   const handleNotePress = (note: Note) => {
@@ -658,13 +683,18 @@ export default function Home() {
     }
   }, [recordingDuration, isRecording]);
 
-  // Handle Quick Action voice note trigger
+  // Handle Quick Action voice note trigger (WARM START - app in background)
   useEffect(() => {
-    console.log('🎤 Quick Action useEffect triggered - voiceNote param:', voiceNote);
-    if (voiceNote === 'true') {
-      console.log('🎤 Quick Action detected - opening voice recording modal');
-      // Add small delay to ensure everything is initialized
+    console.log('🎤 WARM START CHECK - voiceNote param:', voiceNote, '| Already processed:', quickActionProcessedRef.current);
+
+    // Only process if not already handled by cold start logic
+    if (voiceNote === 'true' && !quickActionProcessedRef.current) {
+      console.log('🎤 WARM START DETECTED - Quick Action from background');
+      quickActionProcessedRef.current = true;
+
+      // Shorter delay for warm start (app already initialized)
       setTimeout(() => {
+        console.log('🎤 WARM START - Starting voice recording');
         handleVoiceNotePress();
       }, 100);
     }

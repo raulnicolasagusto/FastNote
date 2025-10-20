@@ -268,7 +268,16 @@ eas submit --platform android --latest
 - Configurado en [app.json](app.json) líneas 31-44
 - Iconos personalizados para Android e iOS
 - Shortcut ID: `voice_note`
-- Detección en [index.tsx](app/index.tsx) mediante `useLocalSearchParams()`
+- **Detección Dual (Cold + Warm Start)**:
+  - **Cold Start**: `QuickActions.initial` en [index.tsx](app/index.tsx) líneas 58-72
+    - Se lee una sola vez al iniciar la app desde cero
+    - Delay de 500ms para esperar inicialización completa de stores
+    - Se consume automáticamente después de la primera lectura
+  - **Warm Start**: `useLocalSearchParams()` en [index.tsx](app/index.tsx) líneas 686-701
+    - Detecta parámetro `voiceNote=true` cuando app está en background
+    - Delay de 100ms (más rápido, app ya inicializada)
+  - **Prevención de duplicados**: `useRef` para evitar procesar la misma acción dos veces
+- **Listener en _layout.tsx**: Maneja navegación con parámetros (líneas 54-59)
 
 ### 13. Sistema de Publicidad (AdMob)
 - **Banner Ads** (implementados previamente):
