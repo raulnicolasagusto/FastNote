@@ -37,6 +37,9 @@
     "titlePlaceholder": "Título",
     "contentPlaceholder": "Comienza a escribir...",
     "tapToEdit": "Toca para editar",
+    "tapToAddText": "Toca para agregar texto...",
+    "noteNotFound": "Nota no encontrada",
+    "goBack": "Volver",
     "editTitle": "Editar Título",
     "editContent": "Editar Contenido",
     "addImage": "Agregar Imagen",
@@ -66,6 +69,7 @@
     "newFolder": "Nueva Carpeta",
     "folderName": "Nombre de Carpeta",
     "moveToFolder": "Mover a Carpeta",
+    "moveTo": "Mover a",
     "selectFolder": "Selecciona una carpeta",
     "createFolder": "Crear Carpeta",
     "deleteFolder": "Eliminar Carpeta",
@@ -73,18 +77,21 @@
     "editFolder": "Editar Carpeta",
     "newFolderNamePlaceholder": "Nuevo nombre...",
     "duplicateFolderName": "Ya existe una carpeta con ese nombre",
-    "deleteFolderConfirmation": "¿Estás seguro de que deseas eliminar la carpeta \"{{name}}\"?"
+    "deleteFolderConfirmation": "¿Estás seguro de que deseas eliminar la carpeta \"{{name}}\"?",
+    "noFoldersCreated": "No hay carpetas creadas"
   },
   "reminders": {
     "title": "Recordatorio",
     "setReminder": "Establecer Recordatorio",
     "reminderSet": "Recordatorio establecido correctamente",
     "removeReminder": "Eliminar Recordatorio",
+    "configureReminder": "Configurar Recordatorio",
     "today": "Hoy",
     "tomorrow": "Mañana",
     "in": "En",
     "days": "días",
-    "at": "a las"
+    "at": "a las",
+    "invalidDate": "Fecha inválida"
   },
   "share": {
     "title": "Compartir",
@@ -99,6 +106,7 @@
     "title": "Grabando",
     "recording": "Grabando...",
     "stop": "Detener",
+    "stopRecording": "Detener Grabación",
     "cancel": "Cancelar",
     "transcribing": "Transcribiendo...",
     "processing": "Procesando audio...",
@@ -123,7 +131,10 @@
     "insufficientMinutes": "Este audio necesita {{needed}} min pero solo te quedan {{available}} min este mes",
     "dailyLimitInfo": "Te quedan {{minutes}} minutos este mes para transcribir",
     "transcriptionLimitTitle": "Límite de Transcripciones Alcanzado",
-    "transcriptionLimitMessage": "Este audio ya ha sido transcrito 2 veces (máximo permitido en el tier gratuito)"
+    "transcriptionLimitMessage": "Este audio ya ha sido transcrito 2 veces (máximo permitido en el tier gratuito)",
+    "play": "Reproducir",
+    "save": "Guardar",
+    "new": "Nuevo"
   },
   "camera": {
     "title": "Capturar Texto",

@@ -10,6 +10,8 @@ import {
 import { Audio } from 'expo-av';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeStore } from '../../store/theme/useThemeStore';
+import { t } from '../../utils/i18n';
+import { useLanguage } from '../../utils/useLanguage';
 
 interface AudioRecorderProps {
   visible: boolean;
@@ -22,6 +24,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
   onClose,
   onSaveAudio,
 }) => {
+  useLanguage(); // Re-render on language change
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [audioUri, setAudioUri] = useState<string | null>(null);
@@ -221,13 +224,13 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
               onPress={stopRecording}
               disabled={!isRecording}
             >
-              <MaterialIcons 
+              <MaterialIcons
                 name="stop"
-                size={24} 
-                color="white" 
+                size={24}
+                color="white"
               />
               <Text style={styles.buttonText}>
-                Detener Grabación
+                {t('recording.stopRecording')}
               </Text>
             </TouchableOpacity>
           ) : (
@@ -238,7 +241,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
                 onPress={playSound}
               >
                 <MaterialIcons name="play-arrow" size={20} color="white" />
-                <Text style={styles.actionButtonText}>Reproducir</Text>
+                <Text style={styles.actionButtonText}>{t('audio.play')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -246,7 +249,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
                 onPress={saveAudio}
               >
                 <MaterialIcons name="save" size={20} color="white" />
-                <Text style={styles.actionButtonText}>Guardar</Text>
+                <Text style={styles.actionButtonText}>{t('audio.save')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -257,7 +260,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
                 }}
               >
                 <MaterialIcons name="refresh" size={20} color="white" />
-                <Text style={styles.actionButtonText}>Nuevo</Text>
+                <Text style={styles.actionButtonText}>{t('audio.new')}</Text>
               </TouchableOpacity>
             </View>
           )}

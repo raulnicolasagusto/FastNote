@@ -14,6 +14,8 @@ import { useThemeStore } from '../../store/theme/useThemeStore';
 import { useFoldersStore } from '../../store/folders/useFoldersStore';
 import { SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { Folder } from '../../types';
+import { t } from '../../utils/i18n';
+import { useLanguage } from '../../utils/useLanguage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -28,6 +30,7 @@ export default function MoveFolderModal({
   onClose,
   onSelectFolder,
 }: MoveFolderModalProps) {
+  useLanguage(); // Re-render on language change
   const { colors } = useThemeStore();
   const insets = useSafeAreaInsets();
   const { folders } = useFoldersStore();
@@ -63,7 +66,7 @@ export default function MoveFolderModal({
           {/* Header */}
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.textPrimary }]}>
-              Mover a
+              {t('folders.moveTo')}
             </Text>
             <TouchableOpacity
               style={styles.closeButton}
@@ -86,7 +89,7 @@ export default function MoveFolderModal({
                 style={styles.emptyIcon}
               />
               <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                No hay carpetas creadas
+                {t('folders.noFoldersCreated')}
               </Text>
             </View>
           ) : (

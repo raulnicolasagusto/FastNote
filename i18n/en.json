@@ -37,6 +37,9 @@
     "titlePlaceholder": "Title",
     "contentPlaceholder": "Start writing...",
     "tapToEdit": "Tap to edit",
+    "tapToAddText": "Tap to add text...",
+    "noteNotFound": "Note not found",
+    "goBack": "Go Back",
     "editTitle": "Edit Title",
     "editContent": "Edit Content",
     "addImage": "Add Image",
@@ -66,6 +69,7 @@
     "newFolder": "New Folder",
     "folderName": "Folder Name",
     "moveToFolder": "Move to Folder",
+    "moveTo": "Move to",
     "selectFolder": "Select a folder",
     "createFolder": "Create Folder",
     "deleteFolder": "Delete Folder",
@@ -73,18 +77,21 @@
     "editFolder": "Edit Folder",
     "newFolderNamePlaceholder": "New name...",
     "duplicateFolderName": "A folder with that name already exists",
-    "deleteFolderConfirmation": "Are you sure you want to delete the folder \"{{name}}\"?"
+    "deleteFolderConfirmation": "Are you sure you want to delete the folder \"{{name}}\"?",
+    "noFoldersCreated": "No folders created"
   },
   "reminders": {
     "title": "Reminder",
     "setReminder": "Set Reminder",
     "reminderSet": "Reminder set successfully",
     "removeReminder": "Remove Reminder",
+    "configureReminder": "Configure Reminder",
     "today": "Today",
     "tomorrow": "Tomorrow",
     "in": "In",
     "days": "days",
-    "at": "at"
+    "at": "at",
+    "invalidDate": "Invalid date"
   },
   "share": {
     "title": "Share",
@@ -99,6 +106,7 @@
     "title": "Recording",
     "recording": "Recording...",
     "stop": "Stop",
+    "stopRecording": "Stop Recording",
     "cancel": "Cancel",
     "transcribing": "Transcribing...",
     "processing": "Processing audio...",
@@ -123,7 +131,10 @@
     "insufficientMinutes": "This audio needs {{needed}} min but you only have {{available}} min left this month",
     "dailyLimitInfo": "You have {{minutes}} minutes left this month to transcribe",
     "transcriptionLimitTitle": "Transcription Limit Reached",
-    "transcriptionLimitMessage": "This audio has already been transcribed 2 times (maximum allowed in free tier)"
+    "transcriptionLimitMessage": "This audio has already been transcribed 2 times (maximum allowed in free tier)",
+    "play": "Play",
+    "save": "Save",
+    "new": "New"
   },
   "camera": {
     "title": "Capture Text",

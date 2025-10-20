@@ -40,7 +40,7 @@ import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
 import { interstitialAdService } from '../utils/interstitialAdService';
-import i18n from '../utils/i18n';
+import i18n, { t } from '../utils/i18n';
 import { useLanguage } from '../utils/i18n';
 import { WidgetService } from '../utils/widgetService';
 
@@ -1887,7 +1887,7 @@ export default function NoteDetail() {
             style={styles.textPlaceholder}
             onPress={handleStartContentEdit}
             activeOpacity={1}>
-            <Text style={[styles.placeholderText, { color: textColors.secondary }]}>Tap to add text...</Text>
+            <Text style={[styles.placeholderText, { color: textColors.secondary }]}>{t('noteDetail.tapToAddText')}</Text>
           </TouchableOpacity>
         )}
 
@@ -1934,9 +1934,9 @@ export default function NoteDetail() {
         />
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Note not found</Text>
+          <Text style={styles.errorText}>{t('noteDetail.noteNotFound')}</Text>
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Text style={styles.backButtonText}>Go Back</Text>
+            <Text style={styles.backButtonText}>{t('noteDetail.goBack')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -2189,7 +2189,7 @@ export default function NoteDetail() {
           </View>
           
           {!editingElement && !note.isLocked && (
-            <Text style={[styles.editHint, { color: textColors.secondary }]}>Tap to edit</Text>
+            <Text style={[styles.editHint, { color: textColors.secondary }]}>{t('noteDetail.tapToEdit')}</Text>
           )}
         </View>
 

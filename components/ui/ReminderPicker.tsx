@@ -13,6 +13,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeStore } from '../../store/theme/useThemeStore';
 import { SPACING, TYPOGRAPHY } from '../../constants/theme';
+import { t, getCurrentLanguage } from '../../utils/i18n';
+import { useLanguage } from '../../utils/useLanguage';
 
 interface ReminderPickerProps {
   visible: boolean;
@@ -27,6 +29,7 @@ export default function ReminderPicker({
   onClose,
   onConfirm,
 }: ReminderPickerProps) {
+  useLanguage(); // Re-render on language change
   const { colors } = useThemeStore();
   const insets = useSafeAreaInsets();
   const slideAnim = React.useState(new Animated.Value(0))[0];
@@ -83,22 +86,26 @@ export default function ReminderPicker({
   const formatDate = (date: Date): string => {
     // Ensure we have a valid Date object
     const dateObj = date instanceof Date ? date : new Date(date);
-    
+
     if (isNaN(dateObj.getTime())) {
       console.error('Invalid date passed to formatDate:', date);
-      return 'Fecha inválida';
+      return t('reminders.invalidDate');
     }
-    
+
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
 
     if (dateObj.toDateString() === today.toDateString()) {
-      return 'Hoy';
+      return t('reminders.today');
     } else if (dateObj.toDateString() === tomorrow.toDateString()) {
-      return 'Mañana';
+      return t('reminders.tomorrow');
     } else {
-      return dateObj.toLocaleDateString('es-ES', {
+      // Get current language for locale
+      const currentLang = getCurrentLanguage();
+      const locale = currentLang === 'es' ? 'es-ES' : 'en-US';
+
+      return dateObj.toLocaleDateString(locale, {
         day: 'numeric',
         month: 'short',
         year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
@@ -109,13 +116,17 @@ export default function ReminderPicker({
   const formatTime = (date: Date): string => {
     // Ensure we have a valid Date object
     const dateObj = date instanceof Date ? date : new Date(date);
-    
+
     if (isNaN(dateObj.getTime())) {
       console.error('Invalid date passed to formatTime:', date);
       return '00:00';
     }
-    
-    return dateObj.toLocaleTimeString('es-ES', {
+
+    // Get current language for locale
+    const currentLang = getCurrentLanguage();
+    const locale = currentLang === 'es' ? 'es-ES' : 'en-US';
+
+    return dateObj.toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -198,7 +209,7 @@ export default function ReminderPicker({
 
           {/* Title */}
           <Text style={[styles.title, { color: colors.textPrimary }]}>
-            Configurar Recordatorio
+            {t('reminders.configureReminder')}
           </Text>
 
           {/* Date and Time Selectors */}
@@ -231,7 +242,7 @@ export default function ReminderPicker({
                 style={[styles.actionButton, { backgroundColor: colors.accent.red + '15' }]}
                 onPress={handleRemove}>
                 <Text style={[styles.buttonText, { color: colors.accent.red }]}>
-                  Eliminar
+                  {t('common.delete')}
                 </Text>
               </TouchableOpacity>
             )}
@@ -240,7 +251,7 @@ export default function ReminderPicker({
               style={[styles.actionButton, { backgroundColor: colors.accent.blue + '15' }]}
               onPress={handleConfirm}>
               <Text style={[styles.buttonText, { color: colors.accent.blue }]}>
-                Confirmar
+                {t('common.confirm')}
               </Text>
             </TouchableOpacity>
           </View>
