@@ -43,6 +43,7 @@ import { interstitialAdService } from '../utils/interstitialAdService';
 import i18n, { t } from '../utils/i18n';
 import { useLanguage } from '../utils/i18n';
 import { WidgetService } from '../utils/widgetService';
+import ImageView from 'react-native-image-viewing';
 
 /*
   VOICE REMINDER FEATURE:
@@ -116,7 +117,11 @@ export default function NoteDetail() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(null);
   const [selectedAudioIndex, setSelectedAudioIndex] = useState<number | null>(null);
-  
+
+  // Image viewer states
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const [imageViewerIndex, setImageViewerIndex] = useState(0);
+
   // Format button active states
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
@@ -953,20 +958,58 @@ export default function NoteDetail() {
 
     try {
       console.log('🗑️ Removing legacy image at index:', imageIndex);
-      
+
       const currentImages = note.images || [];
       const newImages = currentImages.filter((_, index) => index !== imageIndex);
-      
+
       updateNote(note.id, {
         images: newImages,
         updatedAt: new Date(),
       });
-      
+
       console.log('✅ Legacy image removed successfully');
-      
+
     } catch (error) {
       console.error('Error removing legacy image:', error);
       Alert.alert(t('alerts.errorTitle'), t('alerts.deleteImageError'));
+    }
+  };
+
+  // Helper function to get all image URIs for the image viewer
+  const getAllImageUris = (): { uri: string }[] => {
+    if (!note) return [];
+
+    const imageUris: { uri: string }[] = [];
+
+    // Add images from contentBlocks (excluding audio files)
+    if (note.contentBlocks && note.contentBlocks.length > 0) {
+      note.contentBlocks.forEach((block) => {
+        if (block.type === 'image' && block.uri && !isAudioUri(block.uri)) {
+          imageUris.push({ uri: block.uri });
+        }
+      });
+    }
+
+    // Add legacy images (excluding audio files)
+    if (note.images && note.images.length > 0) {
+      note.images.forEach((imageUri) => {
+        if (!isAudioUri(imageUri)) {
+          imageUris.push({ uri: imageUri });
+        }
+      });
+    }
+
+    return imageUris;
+  };
+
+  // Helper function to open image viewer at specific index
+  const openImageViewer = (imageUri: string) => {
+    const allImages = getAllImageUris();
+    const index = allImages.findIndex((img) => img.uri === imageUri);
+
+    if (index !== -1) {
+      setImageViewerIndex(index);
+      setImageViewerVisible(true);
     }
   };
 
@@ -1673,6 +1716,9 @@ export default function NoteDetail() {
                     key={index}
                     style={styles.imageContainer}
                     onPress={() => {
+                      openImageViewer(imageUri);
+                    }}
+                    onLongPress={() => {
                       if (selectedImageIndex === index) {
                         setSelectedImageIndex(null);
                       } else {
@@ -1759,6 +1805,11 @@ export default function NoteDetail() {
                   <TouchableOpacity
                     style={styles.imageContainer}
                     onPress={() => {
+                      if (block.uri) {
+                        openImageViewer(block.uri);
+                      }
+                    }}
+                    onLongPress={() => {
                       if (selectedBlockIndex === index) {
                         // Deselect if already selected
                         setSelectedBlockIndex(null);
@@ -1842,6 +1893,9 @@ export default function NoteDetail() {
                   key={index}
                   style={styles.imageContainer}
                   onPress={() => {
+                    openImageViewer(imageUri);
+                  }}
+                  onLongPress={() => {
                     if (selectedImageIndex === index) {
                       // Deselect if already selected
                       setSelectedImageIndex(null);
@@ -2271,6 +2325,9 @@ export default function NoteDetail() {
                       style={styles.imageContainer}
                       onPress={() => {
                         console.log('🖼️ Image tapped in edit mode:', index);
+                        openImageViewer(imageUri);
+                      }}
+                      onLongPress={() => {
                         if (selectedImageIndex === index) {
                           // Deselect if already selected
                           setSelectedImageIndex(null);
@@ -2621,6 +2678,14 @@ export default function NoteDetail() {
           }}
         />
       </View>
+
+      {/* Image Viewer Modal */}
+      <ImageView
+        images={getAllImageUris()}
+        imageIndex={imageViewerIndex}
+        visible={imageViewerVisible}
+        onRequestClose={() => setImageViewerVisible(false)}
+      />
     </SafeAreaView>
   );
 }
