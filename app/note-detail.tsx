@@ -9,6 +9,8 @@ import {
   StyleSheet,
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { RichEditor, RichToolbar, actions } from 'react-native-pell-rich-editor';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
@@ -101,6 +103,7 @@ export default function NoteDetail() {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [editedChecklistItems, setEditedChecklistItems] = useState<ChecklistItem[]>([]);
   const inputRefs = useRef<{ [key: string]: TextInput | null }>({});
+  const checklistItemRefs = useRef<{ [key: string]: View | null }>({});
   const shareableImageRef = useRef<View>(null);
   const richTextRef = useRef<RichEditor>(null);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -381,12 +384,14 @@ export default function NoteDetail() {
     };
     setEditedChecklistItems([...editedChecklistItems, newItem]);
 
-    // Focus the new item after a short delay to ensure it's rendered
+    // Focus the new item and scroll to bottom after a short delay to ensure it's rendered
     setTimeout(() => {
       const inputRef = inputRefs.current[newItem.id];
       if (inputRef) {
         inputRef.focus();
       }
+      // Scroll to the end to show the new item
+      scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
 
     return newItem;
@@ -417,6 +422,30 @@ export default function NoteDetail() {
     const currentItem = editedChecklistItems.find(item => item.id === itemId);
     if (currentItem && currentItem.text.trim() !== '') {
       addChecklistItem();
+    }
+  };
+
+  // Scroll to checklist item when focused
+  const scrollToChecklistItem = (itemId: string) => {
+    const itemView = checklistItemRefs.current[itemId];
+    if (itemView && scrollViewRef.current) {
+      // Add a small delay to ensure the keyboard is shown
+      setTimeout(() => {
+        itemView.measureLayout(
+          scrollViewRef.current as any,
+          (x, y, width, height) => {
+            // Scroll with extra offset to account for keyboard
+            scrollViewRef.current?.scrollTo({
+              y: y - 100, // Offset to keep item visible above keyboard
+              animated: true,
+            });
+          },
+          () => {
+            // Fallback: scroll to end if measure fails
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }
+        );
+      }, 100);
     }
   };
 
@@ -2202,11 +2231,17 @@ export default function NoteDetail() {
       )}
 
       {/* Content */}
-      <ScrollView
-        ref={scrollViewRef}
-        style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       >
+        <ScrollView
+          ref={scrollViewRef}
+          style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
         <TouchableWithoutFeedback onPress={() => {
           // Deselect any selected images when touching outside
           setSelectedImageIndex(null);
@@ -2368,7 +2403,13 @@ export default function NoteDetail() {
         ) : editingElement === 'checklist' ? (
           <View style={styles.checklistContainer}>
             {editedChecklistItems.map((item, index) => (
-              <View key={item.id} style={styles.checklistEditItem}>
+              <View
+                key={item.id}
+                style={styles.checklistEditItem}
+                ref={(ref) => {
+                  checklistItemRefs.current[item.id] = ref;
+                }}
+              >
                 <TouchableOpacity
                   style={styles.checkbox}
                   onPress={() => updateChecklistItem(item.id, { completed: !item.completed })}>
@@ -2394,6 +2435,7 @@ export default function NoteDetail() {
                   placeholder="Add item..."
                   placeholderTextColor={colors.textSecondary}
                   onSubmitEditing={() => handleChecklistItemSubmit(item.id)}
+                  onFocus={() => scrollToChecklistItem(item.id)}
                   returnKeyType="next"
                   autoFocus={index === editedChecklistItems.length - 1 && !item.text}
                   blurOnSubmit={false}
@@ -2424,6 +2466,7 @@ export default function NoteDetail() {
           </View>
         </TouchableWithoutFeedback>
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Camera Modal */}
       {showCameraModal && (
