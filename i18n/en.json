@@ -59,6 +59,7 @@
     "title": "Checklist",
     "newItem": "New item",
     "addItem": "Add item",
+    "addMoreItems": "Add more items",
     "itemPlaceholder": "Item description...",
     "completed": "Completed",
     "pending": "Pending"

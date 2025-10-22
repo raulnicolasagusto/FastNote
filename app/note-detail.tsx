@@ -2003,6 +2003,21 @@ export default function NoteDetail() {
                 </TouchableOpacity>
               </View>
             ))}
+
+            {/* Add more items button */}
+            <TouchableOpacity
+              style={styles.addMoreItemsButton}
+              onPress={toggleChecklistMode}
+              activeOpacity={0.7}>
+              <MaterialIcons
+                name="add-circle-outline"
+                size={18}
+                color={colors.accent.blue}
+              />
+              <Text style={[styles.addMoreItemsText, { color: colors.accent.blue }]}>
+                {t('checklist.addMoreItems')}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -3088,6 +3103,19 @@ const styles = StyleSheet.create({
     marginTop: SPACING.lg,
     paddingTop: SPACING.lg,
     borderTopWidth: 0, // Will be set dynamically
+  },
+  addMoreItemsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.xs,
+    marginTop: SPACING.xs,
+    marginLeft: 32, // Align with checklist items (after checkbox)
+    gap: SPACING.xs,
+  },
+  addMoreItemsText: {
+    fontSize: TYPOGRAPHY.bodySize - 1,
+    fontWeight: '500',
   },
   textPlaceholder: {
     paddingVertical: SPACING.md,

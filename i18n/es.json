@@ -59,6 +59,7 @@
     "title": "Lista de Tareas",
     "newItem": "Nuevo elemento",
     "addItem": "Agregar elemento",
+    "addMoreItems": "Agregar más elementos",
     "itemPlaceholder": "Descripción del elemento...",
     "completed": "Completado",
     "pending": "Pendiente"
