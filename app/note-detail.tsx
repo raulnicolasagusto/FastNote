@@ -429,23 +429,25 @@ export default function NoteDetail() {
   const scrollToChecklistItem = (itemId: string) => {
     const itemView = checklistItemRefs.current[itemId];
     if (itemView && scrollViewRef.current) {
-      // Add a small delay to ensure the keyboard is shown
       setTimeout(() => {
-        itemView.measureLayout(
-          scrollViewRef.current as any,
-          (x, y, width, height) => {
-            // Scroll with extra offset to account for keyboard
-            scrollViewRef.current?.scrollTo({
-              y: y - 100, // Offset to keep item visible above keyboard
-              animated: true,
-            });
-          },
-          () => {
-            // Fallback: scroll to end if measure fails
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-          }
-        );
-      }, 100);
+        try {
+          // Try to measure and scroll to specific position
+          itemView.measure((fx, fy, width, height, px, py) => {
+            if (py !== undefined && scrollViewRef.current) {
+              // Scroll with offset to keep item visible above keyboard
+              const offset = Math.max(0, py - 150);
+              scrollViewRef.current.scrollTo({
+                y: offset,
+                animated: true,
+              });
+            }
+          });
+        } catch (error) {
+          // Fallback: scroll to end if measure fails
+          console.log('Scroll measure failed, scrolling to end:', error);
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }
+      }, 200);
     }
   };
 
@@ -2234,11 +2236,13 @@ export default function NoteDetail() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
+        enabled={true}
       >
         <ScrollView
           ref={scrollViewRef}
           style={[styles.content, { backgroundColor: note.backgroundColor || colors.background }]}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
