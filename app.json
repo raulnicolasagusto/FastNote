@@ -69,8 +69,7 @@
             }
           ]
         }
-      ],
-      "./plugins/withWidgetPin"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -115,7 +114,6 @@
           ]
         }
       ],
-      "launchMode": "singleTask",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
