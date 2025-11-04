@@ -175,12 +175,12 @@
     "checklist": "Checklist",
     "addToHomeScreen": "Add to Home Screen"
   },
-  "widgets": {
-    "readyTitle": "Note Ready for Widget!",
-    "readyMessage": "This note is ready to be added as a widget.\n\nLong press on your home screen, tap Widgets, find FastNote Widget, and drag it to your screen.\n\nThe widget will automatically display this note!",
-    "openWidgets": "Got it!",
-    "instructionsTitle": "Add Widget to Home Screen",
-    "instructionsMessage": "To add this note to your home screen:\n\n1. Long press on your home screen\n2. Tap 'Widgets'\n3. Find 'FastNote Widget'\n4. Drag it to your home screen\n\nThe widget will display this note automatically!"
+
+  "widgetSizeSelection": {
+    "title": "Select Widget Size",
+    "small": "Small (2x1)",
+    "medium": "Medium (2x2)",
+    "large": "Large (4x2)"
   },
   "alerts": {
     "deleteNoteTitle": "Delete Note",
@@ -228,7 +228,11 @@
     "exportMarkdown": "Export",
     "exportMarkdownMessage": "Export as Markdown - Coming Soon",
     "shareWithSomeone": "Share",
-    "shareWithSomeoneMessage": "Share with someone - Coming Soon"
+    "shareWithSomeoneMessage": "Share with someone - Coming Soon",
+    "widgetNotSupported": "Widgets are not supported on this device",
+    "widgetAddedTitle": "Widget Added",
+    "widgetAddedMessage": "The note has been added to your home screen",
+    "widgetAddFailed": "Failed to add widget to home screen"
   },
   "callouts": {
     "pinNotes": "Pin important notes to keep them at the top!",

@@ -175,12 +175,12 @@
     "checklist": "Checklist",
     "addToHomeScreen": "Colocar en pantalla de inicio"
   },
-  "widgets": {
-    "readyTitle": "¡Nota Lista para Widget!",
-    "readyMessage": "Esta nota está lista para agregarse como widget.\n\nMantén presionada tu pantalla de inicio, toca Widgets, busca FastNote Widget y arrástralo a tu pantalla.\n\n¡El widget mostrará automáticamente esta nota!",
-    "openWidgets": "¡Entendido!",
-    "instructionsTitle": "Agregar Widget a la Pantalla de Inicio",
-    "instructionsMessage": "Para agregar esta nota a tu pantalla de inicio:\n\n1. Mantén presionada tu pantalla de inicio\n2. Toca 'Widgets'\n3. Busca 'FastNote Widget'\n4. Arrástral a tu pantalla de inicio\n\n¡El widget mostrará esta nota automáticamente!"
+
+  "widgetSizeSelection": {
+    "title": "Seleccionar Tamaño del Widget",
+    "small": "Pequeño (2x1)",
+    "medium": "Mediano (2x2)",
+    "large": "Grande (4x2)"
   },
   "alerts": {
     "deleteNoteTitle": "Eliminar Nota",
@@ -228,7 +228,11 @@
     "exportMarkdown": "Exportar",
     "exportMarkdownMessage": "Exportar como Markdown - Próximamente",
     "shareWithSomeone": "Compartir",
-    "shareWithSomeoneMessage": "Compartir con alguien - Próximamente"
+    "shareWithSomeoneMessage": "Compartir con alguien - Próximamente",
+    "widgetNotSupported": "Los widgets no son compatibles con este dispositivo",
+    "widgetAddedTitle": "Widget Añadido",
+    "widgetAddedMessage": "La nota ha sido añadida a tu pantalla de inicio",
+    "widgetAddFailed": "Error al añadir el widget a la pantalla de inicio"
   },
   "callouts": {
     "pinNotes": "¡Fija notas importantes para mantenerlas en la parte superior!",

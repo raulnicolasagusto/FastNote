@@ -7,14 +7,10 @@ import { useEffect } from 'react';
 import * as QuickActions from 'expo-quick-actions';
 import { useQuickActionRouting } from 'expo-quick-actions/router';
 import mobileAds from 'react-native-google-mobile-ads';
-import { registerWidgetTaskHandler } from 'react-native-android-widget';
+
 import { useThemeStore } from '../store/theme/useThemeStore';
 import { t } from '../utils/i18n';
 import { useLanguage } from '../utils/useLanguage';
-import { widgetTaskHandler } from '../widgets/widget-task-handler';
-
-// Register widget task handler for Android widgets
-registerWidgetTaskHandler(widgetTaskHandler);
 
 export default function Layout() {
   useLanguage(); // Force re-render on language change

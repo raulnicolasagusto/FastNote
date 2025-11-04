@@ -50,26 +50,7 @@
         }
       ],
       "expo-localization",
-      [
-        "react-native-android-widget",
-        {
-          "widgets": [
-            {
-              "name": "NoteWidget",
-              "label": "FastNote Widget",
-              "description": "Display your note on the home screen",
-              "minWidth": "320dp",
-              "minHeight": "120dp",
-              "targetCellWidth": 5,
-              "targetCellHeight": 2,
-              "previewImage": "./assets/widget-preview/note-widget-preview.png",
-              "updatePeriodMillis": 1800000,
-              "resizeMode": "horizontal|vertical",
-              "widgetFeatures": "configuration_optional"
-            }
-          ]
-        }
-      ]
+      "./plugins/withHomeWidgetAndroid.js"
     ],
     "experiments": {
       "typedRoutes": true,

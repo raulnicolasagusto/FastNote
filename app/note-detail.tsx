@@ -44,8 +44,9 @@ import { NotificationService } from '../utils/notifications';
 import { interstitialAdService } from '../utils/interstitialAdService';
 import i18n, { t } from '../utils/i18n';
 import { useLanguage } from '../utils/i18n';
-import { WidgetService } from '../utils/widgetService';
 import ImageView from 'react-native-image-viewing';
+import WidgetSizeSelectionModal from '../components/WidgetSizeSelectionModal';
+import { homeWidgetService } from '../utils/homeWidgetService';
 
 /*
   VOICE REMINDER FEATURE:
@@ -146,6 +147,9 @@ export default function NoteDetail() {
 
   // More options menu modal
   const [showMoreOptionsMenu, setShowMoreOptionsMenu] = useState(false);
+
+  // Widget size selection modal
+  const [showWidgetSizeModal, setShowWidgetSizeModal] = useState(false);
 
   useEffect(() => {
     if (noteId) {
@@ -503,6 +507,47 @@ export default function NoteDetail() {
     console.log('Compartir con alguien:', note?.title);
     // TODO: Implementar funcionalidad de compartir con alguien
     Alert.alert(t('alerts.shareWithSomeone'), t('alerts.shareWithSomeoneMessage'));
+  };
+
+  // Widget functions
+  const handleAddToHomeScreen = async () => {
+    if (!note) return;
+    
+    // Check if widgets are supported on this device
+    const isSupported = await homeWidgetService.isSupported();
+    if (!isSupported) {
+      Alert.alert(
+        t('alerts.errorTitle'),
+        t('alerts.widgetNotSupported')
+      );
+      return;
+    }
+    
+    // Close the more options menu and show size selection modal
+    setShowMoreOptionsMenu(false);
+    setShowWidgetSizeModal(true);
+  };
+
+  const handleWidgetSizeSelected = async (size: 'small' | 'medium' | 'large') => {
+    if (!note) return;
+    
+    // Add the note as a widget with the selected size
+    const success = await homeWidgetService.addNoteAsWidget(note, size);
+    
+    if (success) {
+      // Optionally show a success message
+      console.log(`Note added to home screen as ${size} widget`);
+      Alert.alert(
+        t('alerts.widgetAddedTitle'),
+        t('alerts.widgetAddedMessage')
+      );
+    } else {
+      // Show error message
+      Alert.alert(
+        t('alerts.errorTitle'),
+        t('alerts.widgetAddFailed')
+      );
+    }
   };
 
   // Helper function to detect if URI is audio
@@ -2713,10 +2758,7 @@ export default function NoteDetail() {
             {/* Add to Home Screen option (Widget) */}
             <TouchableOpacity
               style={styles.menuOption}
-              onPress={() => {
-                setShowMoreOptionsMenu(false);
-                WidgetService.addNoteToHomeScreen(note);
-              }}>
+              onPress={handleAddToHomeScreen}>
               <MaterialIcons
                 name="widgets"
                 size={24}
@@ -2726,9 +2768,18 @@ export default function NoteDetail() {
                 {i18n.t('menu.addToHomeScreen')}
               </Text>
             </TouchableOpacity>
+
+
           </View>
         </View>
       )}
+
+      {/* Widget Size Selection Modal */}
+      <WidgetSizeSelectionModal
+        visible={showWidgetSizeModal}
+        onClose={() => setShowWidgetSizeModal(false)}
+        onSelectSize={handleWidgetSizeSelected}
+      />
 
       {/* AdMob Banner at bottom */}
       <View style={styles.bannerContainer}>

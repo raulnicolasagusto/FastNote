@@ -26,7 +26,7 @@
 7. **Folder Organization** - Custom folders to organize notes
 8. **Advanced Search** - Across titles, content, and checklist items
 9. **Multi-language Support** - English, Spanish, Portuguese
-10. **Home Screen Widgets** - Android widget support
+
 
 ## Critical Architecture Components
 
@@ -59,6 +59,7 @@ i18n/ - Translation files
 3. **Internationalization** - All UI strings must use `t('key')` function, not hardcoded
 4. **Type Safety** - Full TypeScript compliance required
 5. **State Persistence** - Auto-save on every change using AsyncStorage
+6. **No expo prebuild needed** - Since development uses EAS Build directly to test on physical devices, `npx expo prebuild` is not necessary for the development workflow
 
 ## EAS Build Process
 - Use `eas build --platform android --profile production` for production builds
