@@ -37,6 +37,9 @@
     "titlePlaceholder": "Título",
     "contentPlaceholder": "Comece a escrever...",
     "tapToEdit": "Toque para editar",
+    "tapToAddText": "Toque para adicionar texto...",
+    "noteNotFound": "Nota não encontrada",
+    "goBack": "Voltar",
     "editTitle": "Editar Título",
     "editContent": "Editar Conteúdo",
     "addImage": "Adicionar Imagem",
@@ -50,12 +53,14 @@
     "pinkColor": "Rosa",
     "lavenderColor": "Lavanda",
     "mintColor": "Menta",
-    "skyColor": "Céu"
+    "skyColor": "Céu",
+    "noContent": "Sem conteúdo"
   },
   "checklist": {
     "title": "Lista de Tarefas",
     "newItem": "Novo item",
     "addItem": "Adicionar item",
+    "addMoreItems": "Adicionar mais itens",
     "itemPlaceholder": "Descrição do item...",
     "completed": "Concluído",
     "pending": "Pendente"
@@ -66,6 +71,7 @@
     "newFolder": "Nova Pasta",
     "folderName": "Nome da Pasta",
     "moveToFolder": "Mover para Pasta",
+    "moveTo": "Mover para",
     "selectFolder": "Selecione uma pasta",
     "createFolder": "Criar Pasta",
     "deleteFolder": "Excluir Pasta",
@@ -73,18 +79,21 @@
     "editFolder": "Editar Pasta",
     "newFolderNamePlaceholder": "Novo nome...",
     "duplicateFolderName": "Já existe uma pasta com esse nome",
-    "deleteFolderConfirmation": "Tem certeza de que deseja excluir a pasta \"{{name}}\"?"
+    "deleteFolderConfirmation": "Tem certeza de que deseja excluir a pasta \"{{name}}\"?",
+    "noFoldersCreated": "Nenhuma pasta criada"
   },
   "reminders": {
     "title": "Lembrete",
     "setReminder": "Definir Lembrete",
     "reminderSet": "Lembrete definido com sucesso",
     "removeReminder": "Remover Lembrete",
+    "configureReminder": "Configurar Lembrete",
     "today": "Hoje",
     "tomorrow": "Amanhã",
     "in": "Em",
     "days": "dias",
-    "at": "às"
+    "at": "às",
+    "invalidDate": "Data inválida"
   },
   "share": {
     "title": "Compartilhar",
@@ -99,9 +108,20 @@
     "title": "Gravando",
     "recording": "Gravando...",
     "stop": "Parar",
+    "stopRecording": "Parar Gravação",
     "cancel": "Cancelar",
     "transcribing": "Transcrevendo...",
-    "processing": "Processando áudio..."
+    "processing": "Processando áudio...",
+    "maxDuration": "Máx 1 min",
+    "transcriptionsLeft": "{{count}} restantes hoje",
+    "dailyLimitReached": "Limite diário atingido (3/dia)",
+    "dailyLimitReachedMessage": "Você atingiu o limite de 3 transcrições por dia. Renova em {{time}}",
+    "monthlyLimitReached": "Limite mensal atingido (90 min/mês)",
+    "timeWarning": "{{seconds}} segundos restantes!",
+    "autoStopSoon": "A gravação será interrompida em breve",
+    "chooseAudioOption": "Escolher Opção de Áudio",
+    "transcribeAudio": "Transcrever para Nota",
+    "recordMeeting": "Gravar Reunião/Áudio"
   },
   "audio": {
     "transcribeToNote": "Transcrever para a Nota com IA",
@@ -112,7 +132,14 @@
     "transcribe": "Transcrever",
     "deleteAudio": "Excluir",
     "deleteConfirmTitle": "Excluir Áudio",
-    "deleteConfirmMessage": "Tem certeza de que deseja excluir este áudio? Esta ação não pode ser desfeita."
+    "deleteConfirmMessage": "Tem certeza de que deseja excluir este áudio? Esta ação não pode ser desfeita.",
+    "insufficientMinutes": "Este áudio precisa de {{needed}} min mas você só tem {{available}} min restantes este mês",
+    "dailyLimitInfo": "Você tem {{minutes}} minutos restantes este mês para transcrever",
+    "transcriptionLimitTitle": "Limite de Transcrições Atingido",
+    "transcriptionLimitMessage": "Este áudio já foi transcrito 2 vezes (máximo permitido na versão gratuita)",
+    "play": "Reproduzir",
+    "save": "Salvar",
+    "new": "Novo"
   },
   "camera": {
     "title": "Capturar Texto",
@@ -120,6 +147,18 @@
     "chooseFromGallery": "Escolher da Galeria",
     "scanning": "Digitalizando texto...",
     "processingImage": "Processando imagem..."
+  },
+  "imagePicker": {
+    "title": "Adicionar Imagem",
+    "takePhoto": "Tirar Foto",
+    "chooseFromGallery": "Escolher da Galeria",
+    "cancel": "Cancelar",
+    "permissionsRequired": "Permissões Necessárias",
+    "cameraPermissionMessage": "Precisamos de permissões de câmera para tirar fotos.",
+    "galleryPermissionMessage": "Precisamos de permissões da galeria para selecionar fotos.",
+    "error": "Erro",
+    "cameraError": "Não foi possível abrir a câmera.",
+    "galleryError": "Não foi possível abrir a galeria."
   },
   "menu": {
     "pin": "Fixar",
@@ -135,7 +174,28 @@
     "changeColor": "Mudar Cor",
     "settings": "Configurações",
     "theme": "Tema",
-    "about": "Sobre"
+    "about": "Sobre",
+    "moreOptions": "Mais Opções",
+    "checklist": "Checklist",
+    "addToHomeScreen": "Adicionar à Tela Inicial"
+  },
+  "widgetSizeSelection": {
+    "title": "Selecionar Tamanho do Widget",
+    "small": "Pequeno (2x2)",
+    "smallDesc": "Apenas título",
+    "medium": "Médio (4x2)",
+    "mediumDesc": "Título + pré-visualização",
+    "large": "Grande (4x4)",
+    "largeDesc": "Conteúdo completo"
+  },
+  "widgetInstructions": {
+    "title": "Widget Pronto!",
+    "subtitle": "Siga estes passos para adicioná-lo:",
+    "step1": "Pressione e segure na tela inicial",
+    "step2": "Toque em 'Widgets'",
+    "step3": "Encontre 'FastNote' e arraste o widget {{size}} para sua tela inicial",
+    "hint": "O widget mostrará automaticamente o conteúdo desta nota",
+    "understood": "Entendi!"
   },
   "alerts": {
     "deleteNoteTitle": "Excluir Nota",
@@ -168,6 +228,8 @@
     "reminderSavedNoPermission": "O lembrete foi salvo, mas você não receberá notificações sem permissões.",
     "reminderScheduled": "✅ Lembrete Agendado",
     "reminderScheduledMessage": "Você receberá uma notificação em {{date}} às {{time}}.\n\nDebug: Em {{minutes}} minutos",
+    "noteCreatedWithReminder": "📝 Nota criada com lembrete",
+    "noteCreatedWithReminderMessage": "Nota salva e lembrete agendado para {{date}} às {{time}}.",
     "perfect": "Perfeito",
     "reminderError": "Não foi possível agendar a notificação. Por favor, tente novamente.",
     "ok": "OK",
@@ -181,7 +243,13 @@
     "exportMarkdown": "Exportar",
     "exportMarkdownMessage": "Exportar como Markdown - Em Breve",
     "shareWithSomeone": "Compartilhar",
-    "shareWithSomeoneMessage": "Compartilhar com alguém - Em Breve"
+    "shareWithSomeoneMessage": "Compartilhar com alguém - Em Breve",
+    "widgetNotSupported": "Widgets não são compatíveis com este dispositivo",
+    "widgetAddedTitle": "Widget Adicionado",
+    "widgetAddedMessage": "A nota foi adicionada à sua tela inicial",
+    "widgetAddFailed": "Falha ao adicionar widget à tela inicial",
+    "widgetComingSoonTitle": "Recurso em Breve",
+    "widgetComingSoonMessage": "O recurso de widget na tela inicial está em desenvolvimento e estará disponível na próxima atualização."
   },
   "callouts": {
     "pinNotes": "Fixe notas importantes para mantê-las no topo!",
@@ -252,5 +320,14 @@
     "minutesAgo": "{{count}} min atrás",
     "hoursAgo": "{{count}} horas atrás",
     "daysAgo": "{{count}} dias atrás"
+  },
+  "drawing": {
+    "title": "Criar Desenho",
+    "colors": "Cores:",
+    "size": "Tamanho:",
+    "eraser": "Borracha:",
+    "clear": "Limpar",
+    "save": "Salvar",
+    "saving": "Salvando..."
   }
 }

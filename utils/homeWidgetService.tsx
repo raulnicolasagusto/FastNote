@@ -3,6 +3,9 @@ import { Note } from '../types';
 import { NoteWidget } from '../widgets/NoteWidget';
 import { requestWidgetUpdate } from 'react-native-android-widget';
 
+// Usamos SharedPreferences de Android directamente
+const { NativeModules } = require('react-native');
+
 export interface HomeWidgetService {
   prepareNoteWidget: (note: Note, widgetName: string) => Promise<boolean>;
   updateNoteWidget: (noteId: string) => Promise<boolean>;
@@ -16,7 +19,25 @@ export const homeWidgetService: HomeWidgetService = {
         return false;
       }
       
-      // Update the widget with the specific note
+      // Guardar la configuración del widget en SharedPreferences para que esté disponible cuando 
+      // el widget se agregue a la pantalla principal
+      const RNSharedPreferences = NativeModules.RNSharedPreferences;
+      if (RNSharedPreferences) {
+        const widgetConfig = {
+          noteId: note.id,
+          noteTitle: note.title,
+          noteContent: note.content,
+          noteType: note.type,
+          checklistItems: note.checklistItems || [],
+          backgroundColor: note.backgroundColor || 'default',
+          size: widgetName.includes('Small') ? 'small' : widgetName.includes('Large') ? 'large' : 'medium',
+        };
+        
+        await RNSharedPreferences.setItem(`widget_config_${widgetName}`, JSON.stringify(widgetConfig));
+        console.log(`📌 Configuración guardada para widget: ${widgetName}`);
+      }
+      
+      // Determinar el tamaño del widget basado en el nombre
       let size: 'small' | 'medium' | 'large' = 'medium';
       if (widgetName.includes('Small')) {
         size = 'small';
@@ -26,18 +47,19 @@ export const homeWidgetService: HomeWidgetService = {
         size = 'medium'; // Default to medium
       }
 
+      // Actualizar el widget usando requestWidgetUpdate
       await requestWidgetUpdate({
         widgetName,
         renderWidget: () => <NoteWidget note={note} size={size} />,
         widgetNotFound: () => {
-          console.log('Widget not on home screen yet');
+          console.log('Widget not on home screen yet - config saved for when it gets added');
         },
       });
       
-      console.log(`✅ Widget updated with note: ${note.title}`);
+      console.log(`✅ Widget config prepared with note: ${note.title}`);
       return true;
     } catch (error) {
-      console.error('❌ Error updating widget:', error);
+      console.error('❌ Error preparing widget:', error);
       return false;
     }
   },

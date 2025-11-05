@@ -53,7 +53,8 @@
     "pinkColor": "Pink",
     "lavenderColor": "Lavender",
     "mintColor": "Mint",
-    "skyColor": "Sky"
+    "skyColor": "Sky",
+    "noContent": "No content"
   },
   "checklist": {
     "title": "Checklist",
@@ -117,7 +118,10 @@
     "dailyLimitReachedMessage": "You've reached the limit of 3 transcriptions per day. Resets in {{time}}",
     "monthlyLimitReached": "Monthly limit reached (90 min/month)",
     "timeWarning": "{{seconds}} seconds remaining!",
-    "autoStopSoon": "Recording will stop soon"
+    "autoStopSoon": "Recording will stop soon",
+    "chooseAudioOption": "Choose Audio Option",
+    "transcribeAudio": "Transcribe to Note",
+    "recordMeeting": "Record Meeting/Audio"
   },
   "audio": {
     "transcribeToNote": "Transcribe to Note with AI",

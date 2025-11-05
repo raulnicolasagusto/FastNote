@@ -103,6 +103,7 @@ export default function NoteDetail() {
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showAudioChoiceModal, setShowAudioChoiceModal] = useState(false);
   const [editedChecklistItems, setEditedChecklistItems] = useState<ChecklistItem[]>([]);
   const inputRefs = useRef<{ [key: string]: TextInput | null }>({});
   const checklistItemRefs = useRef<{ [key: string]: View | null }>({});
@@ -619,7 +620,7 @@ export default function NoteDetail() {
     if (!content || !content.trim()) {
       return (
         <Text style={[styles.contentText, { color: textColors.secondary }]}>
-          No content
+          {t('noteDetail.noContent')}
         </Text>
       );
     }
@@ -647,157 +648,207 @@ export default function NoteDetail() {
         .replace(/&#39;/g, "'");
     };
 
-    // Enhanced HTML parsing for rich text with proper nesting
+    // Enhanced HTML parsing for rich text with proper nesting (patterned after react-native-pell-rich-editor behavior)
     const parseHtmlToElements = (html: string) => {
       const elements: any[] = [];
-      let key = 0;
+      let globalKey = 0;
 
-      // Process content line by line to handle complex structures
-      const processText = (text: string, baseStyle: any = [styles.contentText, { color: textColors.primary }]) => {
-        // Handle bullet points with font-size (• with specific size and color)
-        if (text.includes('<span') && text.includes('font-size') && text.includes('•')) {
-          const regex = /<span[^>]*color:\s*(#[A-Fa-f0-9]{6}|#[A-Fa-f0-9]{3}|[a-z]+)[^>]*font-size:\s*([^;]+)[^>]*>(•)<\/span>/gs;
+      // Process text with inline formatting (bold, highlight, headers, bullets)
+      const processText = (text: string, baseStyle: any = [styles.contentText, { color: textColors.primary }], elementKey: number) => {
+        // Handle nested HTML tags properly - check for multiple formatting types
+        
+        // Check for multiple types of formatting: bold, italic, highlight
+        if (text.includes('<')) {
           const parts: any[] = [];
           let lastIndex = 0;
-          let match;
+          let localKey = 0;
 
-          while ((match = regex.exec(text)) !== null) {
-            // Add text before the span
+          // Handle all possible tags in order: bold, strong, spans
+          const tagRegex = /<(\/?)(b|strong|i|em|u|s|span)([^>]*)>(.*?)(?=<|$)/gs;
+          let match;
+          
+          while ((match = tagRegex.exec(text)) !== null) {
+            // Add text before the tag
             if (match.index > lastIndex) {
-              const beforeText = decodeHtmlEntities(text.substring(lastIndex, match.index).replace(/<[^>]*>/g, ''));
+              const beforeText = decodeHtmlEntities(text.substring(lastIndex, match.index));
               if (beforeText) {
                 parts.push(beforeText);
               }
             }
 
-            // Add large bullet with color
-            const color = match[1];
-            const fontSize = match[2]; // e.g., "2em"
-            const bullet = match[3];
-            parts.push(
-              <Text key={`${key}-bullet-${parts.length}`} style={{ color, fontSize: fontSize === '2em' ? 32 : 16 }}>
-                {bullet}
-              </Text>
-            );
+            const isClosing = match[1] === '/';
+            const tagName = match[2];
+            const tagAttributes = match[3];
+            let content = decodeHtmlEntities(match[4] || '');
+            
+            // Process content that might have more tags
+            if (content && content.includes('<')) {
+              // Recursively process nested content
+              const nestedContent = processText(content, baseStyle, elementKey + localKey);
+              parts.push(nestedContent);
+            } else if (!isClosing) {
+              // Process opening tag
+              let tagStyle: any = {};
+              let processedContent = content || '';
 
-            lastIndex = regex.lastIndex;
+              // Apply styles based on tag type
+              if (tagName === 'b' || tagName === 'strong') {
+                tagStyle = { ...baseStyle, fontWeight: 'bold' };
+              } else if (tagName === 'i' || tagName === 'em') {
+                tagStyle = { ...baseStyle, fontStyle: 'italic' };
+              } else if (tagName === 'u') {
+                tagStyle = { ...baseStyle, textDecorationLine: 'underline' };
+              } else if (tagName === 's') {
+                tagStyle = { ...baseStyle, textDecorationLine: 'line-through' };
+              } else if (tagName === 'span') {
+                // Handle span with specific styles
+                if (tagAttributes.includes('background') || tagAttributes.includes('yellow') || tagAttributes.includes('highlight')) {
+                  // Detect highlight color based on theme
+                  const highlightBg = isDarkMode ? '#D97706' : 'yellow'; // Different color for dark mode
+                  tagStyle = { ...baseStyle, backgroundColor: highlightBg };
+                } else if (tagAttributes.includes('font-weight') && tagAttributes.includes('bold')) {
+                  tagStyle = { ...baseStyle, fontWeight: 'bold' };
+                }
+                // Add more span processing as needed
+              }
+
+              // Add the formatted text
+              parts.push(
+                <Text 
+                  key={`${elementKey}-${tagName}-${localKey++}`} 
+                  style={tagStyle}
+                >
+                  {processedContent}
+                </Text>
+              );
+            }
+
+            lastIndex = match.index + match[0].length;
           }
 
-          // Add remaining text after last span
+          // Add any remaining text after last tag
           if (lastIndex < text.length) {
-            const afterText = decodeHtmlEntities(text.substring(lastIndex).replace(/<[^>]*>/g, ''));
+            const afterText = decodeHtmlEntities(text.substring(lastIndex));
             if (afterText) {
               parts.push(afterText);
             }
           }
 
           return (
-            <Text key={key} style={baseStyle}>
+            <Text key={`formatted-${elementKey}`} style={baseStyle}>
               {parts}
             </Text>
           );
         }
 
-        // Handle inline formatting within text - detect both yellow and dark mode orange
-        if (text.includes('<span') && (text.includes('background') || text.includes('yellow') || text.includes('#D97706') || text.includes('rgb(217, 119, 6)'))) {
-          // More precise regex to capture ONLY the span content
-          const regex = /<span[^>]*background[^>]*>(.*?)<\/span>/gs;
-          const parts: any[] = [];
-          let lastIndex = 0;
-          let match;
-
-          while ((match = regex.exec(text)) !== null) {
-            // Add text before the span as plain string
-            if (match.index > lastIndex) {
-              const beforeText = decodeHtmlEntities(text.substring(lastIndex, match.index).replace(/<[^>]*>/g, ''));
-              if (beforeText) {
-                parts.push(beforeText);
-              }
-            }
-
-            // Add highlighted text as nested Text component
-            const innerText = decodeHtmlEntities(match[1].replace(/<[^>]*>/g, ''));
-            // Use different highlight color based on theme
-            const highlightBg = isDarkMode ? '#D97706' : 'yellow';
-            parts.push(
-              <Text key={`${key}-hl-${parts.length}`} style={{ backgroundColor: highlightBg }}>
-                {innerText}
-              </Text>
-            );
-
-            lastIndex = regex.lastIndex;
-          }
-
-          // Add remaining text after last span as plain string
-          if (lastIndex < text.length) {
-            const afterText = decodeHtmlEntities(text.substring(lastIndex).replace(/<[^>]*>/g, ''));
-            if (afterText) {
-              parts.push(afterText);
-            }
-          }
-
-          // Wrap everything in ONE Text component to keep them in the same line
-          return (
-            <Text key={key} style={baseStyle}>
-              {parts}
-            </Text>
-          );
-        } else {
-          const cleanText = text.replace(/<[^>]*>/g, '');
-          return cleanText ? (
-            <Text key={key} style={baseStyle}>
-              {cleanText}
-            </Text>
-          ) : null;
-        }
+        // If no tags, just return plain text
+        const cleanText = text.replace(/<[^>]*>/g, '');
+        return cleanText ? (
+          <Text key={`plain-${elementKey}`} style={baseStyle}>
+            {cleanText}
+          </Text>
+        ) : null;
       };
+
+      // Split by block elements to handle paragraphs correctly
+      const blocks = html.split(/(<\/?(?:h[1-6]|div|p|br)[^>]*>)/);
       
-      // Split by major block elements
-      const blocks = html.split(/(<\/?(?:h[1-6]|div|p)[^>]*>)/);
-      
-      let currentBlockType: 'h1' | 'h2' | 'h3' | null = null;
+      let currentBlockType: 'h1' | 'h2' | 'h3' | 'p' | 'div' | 'br' | null = null;
       let currentContent = '';
       
-      blocks.forEach(block => {
+      blocks.forEach((block, index) => {
         if (block.match(/<h1[^>]*>/)) {
+          // Process any accumulated content before the header
+          if (currentContent.trim()) {
+            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
+            if (processed) elements.push(processed);
+          }
           currentBlockType = 'h1';
           currentContent = '';
         } else if (block.match(/<h2[^>]*>/)) {
-          currentBlockType = 'h2'; 
+          // Process any accumulated content before the header
+          if (currentContent.trim()) {
+            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
+            if (processed) elements.push(processed);
+          }
+          currentBlockType = 'h2';
           currentContent = '';
         } else if (block.match(/<h3[^>]*>/)) {
+          // Process any accumulated content before the header
+          if (currentContent.trim()) {
+            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
+            if (processed) elements.push(processed);
+          }
           currentBlockType = 'h3';
+          currentContent = '';
+        } else if (block.match(/<div[^>]*>/)) {
+          // Process any accumulated content before the div
+          if (currentContent.trim()) {
+            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
+            if (processed) elements.push(processed);
+          }
+          currentBlockType = 'div';
+          currentContent = '';
+        } else if (block.match(/<p[^>]*>/)) {
+          // Process any accumulated content before the paragraph
+          if (currentContent.trim()) {
+            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
+            if (processed) elements.push(processed);
+          }
+          currentBlockType = 'p';
+          currentContent = '';
+        } else if (block.match(/<br[^>]*>/)) {
+          // Process any accumulated content before the line break
+          if (currentContent.trim()) {
+            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
+            if (processed) elements.push(processed);
+          }
+          // Add a line break element
+          elements.push(
+            <Text key={`br-${globalKey++}`} style={[styles.contentText, { color: textColors.primary }]}>
+              {'\n'}
+            </Text>
+          );
           currentContent = '';
         } else if (block.match(/<\/h[1-6]>/)) {
           // End of heading - process accumulated content
           if (currentContent.trim()) {
             const style = currentBlockType === 'h1' ? styles.headerH1 : 
                          currentBlockType === 'h2' ? styles.headerH2 : styles.headerH3;
-            const processed = processText(currentContent, [style, { color: textColors.primary }]);
-            if (Array.isArray(processed)) {
-              elements.push(
-                <Text key={key++} style={[style, { color: textColors.primary }]}>
-                  {processed}
-                </Text>
-              );
-            } else if (processed) {
+            const processed = processText(currentContent, [style, { color: textColors.primary }], globalKey++);
+            if (processed) {
               elements.push(processed);
-              key++;
             }
           }
+          // Add spacing after heading
+          elements.push(
+            <View key={`h-space-${globalKey++}`} style={{ height: 8 }} />
+          );
           currentBlockType = null;
           currentContent = '';
-        } else if (block.match(/<\/?(?:div|p)/)) {
-          // Skip div/p tags but process any accumulated content
+        } else if (block.match(/<\/p>/)) {
+          // End of paragraph - process accumulated content
           if (currentContent.trim()) {
-            const processed = processText(currentContent);
-            if (Array.isArray(processed)) {
-              elements.push(...processed);
-            } else if (processed) {
-              elements.push(processed);
-            }
-            key++;
+            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
+            if (processed) elements.push(processed);
           }
+          // Add spacing after paragraph
+          elements.push(
+            <View key={`p-space-${globalKey++}`} style={{ height: 12 }} />
+          );
+          currentBlockType = null;
+          currentContent = '';
+        } else if (block.match(/<\/div>/)) {
+          // End of div - process accumulated content
+          if (currentContent.trim()) {
+            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
+            if (processed) elements.push(processed);
+          }
+          // Add spacing after div
+          elements.push(
+            <View key={`div-space-${globalKey++}`} style={{ height: 8 }} />
+          );
+          currentBlockType = null;
           currentContent = '';
         } else if (block.trim()) {
           // Accumulate content
@@ -807,10 +858,8 @@ export default function NoteDetail() {
       
       // Process any remaining content
       if (currentContent.trim()) {
-        const processed = processText(currentContent);
-        if (Array.isArray(processed)) {
-          elements.push(...processed);
-        } else if (processed) {
+        const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
+        if (processed) {
           elements.push(processed);
         }
       }
@@ -2143,10 +2192,7 @@ export default function NoteDetail() {
           {!editingElement && !note.isLocked && (
             <TouchableOpacity
               style={styles.actionIcon}
-              onPress={() => {
-                setShowRecordingModal(true);
-                startRecording();
-              }}
+              onPress={() => setShowAudioChoiceModal(true)}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <MaterialIcons
                 name="mic"
@@ -2641,6 +2687,50 @@ export default function NoteDetail() {
                 </TouchableOpacity>
               )}
             </View>
+          </View>
+        </View>
+      )}
+
+      {/* Audio Choice Modal */}
+      {showAudioChoiceModal && (
+        <View style={styles.modalOverlay}>
+          <View style={[styles.audioChoiceModal, { backgroundColor: colors.cardBackground }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary, textAlign: 'center', marginBottom: 24 }]}>
+              {t('recording.chooseAudioOption')}
+            </Text>
+
+            <View style={styles.choiceButtonsContainer}>
+              {/* Transcribe audio option */}
+              <TouchableOpacity
+                style={[styles.choiceButton, { backgroundColor: colors.accent.blue }]}
+                onPress={() => {
+                  setShowAudioChoiceModal(false);
+                  setShowRecordingModal(true);
+                  startRecording();
+                }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <MaterialIcons name="mic" size={24} color="white" />
+                <Text style={styles.choiceButtonText}>{t('recording.transcribeAudio')}</Text>
+              </TouchableOpacity>
+
+              {/* Record meeting/long audio option */}
+              <TouchableOpacity
+                style={[styles.choiceButton, { backgroundColor: colors.accent.green }]}
+                onPress={() => {
+                  setShowAudioChoiceModal(false);
+                  setShowAudioRecorder(true);
+                }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <MaterialIcons name="mic-none" size={24} color="white" />
+                <Text style={styles.choiceButtonText}>{t('recording.recordMeeting')}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.cancelButton, { marginTop: 20 }]}
+              onPress={() => setShowAudioChoiceModal(false)}>
+              <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
+            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -3364,5 +3454,32 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.bodySize + 2,
     fontWeight: '500',
     flex: 1,
+  },
+  audioChoiceModal: {
+    borderRadius: 16,
+    padding: SPACING.xl,
+    margin: SPACING.lg,
+    alignItems: 'center',
+    maxWidth: 350,
+    width: '90%',
+  },
+  choiceButtonsContainer: {
+    width: '100%',
+    gap: SPACING.md,
+  },
+  choiceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: 8,
+    gap: SPACING.sm,
+    width: '100%',
+  },
+  choiceButtonText: {
+    color: 'white',
+    fontSize: TYPOGRAPHY.bodySize,
+    fontWeight: '600',
   },
 });

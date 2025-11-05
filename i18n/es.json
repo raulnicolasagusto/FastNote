@@ -53,7 +53,8 @@
     "pinkColor": "Rosa",
     "lavenderColor": "Lavanda",
     "mintColor": "Menta",
-    "skyColor": "Cielo"
+    "skyColor": "Cielo",
+    "noContent": "Sin contenido"
   },
   "checklist": {
     "title": "Lista de Tareas",
@@ -117,7 +118,10 @@
     "dailyLimitReachedMessage": "Has alcanzado el límite de 3 transcripciones por día. Se renueva en {{time}}",
     "monthlyLimitReached": "Límite mensual alcanzado (90 min/mes)",
     "timeWarning": "¡Quedan {{seconds}} segundos!",
-    "autoStopSoon": "La grabación se detendrá pronto"
+    "autoStopSoon": "La grabación se detendrá pronto",
+    "chooseAudioOption": "Elegir Opción de Audio",
+    "transcribeAudio": "Transcribir a Nota",
+    "recordMeeting": "Grabar Reunión/Audio"
   },
   "audio": {
     "transcribeToNote": "Transcribir a la Nota con IA",
