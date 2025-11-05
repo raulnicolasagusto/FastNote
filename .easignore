@@ -26,6 +26,9 @@ QWEN.md
 # Carpeta de documentación LLM
 llm/
 
+# Carpeta de planes 
+plan/
+
 # Archivos .md adicionales (carpetas ocultas)
 .claude/
 .expo/README.md
