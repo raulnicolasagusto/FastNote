@@ -46,6 +46,7 @@ import i18n, { t } from '../utils/i18n';
 import { useLanguage } from '../utils/i18n';
 import ImageView from 'react-native-image-viewing';
 import WidgetInstructionsModal from '../components/WidgetInstructionsModal';
+import WidgetSizeSelectionModal from '../components/WidgetSizeSelectionModal';
 import { homeWidgetService } from '../utils/homeWidgetService';
 
 /*
@@ -147,6 +148,8 @@ export default function NoteDetail() {
 
   const [showMoreOptionsMenu, setShowMoreOptionsMenu] = useState(false);
   const [showWidgetInstructions, setShowWidgetInstructions] = useState(false);
+  const [showWidgetSizeSelection, setShowWidgetSizeSelection] = useState(false);
+  const [selectedWidgetSize, setSelectedWidgetSize] = useState<'small' | 'medium' | 'large'>('medium');
 
   useEffect(() => {
     if (noteId) {
@@ -518,14 +521,9 @@ export default function NoteDetail() {
       return;
     }
     
-    try {
-      await homeWidgetService.prepareNoteWidget(note);
-      setShowMoreOptionsMenu(false);
-      setShowWidgetInstructions(true);
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert(t('alerts.errorTitle'), 'Error preparando widget');
-    }
+    // Show widget size selection modal instead of directly adding to home screen
+    setShowMoreOptionsMenu(false);
+    setShowWidgetSizeSelection(true);
   };
 
   // Helper function to detect if URI is audio
@@ -924,6 +922,32 @@ export default function NoteDetail() {
 
   const handleToolbarAudio = () => {
     setShowAudioRecorder(true);
+  };
+
+  const handleWidgetSizeSelected = async (size: 'small' | 'medium' | 'large') => {
+    if (!note) return;
+    
+    try {
+      // Map size to widget name based on the configuration
+      const sizeToName = {
+        small: 'NoteWidgetSmall',
+        medium: 'NoteWidgetMedium', 
+        large: 'NoteWidgetLarge',
+      };
+      
+      const widgetName = sizeToName[size];
+      
+      // Prepare the widget with the selected size
+      await homeWidgetService.prepareNoteWidget(note, widgetName);
+      
+      // Track the selected size and close the size selection modal
+      setSelectedWidgetSize(size);
+      setShowWidgetSizeSelection(false);
+      setShowWidgetInstructions(true);
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert(t('alerts.errorTitle'), 'Error preparing widget');
+    }
   };
 
   const handleAudioSaved = async (audioUri: string) => {
@@ -2752,10 +2776,17 @@ export default function NoteDetail() {
         </View>
       )}
 
+      {/* Widget Size Selection Modal */}
+      <WidgetSizeSelectionModal
+        visible={showWidgetSizeSelection}
+        onClose={() => setShowWidgetSizeSelection(false)}
+        onSelectSize={handleWidgetSizeSelected}
+      />
+
       <WidgetInstructionsModal
         visible={showWidgetInstructions}
         onClose={() => setShowWidgetInstructions(false)}
-        widgetSize="medium"
+        widgetSize={selectedWidgetSize}
       />
 
       {/* AdMob Banner at bottom */}

@@ -1,38 +1,34 @@
 import { Platform } from 'react-native';
 import { Note } from '../types';
-
-// Usamos SharedPreferences de Android directamente
-const { NativeModules } = require('react-native');
+import { NoteWidget } from '../widgets/NoteWidget';
+import { requestWidgetUpdate } from 'react-native-android-widget';
 
 export interface HomeWidgetService {
-  prepareNoteWidget: (note: Note) => Promise<boolean>;
+  prepareNoteWidget: (note: Note, widgetName: string) => Promise<boolean>;
   updateNoteWidget: (noteId: string) => Promise<boolean>;
   isSupported: () => Promise<boolean>;
 }
 
 export const homeWidgetService: HomeWidgetService = {
-  prepareNoteWidget: async (note: Note): Promise<boolean> => {
+  prepareNoteWidget: async (note: Note, widgetName: string): Promise<boolean> => {
     try {
       if (Platform.OS !== 'android') {
         return false;
       }
       
-      // Guardar en SharedPreferences nativo para que widget pueda leer
-      const RNSharedPreferences = NativeModules.RNSharedPreferences;
-      if (RNSharedPreferences) {
-        await RNSharedPreferences.setItem('widget_note_data', JSON.stringify({
-          id: note.id,
-          title: note.title,
-          content: note.content,
-          type: note.type,
-          checklistItems: note.checklistItems || [],
-        }));
-        console.log(`📌 Nota guardada en SharedPreferences: ${note.id}`);
-      }
+      // Update the widget with the specific note
+      await requestWidgetUpdate({
+        widgetName,
+        renderWidget: () => <NoteWidget note={note} size={widgetName.includes('Small') ? 'small' : widgetName.includes('Large') ? 'large' : 'medium'} />,
+        widgetNotFound: () => {
+          console.log('Widget not on home screen yet');
+        },
+      });
       
+      console.log(`✅ Widget updated with note: ${note.title}`);
       return true;
     } catch (error) {
-      console.error('❌ Error guardando nota:', error);
+      console.error('❌ Error updating widget:', error);
       return false;
     }
   },
