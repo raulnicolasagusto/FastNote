@@ -121,11 +121,11 @@
     "timeWarning": "¡Quedan {{seconds}} segundos!",
     "autoStopSoon": "La grabación se detendrá pronto",
     "chooseAudioOption": "Elegir Opción de Audio",
-    "transcribeAudio": "Transcribir a Nota",
+    "transcribeAudio": "Transcribir/Crear lista",
     "recordMeeting": "Grabar Reunión/Audio"
   },
   "audio": {
-    "transcribeToNote": "Transcribir a la Nota con IA",
+    "transcribeToNote": "Transcribir a Nota o Crear Lista con IA",
     "transcribing": "Transcribiendo audio...",
     "transcribed": "Audio transcrito exitosamente",
     "transcriptionFailed": "Error al transcribir el audio",

@@ -121,11 +121,11 @@
     "timeWarning": "{{seconds}} seconds remaining!",
     "autoStopSoon": "Recording will stop soon",
     "chooseAudioOption": "Choose Audio Option",
-    "transcribeAudio": "Transcribe to Note",
+    "transcribeAudio": "Transcribe/Create List",
     "recordMeeting": "Record Meeting/Audio"
   },
   "audio": {
-    "transcribeToNote": "Transcribe to Note with AI",
+    "transcribeToNote": "Transcribe to Note or Create List with AI",
     "transcribing": "Transcribing audio...",
     "transcribed": "Audio transcribed successfully",
     "transcriptionFailed": "Failed to transcribe audio",
