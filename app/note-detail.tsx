@@ -1246,11 +1246,19 @@ export default function NoteDetail() {
         console.log('🎤 Detected language:', detectedLanguage);
         console.log('🎤 Transcribed text:', transcribedText);
 
-        // ⚠️ CRITICAL: Record transcription in limits store (costs money!)
-        recordTranscription(1); // 1 minute for quick voice notes
-        console.log('✅ Transcription recorded in limits. Remaining:', getRemainingTranscriptions());
+        // Only record transcription if we got meaningful text (not just empty or unclear response)
+        const trimmedText = transcribedText.trim();
+        if (trimmedText && trimmedText.length > 3) { // At least 4 characters for meaningful content
+          // ⚠️ CRITICAL: Record transcription in limits store (costs money!)
+          recordTranscription(1); // 1 minute for quick voice notes
+          console.log('✅ Transcription recorded in limits. Remaining:', getRemainingTranscriptions());
 
-        await insertTranscribedText(transcribedText);
+          await insertTranscribedText(transcribedText);
+        } else {
+          // Transcription returned empty or unclear result - show user-friendly error
+          Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.transcriptionError'));
+          console.log('⚠️ Transcription returned empty/unusable result, not recording to limits');
+        }
       } else {
         // Transcription failed - show user-friendly error
         Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.transcriptionError'));

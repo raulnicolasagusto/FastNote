@@ -248,22 +248,30 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       const result = await transcribeAudioFile(audioUri);
 
       if (result.success && result.transcript) {
-        // ⚠️ CRITICAL: Record transcription usage (costs money!)
-        await recordTranscription(audioDurationSeconds);
-        console.log(`🎤 Recorded audio transcription: ${audioDurationSeconds}s`);
+        // Only record transcription if we got meaningful text (not just empty or unclear response)
+        const trimmedTranscript = result.transcript.trim();
+        if (trimmedTranscript && trimmedTranscript.length > 3) { // At least 4 characters for meaningful content
+          // ⚠️ CRITICAL: Record transcription usage (costs money!)
+          await recordTranscription(audioDurationSeconds);
+          console.log(`🎤 Recorded audio transcription: ${audioDurationSeconds}s`);
 
-        // Update transcription count
-        if (audioMetadata && onUpdateMetadata) {
-          const updatedMetadata: AudioMetadata = {
-            ...audioMetadata,
-            transcriptionCount: audioMetadata.transcriptionCount + 1,
-          };
-          onUpdateMetadata(updatedMetadata);
-          console.log(`🎤 Updated transcription count: ${updatedMetadata.transcriptionCount}/2`);
+          // Update transcription count
+          if (audioMetadata && onUpdateMetadata) {
+            const updatedMetadata: AudioMetadata = {
+              ...audioMetadata,
+              transcriptionCount: audioMetadata.transcriptionCount + 1,
+            };
+            onUpdateMetadata(updatedMetadata);
+            console.log(`🎤 Updated transcription count: ${updatedMetadata.transcriptionCount}/2`);
+          }
+
+          onTranscribe(result.transcript);
+          Alert.alert(t('alerts.successTitle'), t('audio.transcribed'));
+        } else {
+          // Transcription returned empty or unclear result
+          Alert.alert(t('alerts.errorTitle'), t('audio.transcriptionFailed'));
+          console.log('⚠️ Audio transcription returned empty/unusable result, not recording to limits');
         }
-
-        onTranscribe(result.transcript);
-        Alert.alert(t('alerts.successTitle'), t('audio.transcribed'));
       } else {
         // Manejo de errores específicos
         if (result.error === 'DEEPGRAM_API_KEY_MISSING') {
