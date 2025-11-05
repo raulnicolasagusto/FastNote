@@ -37,8 +37,8 @@ export function NoteWidget({ note, size }: NoteWidgetProps) {
     return (
       <FlexWidget
         style={{
-          width: 'match_parent',
-          height: 'match_parent',
+          width: 110, // Fixed size for small widget (2x2 cells)
+          height: 110,
           backgroundColor: backgroundColor as any,
           padding: 12,
           borderRadius: 8,
@@ -69,8 +69,8 @@ export function NoteWidget({ note, size }: NoteWidgetProps) {
     return (
       <FlexWidget
         style={{
-          width: 'match_parent',
-          height: 'match_parent',
+          width: 250, // Fixed size for medium widget (4x2 cells)
+          height: 110,
           backgroundColor: backgroundColor as any,
           padding: 12,
           borderRadius: 8,
@@ -106,8 +106,8 @@ export function NoteWidget({ note, size }: NoteWidgetProps) {
   return (
     <FlexWidget
       style={{
-        width: 'match_parent',
-        height: 'match_parent',
+        width: 250, // Fixed size for large widget (4x4 cells) - can be adjusted
+        height: 250,
         backgroundColor: backgroundColor as any,
         padding: 16,
         borderRadius: 8,

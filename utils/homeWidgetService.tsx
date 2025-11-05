@@ -17,9 +17,18 @@ export const homeWidgetService: HomeWidgetService = {
       }
       
       // Update the widget with the specific note
+      let size: 'small' | 'medium' | 'large' = 'medium';
+      if (widgetName.includes('Small')) {
+        size = 'small';
+      } else if (widgetName.includes('Large')) {
+        size = 'large';
+      } else {
+        size = 'medium'; // Default to medium
+      }
+
       await requestWidgetUpdate({
         widgetName,
-        renderWidget: () => <NoteWidget note={note} size={widgetName.includes('Small') ? 'small' : widgetName.includes('Large') ? 'large' : 'medium'} />,
+        renderWidget: () => <NoteWidget note={note} size={size} />,
         widgetNotFound: () => {
           console.log('Widget not on home screen yet');
         },
