@@ -54,7 +54,8 @@
     "lavenderColor": "Lavender",
     "mintColor": "Mint",
     "skyColor": "Sky",
-    "noContent": "No content"
+    "noContent": "No content",
+    "tapToWriteAddImages": "Tap to write, add images, photos or drawings..."
   },
   "checklist": {
     "title": "Checklist",

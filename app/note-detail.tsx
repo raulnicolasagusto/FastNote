@@ -1880,7 +1880,7 @@ export default function NoteDetail() {
             </View>
           )}
           <Text style={[styles.emptyText, { color: textColors.secondary }]}>
-            Start writing or add a checklist...
+            {t('noteDetail.tapToWriteAddImages')}
           </Text>
         </View>
       );

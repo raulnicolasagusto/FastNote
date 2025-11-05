@@ -54,7 +54,8 @@
     "lavenderColor": "Lavanda",
     "mintColor": "Menta",
     "skyColor": "Cielo",
-    "noContent": "Sin contenido"
+    "noContent": "Sin contenido",
+    "tapToWriteAddImages": "Presiona para escribir, agregar imágenes, fotos o dibujos..."
   },
   "checklist": {
     "title": "Lista de Tareas",
