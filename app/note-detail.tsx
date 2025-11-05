@@ -145,10 +145,7 @@ export default function NoteDetail() {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
 
-  // More options menu modal
   const [showMoreOptionsMenu, setShowMoreOptionsMenu] = useState(false);
-
-  // Widget instructions modal (removed size selection modal)
   const [showWidgetInstructions, setShowWidgetInstructions] = useState(false);
 
   useEffect(() => {
@@ -509,46 +506,27 @@ export default function NoteDetail() {
     Alert.alert(t('alerts.shareWithSomeone'), t('alerts.shareWithSomeoneMessage'));
   };
 
-  // Widget functions
   const handleAddToHomeScreen = async () => {
     if (!note) return;
 
-    // Check if widgets are supported on this device
     const isSupported = await homeWidgetService.isSupported();
     if (!isSupported) {
       Alert.alert(
         t('alerts.errorTitle'),
-        'Widgets are not supported on this device'
+        'Widgets no soportados en este dispositivo'
       );
       return;
     }
     
-    console.log(`📱 Preparing widget for note: ${note.title}`);
-    
     try {
-      // Prepare the widget (saves note ID to AsyncStorage)
-      const success = await homeWidgetService.prepareNoteWidget(note);
-      
-      if (success) {
-        // Close options menu and show instructions
-        setShowMoreOptionsMenu(false);
-        setShowWidgetInstructions(true);
-      } else {
-        Alert.alert(
-          t('alerts.errorTitle'),
-          'Failed to prepare widget. Please try again.'
-        );
-      }
+      await homeWidgetService.prepareNoteWidget(note);
+      setShowMoreOptionsMenu(false);
+      setShowWidgetInstructions(true);
     } catch (error) {
-      console.error('Error preparing widget:', error);
-      Alert.alert(
-        t('alerts.errorTitle'),
-        'An error occurred while preparing the widget.'
-      );
+      console.error('Error:', error);
+      Alert.alert(t('alerts.errorTitle'), 'Error preparando widget');
     }
   };
-
-  // Removed handleWidgetSizeSelected - no longer needed
 
   // Helper function to detect if URI is audio
   const isAudioUri = (uri: string): boolean => {
@@ -2774,7 +2752,6 @@ export default function NoteDetail() {
         </View>
       )}
 
-      {/* Widget Instructions Modal - removed size selection */}
       <WidgetInstructionsModal
         visible={showWidgetInstructions}
         onClose={() => setShowWidgetInstructions(false)}

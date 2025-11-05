@@ -82,7 +82,7 @@ const WidgetInstructionsModal: React.FC<WidgetInstructionsModalProps> = ({
               </View>
               <View style={styles.stepContent}>
                 <Text style={[styles.stepText, { color: colors.textPrimary }]}>
-                  {t('widgetInstructions.step3')}
+                  {t('widgetInstructions.step3', { size: sizeLabels[widgetSize] })}
                 </Text>
               </View>
             </View>

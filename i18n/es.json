@@ -190,7 +190,7 @@
     "subtitle": "Sigue estos pasos para agregarlo:",
     "step1": "Mantén presionada la pantalla de inicio",
     "step2": "Toca 'Widgets'",
-    "step3": "Busca 'FastNote' y arrastra cualquier widget a tu pantalla de inicio",
+    "step3": "Busca 'FastNote' y arrastra el widget {{size}} a tu pantalla de inicio",
     "hint": "El widget mostrará automáticamente el contenido de esta nota",
     "understood": "¡Entendido!"
   },

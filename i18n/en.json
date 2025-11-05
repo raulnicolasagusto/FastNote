@@ -190,7 +190,7 @@
     "subtitle": "Follow these steps to add it:",
     "step1": "Long press on your home screen",
     "step2": "Tap 'Widgets'",
-    "step3": "Find 'FastNote' and drag any widget to your home screen",
+    "step3": "Find 'FastNote' and drag the {{size}} widget to your home screen",
     "hint": "The widget will automatically show this note's content",
     "understood": "Got it!"
   },
