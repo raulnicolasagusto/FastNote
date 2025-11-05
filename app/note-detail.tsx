@@ -45,7 +45,7 @@ import { interstitialAdService } from '../utils/interstitialAdService';
 import i18n, { t } from '../utils/i18n';
 import { useLanguage } from '../utils/i18n';
 import ImageView from 'react-native-image-viewing';
-import WidgetSizeSelectionModal from '../components/WidgetSizeSelectionModal';
+import WidgetInstructionsModal from '../components/WidgetInstructionsModal';
 import { homeWidgetService } from '../utils/homeWidgetService';
 
 /*
@@ -148,8 +148,8 @@ export default function NoteDetail() {
   // More options menu modal
   const [showMoreOptionsMenu, setShowMoreOptionsMenu] = useState(false);
 
-  // Widget size selection modal
-  const [showWidgetSizeModal, setShowWidgetSizeModal] = useState(false);
+  // Widget instructions modal (removed size selection modal)
+  const [showWidgetInstructions, setShowWidgetInstructions] = useState(false);
 
   useEffect(() => {
     if (noteId) {
@@ -512,43 +512,43 @@ export default function NoteDetail() {
   // Widget functions
   const handleAddToHomeScreen = async () => {
     if (!note) return;
-    
+
     // Check if widgets are supported on this device
     const isSupported = await homeWidgetService.isSupported();
     if (!isSupported) {
       Alert.alert(
         t('alerts.errorTitle'),
-        t('alerts.widgetNotSupported')
+        'Widgets are not supported on this device'
       );
       return;
     }
     
-    // Close the more options menu and show size selection modal
-    setShowMoreOptionsMenu(false);
-    setShowWidgetSizeModal(true);
-  };
-
-  const handleWidgetSizeSelected = async (size: 'small' | 'medium' | 'large') => {
-    if (!note) return;
+    console.log(`📱 Preparing widget for note: ${note.title}`);
     
-    // Add the note as a widget with the selected size
-    const success = await homeWidgetService.addNoteAsWidget(note, size);
-    
-    if (success) {
-      // Optionally show a success message
-      console.log(`Note added to home screen as ${size} widget`);
-      Alert.alert(
-        t('alerts.widgetAddedTitle'),
-        t('alerts.widgetAddedMessage')
-      );
-    } else {
-      // Show error message
+    try {
+      // Prepare the widget (saves note ID to AsyncStorage)
+      const success = await homeWidgetService.prepareNoteWidget(note);
+      
+      if (success) {
+        // Close options menu and show instructions
+        setShowMoreOptionsMenu(false);
+        setShowWidgetInstructions(true);
+      } else {
+        Alert.alert(
+          t('alerts.errorTitle'),
+          'Failed to prepare widget. Please try again.'
+        );
+      }
+    } catch (error) {
+      console.error('Error preparing widget:', error);
       Alert.alert(
         t('alerts.errorTitle'),
-        t('alerts.widgetAddFailed')
+        'An error occurred while preparing the widget.'
       );
     }
   };
+
+  // Removed handleWidgetSizeSelected - no longer needed
 
   // Helper function to detect if URI is audio
   const isAudioUri = (uri: string): boolean => {
@@ -2774,11 +2774,11 @@ export default function NoteDetail() {
         </View>
       )}
 
-      {/* Widget Size Selection Modal */}
-      <WidgetSizeSelectionModal
-        visible={showWidgetSizeModal}
-        onClose={() => setShowWidgetSizeModal(false)}
-        onSelectSize={handleWidgetSizeSelected}
+      {/* Widget Instructions Modal - removed size selection */}
+      <WidgetInstructionsModal
+        visible={showWidgetInstructions}
+        onClose={() => setShowWidgetInstructions(false)}
+        widgetSize="medium"
       />
 
       {/* AdMob Banner at bottom */}

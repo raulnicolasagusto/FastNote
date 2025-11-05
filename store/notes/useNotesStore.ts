@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { NotesStore, Note, Category } from '../../types';
 import { StorageService } from '../../utils/storage';
+import { homeWidgetService } from '../../utils/homeWidgetService';
 
 export const useNotesStore = create<NotesStore>((set, get) => ({
   // State
@@ -34,6 +35,11 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     );
     set({ notes });
     StorageService.saveNotes(notes);
+    
+    // Update widget if this note has one
+    homeWidgetService.updateNoteWidget(id).catch(error => {
+      console.log('⚠️ Failed to update widget for note:', id, error);
+    });
   },
 
   deleteNote: (id) => {

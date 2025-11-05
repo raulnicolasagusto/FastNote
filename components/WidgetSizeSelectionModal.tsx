@@ -7,7 +7,9 @@ import {
   StyleSheet,
   Dimensions 
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { t } from '../utils/i18n';
+import { useThemeStore } from '../store/theme/useThemeStore';
 
 interface WidgetSizeSelectionModalProps {
   visible: boolean;
@@ -20,9 +22,10 @@ const WidgetSizeSelectionModal: React.FC<WidgetSizeSelectionModalProps> = ({
   onClose,
   onSelectSize
 }) => {
+  const { colors } = useThemeStore();
+  
   const handleSizeSelect = (size: 'small' | 'medium' | 'large') => {
     onSelectSize(size);
-    onClose();
   };
 
   return (
@@ -33,43 +36,64 @@ const WidgetSizeSelectionModal: React.FC<WidgetSizeSelectionModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <Text style={styles.modalTitle}>
+        <View style={[styles.modalView, { backgroundColor: colors.cardBackground }]}>
+          <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
             {t('widgetSizeSelection.title')}
           </Text>
           
+          {/* Small Widget */}
           <TouchableOpacity
             style={styles.sizeOption}
             onPress={() => handleSizeSelect('small')}
           >
-            <Text style={styles.optionText}>
-              {t('widgetSizeSelection.small')}
-            </Text>
+            <MaterialIcons name="crop-square" size={24} color="#4F46E5" />
+            <View style={styles.optionTextContainer}>
+              <Text style={[styles.optionText, { color: colors.textPrimary }]}>
+                {t('widgetSizeSelection.small')}
+              </Text>
+              <Text style={[styles.optionDesc, { color: colors.textSecondary }]}>
+                {t('widgetSizeSelection.smallDesc')}
+              </Text>
+            </View>
           </TouchableOpacity>
           
+          {/* Medium Widget */}
           <TouchableOpacity
             style={styles.sizeOption}
             onPress={() => handleSizeSelect('medium')}
           >
-            <Text style={styles.optionText}>
-              {t('widgetSizeSelection.medium')}
-            </Text>
+            <MaterialIcons name="crop-landscape" size={24} color="#4F46E5" />
+            <View style={styles.optionTextContainer}>
+              <Text style={[styles.optionText, { color: colors.textPrimary }]}>
+                {t('widgetSizeSelection.medium')}
+              </Text>
+              <Text style={[styles.optionDesc, { color: colors.textSecondary }]}>
+                {t('widgetSizeSelection.mediumDesc')}
+              </Text>
+            </View>
           </TouchableOpacity>
           
+          {/* Large Widget */}
           <TouchableOpacity
             style={styles.sizeOption}
             onPress={() => handleSizeSelect('large')}
           >
-            <Text style={styles.optionText}>
-              {t('widgetSizeSelection.large')}
-            </Text>
+            <MaterialIcons name="crop-din" size={24} color="#4F46E5" />
+            <View style={styles.optionTextContainer}>
+              <Text style={[styles.optionText, { color: colors.textPrimary }]}>
+                {t('widgetSizeSelection.large')}
+              </Text>
+              <Text style={[styles.optionDesc, { color: colors.textSecondary }]}>
+                {t('widgetSizeSelection.largeDesc')}
+              </Text>
+            </View>
           </TouchableOpacity>
           
           <TouchableOpacity
             style={styles.cancelButton}
             onPress={onClose}
           >
-            <Text style={styles.cancelText}>
+            <Text style={[styles.cancelText, { color: colors.textSecondary }]}>
               {t('common.cancel')}
             </Text>
           </TouchableOpacity>
@@ -80,7 +104,7 @@ const WidgetSizeSelectionModal: React.FC<WidgetSizeSelectionModalProps> = ({
 };
 
 const { width } = Dimensions.get('window');
-const modalWidth = Math.min(width * 0.8, 300);
+const modalWidth = Math.min(width * 0.85, 340);
 
 const styles = StyleSheet.create({
   centeredView: {
@@ -91,46 +115,51 @@ const styles = StyleSheet.create({
   },
   modalView: {
     width: modalWidth,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'stretch',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
   },
   sizeOption: {
-    width: '100%',
-    padding: 15,
-    marginVertical: 5,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
+    flexDirection: 'row',
     alignItems: 'center',
+    padding: 16,
+    marginVertical: 6,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+  },
+  optionTextContainer: {
+    marginLeft: 12,
+    flex: 1,
   },
   optionText: {
     fontSize: 16,
-    color: '#333',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  optionDesc: {
+    fontSize: 13,
   },
   cancelButton: {
-    marginTop: 15,
-    padding: 10,
-    width: '100%',
+    marginTop: 16,
+    padding: 12,
     alignItems: 'center',
   },
   cancelText: {
     fontSize: 16,
-    color: '#666',
     fontWeight: '600',
   },
 });

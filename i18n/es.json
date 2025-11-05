@@ -178,9 +178,21 @@
 
   "widgetSizeSelection": {
     "title": "Seleccionar Tamaño del Widget",
-    "small": "Pequeño (2x1)",
-    "medium": "Mediano (2x2)",
-    "large": "Grande (4x2)"
+    "small": "Pequeño (2x2)",
+    "smallDesc": "Solo título",
+    "medium": "Mediano (4x2)",
+    "mediumDesc": "Título + vista previa",
+    "large": "Grande (4x4)",
+    "largeDesc": "Contenido completo"
+  },
+  "widgetInstructions": {
+    "title": "¡Widget Listo!",
+    "subtitle": "Sigue estos pasos para agregarlo:",
+    "step1": "Mantén presionada la pantalla de inicio",
+    "step2": "Toca 'Widgets'",
+    "step3": "Busca 'FastNote' y arrastra cualquier widget a tu pantalla de inicio",
+    "hint": "El widget mostrará automáticamente el contenido de esta nota",
+    "understood": "¡Entendido!"
   },
   "alerts": {
     "deleteNoteTitle": "Eliminar Nota",
@@ -232,7 +244,9 @@
     "widgetNotSupported": "Los widgets no son compatibles con este dispositivo",
     "widgetAddedTitle": "Widget Añadido",
     "widgetAddedMessage": "La nota ha sido añadida a tu pantalla de inicio",
-    "widgetAddFailed": "Error al añadir el widget a la pantalla de inicio"
+    "widgetAddFailed": "Error al añadir el widget a la pantalla de inicio",
+    "widgetComingSoonTitle": "Función Próximamente",
+    "widgetComingSoonMessage": "La función de widget de pantalla de inicio está en desarrollo y estará disponible en la próxima actualización."
   },
   "callouts": {
     "pinNotes": "¡Fija notas importantes para mantenerlas en la parte superior!",

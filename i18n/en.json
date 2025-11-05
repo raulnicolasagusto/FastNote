@@ -178,9 +178,21 @@
 
   "widgetSizeSelection": {
     "title": "Select Widget Size",
-    "small": "Small (2x1)",
-    "medium": "Medium (2x2)",
-    "large": "Large (4x2)"
+    "small": "Small (2x2)",
+    "smallDesc": "Title only",
+    "medium": "Medium (4x2)",
+    "mediumDesc": "Title + preview",
+    "large": "Large (4x4)",
+    "largeDesc": "Full content"
+  },
+  "widgetInstructions": {
+    "title": "Widget Ready!",
+    "subtitle": "Follow these steps to add it:",
+    "step1": "Long press on your home screen",
+    "step2": "Tap 'Widgets'",
+    "step3": "Find 'FastNote' and drag any widget to your home screen",
+    "hint": "The widget will automatically show this note's content",
+    "understood": "Got it!"
   },
   "alerts": {
     "deleteNoteTitle": "Delete Note",
@@ -232,7 +244,9 @@
     "widgetNotSupported": "Widgets are not supported on this device",
     "widgetAddedTitle": "Widget Added",
     "widgetAddedMessage": "The note has been added to your home screen",
-    "widgetAddFailed": "Failed to add widget to home screen"
+    "widgetAddFailed": "Failed to add widget to home screen",
+    "widgetComingSoonTitle": "Feature Coming Soon",
+    "widgetComingSoonMessage": "The home screen widget feature is under development and will be available in the next update."
   },
   "callouts": {
     "pinNotes": "Pin important notes to keep them at the top!",

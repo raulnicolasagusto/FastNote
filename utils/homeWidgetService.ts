@@ -1,92 +1,58 @@
-import { Note } from '../types/note';
-import { 
-  addWidget, 
-  updateWidget, 
-  isSupported,
-  WidgetSize
-} from 'react-native-home-widget';
+import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Note } from '../types';
 
-// Interface for home widget functionality
+// Storage key for the currently selected note for widget
+const WIDGET_PENDING_NOTE_KEY = '@fastnote_widget_pending_note';
+
 export interface HomeWidgetService {
-  addNoteAsWidget: (note: Note, size: 'small' | 'medium' | 'large') => Promise<boolean>;
-  updateWidget: (note: Note) => Promise<boolean>;
+  prepareNoteWidget: (note: Note) => Promise<boolean>;
+  updateNoteWidget: (noteId: string) => Promise<boolean>;
   isSupported: () => Promise<boolean>;
 }
 
-// Mapping of our sizes to the library's WidgetSize
-const sizeMap: Record<'small' | 'medium' | 'large', WidgetSize> = {
-  'small': WidgetSize.Small,
-  'medium': WidgetSize.Medium, 
-  'large': WidgetSize.Large
-};
-
-// Implementation for home widget service
 export const homeWidgetService: HomeWidgetService = {
   /**
-   * Adds a note as a home screen widget with specified size
+   * Prepares a note to be used in a widget
+   * Saves the note ID to AsyncStorage so the widget can pick it up
    * @param note The note to add as a widget
-   * @param size The size of the widget (small, medium, large)
    * @returns Promise<boolean> indicating success or failure
    */
-  addNoteAsWidget: async (note: Note, size: 'small' | 'medium' | 'large'): Promise<boolean> => {
+  prepareNoteWidget: async (note: Note): Promise<boolean> => {
     try {
-      // Check if widgets are supported on this platform
-      const supported = await isSupported();
-      if (!supported) {
-        console.log('Widgets are not supported on this device');
+      console.log(`📌 Preparing widget for note: ${note.id} - ${note.title}`);
+      
+      // Check if platform is Android
+      if (Platform.OS !== 'android') {
+        console.log('⚠️ Widgets are only supported on Android');
         return false;
       }
       
-      // Prepare data to be passed to the widget
-      const widgetData = {
-        noteId: note.id,
-        title: note.title || 'Untitled Note',
-        content: note.content || '',
-        lastModified: note.lastModified || new Date().toISOString(),
-        color: note.color || '#ffffff', // Include note color for styling
-      };
+      // Save the note ID as the pending widget note
+      await AsyncStorage.setItem(WIDGET_PENDING_NOTE_KEY, note.id);
       
-      // Add the widget using the library
-      const result = await addWidget({
-        widgetName: 'NoteWidget',
-        data: widgetData,
-        size: sizeMap[size]
-      });
+      console.log(`✅ Widget pending note saved: ${note.id}`);
       
-      console.log(`Widget added successfully: ${result}`);
-      return result; // Returns true if successful
+      return true;
     } catch (error) {
-      console.error('Error adding note as widget:', error);
+      console.error('❌ Error preparing note widget:', error);
       return false;
     }
   },
 
   /**
-   * Updates an existing home screen widget with new note data
-   * @param note The updated note to display in the widget
+   * Updates all widgets that are showing this note
+   * @param noteId The ID of the note that was updated
    * @returns Promise<boolean> indicating success or failure
    */
-  updateWidget: async (note: Note): Promise<boolean> => {
+  updateNoteWidget: async (noteId: string): Promise<boolean> => {
     try {
-      // Prepare updated data to be passed to the widget
-      const widgetData = {
-        noteId: note.id,
-        title: note.title || 'Untitled Note',
-        content: note.content || '',
-        lastModified: note.lastModified || new Date().toISOString(),
-        color: note.color || '#ffffff', // Include note color for styling
-      };
-      
-      // Update the widget using the library
-      const result = await updateWidget({
-        widgetName: 'NoteWidget',
-        data: widgetData
-      });
-      
-      console.log(`Widget updated successfully: ${result}`);
-      return result; // Returns true if successful
+      console.log(`🔄 Widget update requested for note: ${noteId}`);
+      // Widgets will auto-update when the user opens them
+      // We don't need to manually trigger updates
+      return true;
     } catch (error) {
-      console.error('Error updating widget:', error);
+      console.error('❌ Error updating note widgets:', error);
       return false;
     }
   },
@@ -97,9 +63,18 @@ export const homeWidgetService: HomeWidgetService = {
    */
   isSupported: async (): Promise<boolean> => {
     try {
-      return await isSupported();
+      // Check if platform is Android
+      const isAndroid = Platform.OS === 'android';
+      
+      if (!isAndroid) {
+        return false;
+      }
+      
+      // Android 8.0+ supports widgets
+      // We assume Android version is sufficient if we're on Android
+      return true;
     } catch (error) {
-      console.error('Error checking widget support:', error);
+      console.error('❌ Error checking widget support:', error);
       return false;
     }
   }

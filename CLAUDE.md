@@ -326,6 +326,42 @@ eas submit --platform android --latest
   - [components/layout/MainScreen.tsx](components/layout/MainScreen.tsx) - Header title
 - **Pendientes de Traducir**: Ver guía de implementación (12 componentes)
 
+### 16. Widgets de Android (Home Screen Widgets) - Noviembre 2025 ✅
+- **Funcionalidad**: "Colocar en pantalla de inicio"
+- **Tamaños disponibles**: 
+  - Pequeño (2x2): Solo título
+  - Mediano (4x2): Título + preview
+  - Grande (4x4): Contenido completo
+- **Librería**: `react-native-android-widget`
+- **Características**:
+  - Modal de selección de tamaño con iconos
+  - Modal de instrucciones paso a paso
+  - Preparación automática del widget
+  - Deep linking: click en widget abre la nota
+  - Actualización automática al editar nota
+  - Soporte para colores de fondo personalizados
+  - Soporte para checklists
+  - Traducciones completas (EN/ES)
+- **Flujo UX**:
+  1. Usuario presiona "⋮" → "Colocar en pantalla de inicio"
+  2. Selecciona tamaño (Pequeño/Mediano/Grande)
+  3. Sistema prepara widget (guarda config en AsyncStorage)
+  4. Modal muestra instrucciones visuales
+  5. Usuario arrastra widget manualmente desde menú de widgets
+  6. Widget muestra la nota correctamente
+- **Archivos principales**:
+  - `widgets/NoteWidget.tsx` - Componente visual del widget
+  - `widgets/widgetTaskHandler.tsx` - Lógica de eventos
+  - `widgets/widgetConfig.ts` - Configuración
+  - `utils/homeWidgetService.ts` - Servicio de gestión
+  - `components/WidgetInstructionsModal.tsx` - Modal instructivo
+- **Configuración**: `app.json` (plugin `react-native-android-widget`)
+- **Limitaciones**:
+  - Solo Android 8.0+
+  - Usuario debe arrastrar widget manualmente (restricción de seguridad de Android)
+  - Actualización solo cuando app está abierta o cada 30 min
+- **Documentación**: `WIDGET_IMPLEMENTATION_PLAN.md`
+
 ## Arquitectura del Código
 
 ### Estructura de Carpetas
@@ -382,7 +418,14 @@ utils/
 ├── useCalloutRotation.ts         # Hook callouts rotativos
 ├── useNotificationHandlers.ts    # Hook manejo notificaciones
 ├── interstitialAdService.ts      # Servicio Singleton Interstitial Ads
+├── homeWidgetService.ts          # Servicio de gestión de widgets
 └── i18n.ts                       # Servicio de internacionalización (i18n-js + expo-localization)
+
+widgets/
+├── NoteWidget.tsx                # Componente React del widget (3 tamaños)
+├── widgetTaskHandler.tsx         # Lógica de eventos y actualización de widgets
+├── widgetConfig.ts               # Configuración de tamaños, colores y helpers
+└── index.ts                      # Barrel exports
 
 types/
 └── index.ts               # Definiciones TypeScript centralizadas

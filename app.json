@@ -50,7 +50,43 @@
         }
       ],
       "expo-localization",
-      "./plugins/withHomeWidgetAndroid.js"
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "NoteWidgetSmall",
+              "label": "FastNote (Small)",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "description": "Small note widget",
+              "updatePeriodMillis": 0
+            },
+            {
+              "name": "NoteWidgetMedium",
+              "label": "FastNote (Medium)",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "description": "Medium note widget",
+              "updatePeriodMillis": 0
+            },
+            {
+              "name": "NoteWidgetLarge",
+              "label": "FastNote (Large)",
+              "minWidth": "250dp",
+              "minHeight": "250dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 4,
+              "description": "Large note widget",
+              "updatePeriodMillis": 0
+            }
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

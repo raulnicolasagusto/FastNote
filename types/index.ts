@@ -30,6 +30,7 @@ export interface Note {
   reminderDate?: Date; // Reminder date and time
   notificationId?: string; // ID for scheduled notification
   backgroundColor?: string; // Custom background color for the note
+  widgetId?: string; // Widget ID if this note has a home screen widget
 }
 
 export interface ChecklistItem {
