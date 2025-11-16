@@ -595,17 +595,18 @@ export default function NoteDetail() {
 
   const handleHighlightPress = () => {
     console.log('Highlight pressed');
-    const highlightColor = isDarkMode ? "#D97706" : "yellow";
-    
     if (activeFormats.highlight) {
       // Deactivate highlight - restore default background
       richTextRef.current?.commandDOM(`
-        document.execCommand("backColor", false, "transparent");
+        document.execCommand("backColor", false, "inherit");
       `);
     } else {
-      // Activate highlight - use backColor instead of hiliteColor
+      // Activate highlight - use different color based on theme
+      // Dark mode: darker orange/amber for better contrast with black background
+      // Light mode: bright yellow for traditional highlight
+      const highlightColor = isDarkMode ? "#D97706" : "yellow";
       richTextRef.current?.commandDOM(`
-        document.execCommand("backColor", false, "${highlightColor}");
+        document.execCommand("hiliteColor", false, "${highlightColor}");
       `);
     }
     setActiveFormats(prev => ({ ...prev, highlight: !prev.highlight }));
@@ -635,14 +636,28 @@ export default function NoteDetail() {
 
     // If it's plain text, return as is (with search highlighting if active)
     if (!content.includes('<') || !content.includes('>')) {
-      return (
-        <Text style={[styles.contentText, { color: textColors.primary }]}>
-          {isSearchMode && searchQuery.trim()
-            ? highlightSearchText(content, getContentMatchOffset())
-            : content
-          }
-        </Text>
-      );
+      let processedText = content;
+
+      // Apply search highlighting if in search mode
+      if (isSearchMode && searchQuery.trim()) {
+        processedText = highlightSearchText(content, getContentMatchOffset());
+      }
+
+      if (typeof processedText === 'string') {
+        return (
+          <Text style={[styles.contentText, { color: textColors.primary }]}>
+            {processedText}
+          </Text>
+        );
+      } else {
+        return (
+          <View>
+            <Text style={[styles.contentText, { color: textColors.primary }]}>
+              {processedText}
+            </Text>
+          </View>
+        );
+      }
     }
 
     // Helper to decode HTML entities
@@ -656,261 +671,177 @@ export default function NoteDetail() {
         .replace(/&#39;/g, "'");
     };
 
-    // Enhanced HTML parsing for rich text with proper nesting (patterned after react-native-pell-rich-editor behavior)
+    // Enhanced HTML parsing for rich text with proper nesting
     const parseHtmlToElements = (html: string) => {
       const elements: any[] = [];
-      let globalKey = 0;
+      let key = 0;
 
-      // Process text with inline formatting (bold, highlight, headers, bullets)
-      const processText = (text: string, baseStyle: any = [styles.contentText, { color: textColors.primary }], elementKey: number) => {
-        // Handle nested HTML tags properly - check for multiple formatting types
-        
-        // Check for multiple types of formatting: bold, italic, highlight
-        if (text.includes('<')) {
+      // Process content line by line to handle complex structures
+      const processText = (text: string, baseStyle: any = [styles.contentText, { color: textColors.primary }]) => {
+        // Handle inline formatting within text - detect both yellow and dark mode orange
+        if (text.includes('<span') && (text.includes('background') || text.includes('yellow') || text.includes('#D97706') || text.includes('rgb(217, 119, 6)'))) {
+          // More precise regex to capture ONLY the span content
+          const regex = /<span[^>]*background[^>]*>(.*?)<\/span>/gs;
           const parts: any[] = [];
           let lastIndex = 0;
-          let localKey = 0;
-
-          // Handle all possible tags in order: bold, strong, spans
-          const tagRegex = /<(\/?)(b|strong|i|em|u|s|span)([^>]*)>(.*?)(?=<|$)/gs;
           let match;
-          
-          while ((match = tagRegex.exec(text)) !== null) {
-            // Add text before the tag
+
+          while ((match = regex.exec(text)) !== null) {
+            // Add text before the span as plain string
             if (match.index > lastIndex) {
-              const beforeText = decodeHtmlEntities(text.substring(lastIndex, match.index));
+              const beforeText = decodeHtmlEntities(text.substring(lastIndex, match.index).replace(/<[^>]*>/g, ''));
               if (beforeText) {
-                parts.push(beforeText);
-              }
-            }
+                // Add search highlighting for this part
+                const searchHighlightedText = isSearchMode && searchQuery.trim()
+                  ? highlightSearchText(beforeText, 0)
+                  : beforeText;
 
-            const isClosing = match[1] === '/';
-            const tagName = match[2];
-            const tagAttributes = match[3];
-            let content = decodeHtmlEntities(match[4] || '');
-            
-            // Process content that might have more tags
-            if (content && content.includes('<')) {
-              // Recursively process nested content
-              const nestedContent = processText(content, baseStyle, elementKey + localKey);
-              parts.push(nestedContent);
-            } else if (!isClosing) {
-              // Process opening tag
-              let tagStyle: any = {};
-              let processedContent = content || '';
-
-              // Apply styles based on tag type
-              if (tagName === 'b' || tagName === 'strong') {
-                tagStyle = {
-                  fontSize: baseStyle.fontSize || styles.contentText.fontSize,
-                  color: baseStyle.color || textColors.primary,
-                  fontWeight: 'bold',
-                  textDecorationLine: 'none', // Prevent inherited decoration
-                };
-              } else if (tagName === 'i' || tagName === 'em') {
-                tagStyle = {
-                  fontSize: baseStyle.fontSize || styles.contentText.fontSize,
-                  color: baseStyle.color || textColors.primary,
-                  fontStyle: 'italic',
-                  textDecorationLine: 'none', // Prevent inherited decoration
-                };
-              } else if (tagName === 'u') {
-                tagStyle = {
-                  fontSize: baseStyle.fontSize || styles.contentText.fontSize,
-                  color: baseStyle.color || textColors.primary,
-                  textDecorationLine: 'underline',
-                };
-              } else if (tagName === 's') {
-                tagStyle = {
-                  fontSize: baseStyle.fontSize || styles.contentText.fontSize,
-                  color: baseStyle.color || textColors.primary,
-                  textDecorationLine: 'line-through',
-                };
-              } else if (tagName === 'span') {
-                // Handle span with specific styles
-                if (tagAttributes.includes('background-color') || tagAttributes.includes('yellow') || tagAttributes.includes('#D97706') || tagAttributes.includes('highlight')) {
-                  // Extract the actual background color from style attribute if possible
-                  let bgColor = 'yellow'; // default
-                  if (tagAttributes.includes('#D97706')) {
-                    bgColor = '#D97706';
-                  } else if (tagAttributes.includes('yellow')) {
-                    bgColor = 'yellow';
-                  }
-                  // Create clean style for highlight - explicitly remove textDecorationLine
-                  tagStyle = {
-                    fontSize: baseStyle.fontSize || styles.contentText.fontSize,
-                    color: baseStyle.color || textColors.primary,
-                    backgroundColor: bgColor,
-                    textDecorationLine: 'none', // Explicitly prevent strikethrough
-                  };
-                } else if (tagAttributes.includes('font-weight') && tagAttributes.includes('bold')) {
-                  tagStyle = { ...baseStyle, fontWeight: 'bold', textDecorationLine: 'none' };
+                if (typeof searchHighlightedText === 'string') {
+                  parts.push(searchHighlightedText);
+                } else {
+                  parts.push(searchHighlightedText);
                 }
-                // Add more span processing as needed
               }
-
-              // Add the formatted text
-              parts.push(
-                <Text 
-                  key={`${elementKey}-${tagName}-${localKey++}`} 
-                  style={tagStyle}
-                >
-                  {processedContent}
-                </Text>
-              );
             }
 
-            lastIndex = match.index + match[0].length;
+            // Add highlighted text as nested Text component
+            const innerText = decodeHtmlEntities(match[1].replace(/<[^>]*>/g, ''));
+            // Use different highlight color based on theme
+            const highlightBg = isDarkMode ? '#D97706' : 'yellow';
+
+            // Add search highlighting within the highlighted text
+            let searchHighlightedInner;
+            if (isSearchMode && searchQuery.trim()) {
+              searchHighlightedInner = highlightSearchText(innerText, 0);
+            } else {
+              searchHighlightedInner = innerText;
+            }
+
+            parts.push(
+              <Text key={`${key}-hl-${parts.length}`} style={{ backgroundColor: highlightBg }}>
+                {searchHighlightedInner}
+              </Text>
+            );
+
+            lastIndex = regex.lastIndex;
           }
 
-          // Add any remaining text after last tag
+          // Add remaining text after last span as plain string
           if (lastIndex < text.length) {
-            const afterText = decodeHtmlEntities(text.substring(lastIndex));
+            const afterText = decodeHtmlEntities(text.substring(lastIndex).replace(/<[^>]*>/g, ''));
             if (afterText) {
-              parts.push(afterText);
+              // Add search highlighting for this part
+              const searchHighlightedText = isSearchMode && searchQuery.trim()
+                ? highlightSearchText(afterText, 0)
+                : afterText;
+
+              if (typeof searchHighlightedText === 'string') {
+                parts.push(searchHighlightedText);
+              } else {
+                parts.push(searchHighlightedText);
+              }
             }
           }
 
+          // Wrap everything in ONE Text component to keep them in the same line
           return (
-            <Text key={`formatted-${elementKey}`} style={baseStyle}>
+            <Text key={key} style={baseStyle}>
               {parts}
             </Text>
           );
-        }
+        } else {
+          let cleanText = text.replace(/<[^>]*>/g, '');
 
-        // If no tags, just return plain text
-        const cleanText = text.replace(/<[^>]*>/g, '');
-        return cleanText ? (
-          <Text key={`plain-${elementKey}`} style={baseStyle}>
-            {cleanText}
-          </Text>
-        ) : null;
+          // Apply search highlighting if in search mode
+          if (isSearchMode && searchQuery.trim()) {
+            cleanText = highlightSearchText(cleanText, 0);
+          }
+
+          return typeof cleanText === 'string'
+            ? (
+                <Text key={key} style={baseStyle}>
+                  {cleanText}
+                </Text>
+              )
+            : cleanText;
+        }
       };
 
-      // Split by block elements to handle paragraphs correctly
-      const blocks = html.split(/(<\/?(?:h[1-6]|div|p|br)[^>]*>)/);
-      
-      let currentBlockType: 'h1' | 'h2' | 'h3' | 'p' | 'div' | 'br' | null = null;
+      // Split by major block elements
+      const blocks = html.split(/(<\/?(?:h[1-6]|div|p)[^>]*>)/);
+
+      let currentBlockType: 'h1' | 'h2' | 'h3' | null = null;
       let currentContent = '';
-      
-      blocks.forEach((block, index) => {
+
+      blocks.forEach(block => {
         if (block.match(/<h1[^>]*>/)) {
-          // Process any accumulated content before the header
-          if (currentContent.trim()) {
-            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
-            if (processed) elements.push(processed);
-          }
           currentBlockType = 'h1';
           currentContent = '';
         } else if (block.match(/<h2[^>]*>/)) {
-          // Process any accumulated content before the header
-          if (currentContent.trim()) {
-            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
-            if (processed) elements.push(processed);
-          }
           currentBlockType = 'h2';
           currentContent = '';
         } else if (block.match(/<h3[^>]*>/)) {
-          // Process any accumulated content before the header
-          if (currentContent.trim()) {
-            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
-            if (processed) elements.push(processed);
-          }
           currentBlockType = 'h3';
-          currentContent = '';
-        } else if (block.match(/<div[^>]*>/)) {
-          // Process any accumulated content before the div
-          if (currentContent.trim()) {
-            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
-            if (processed) elements.push(processed);
-          }
-          currentBlockType = 'div';
-          currentContent = '';
-        } else if (block.match(/<p[^>]*>/)) {
-          // Process any accumulated content before the paragraph
-          if (currentContent.trim()) {
-            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
-            if (processed) elements.push(processed);
-          }
-          currentBlockType = 'p';
-          currentContent = '';
-        } else if (block.match(/<br[^>]*>/)) {
-          // Process any accumulated content before the line break
-          if (currentContent.trim()) {
-            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
-            if (processed) elements.push(processed);
-          }
-          // Add a line break element
-          elements.push(
-            <Text key={`br-${globalKey++}`} style={[styles.contentText, { color: textColors.primary }]}>
-              {'\n'}
-            </Text>
-          );
           currentContent = '';
         } else if (block.match(/<\/h[1-6]>/)) {
           // End of heading - process accumulated content
           if (currentContent.trim()) {
-            const style = currentBlockType === 'h1' ? styles.headerH1 : 
+            const style = currentBlockType === 'h1' ? styles.headerH1 :
                          currentBlockType === 'h2' ? styles.headerH2 : styles.headerH3;
-            const processed = processText(currentContent, [style, { color: textColors.primary }], globalKey++);
-            if (processed) {
+            const processed = processText(currentContent, [style, { color: textColors.primary }]);
+            if (Array.isArray(processed)) {
+              elements.push(
+                <Text key={key++} style={[style, { color: textColors.primary }]}>
+                  {processed}
+                </Text>
+              );
+            } else if (processed) {
               elements.push(processed);
             }
           }
-          // Add spacing after heading
-          elements.push(
-            <View key={`h-space-${globalKey++}`} style={{ height: 8 }} />
-          );
           currentBlockType = null;
           currentContent = '';
-        } else if (block.match(/<\/p>/)) {
-          // End of paragraph - process accumulated content
+        } else if (block.match(/<\/?(?:div|p)/)) {
+          // Skip div/p tags but process any accumulated content
           if (currentContent.trim()) {
-            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
-            if (processed) elements.push(processed);
+            const processed = processText(currentContent);
+            if (Array.isArray(processed)) {
+              elements.push(...processed);
+            } else if (processed) {
+              elements.push(processed);
+            }
+            key++;
           }
-          // Add spacing after paragraph
-          elements.push(
-            <View key={`p-space-${globalKey++}`} style={{ height: 12 }} />
-          );
-          currentBlockType = null;
-          currentContent = '';
-        } else if (block.match(/<\/div>/)) {
-          // End of div - process accumulated content
-          if (currentContent.trim()) {
-            const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
-            if (processed) elements.push(processed);
-          }
-          // Add spacing after div
-          elements.push(
-            <View key={`div-space-${globalKey++}`} style={{ height: 8 }} />
-          );
-          currentBlockType = null;
           currentContent = '';
         } else if (block.trim()) {
           // Accumulate content
           currentContent += block;
         }
       });
-      
+
       // Process any remaining content
       if (currentContent.trim()) {
-        const processed = processText(currentContent, [styles.contentText, { color: textColors.primary }], globalKey++);
-        if (processed) {
+        const processed = processText(currentContent);
+        if (Array.isArray(processed)) {
+          elements.push(...processed);
+        } else if (processed) {
           elements.push(processed);
         }
       }
-      
+
       return elements;
     };
-    
+
     const elements = parseHtmlToElements(content);
-    
+
     return (
       <View>
         {elements.length > 0 ? elements : (
           <Text style={[styles.contentText, { color: textColors.primary }]}>
-            {content.replace(/<[^>]*>/g, '')}
+            {isSearchMode && searchQuery.trim()
+              ? highlightSearchText(content.replace(/<[^>]*>/g, ''), getContentMatchOffset())
+              : content.replace(/<[^>]*>/g, '')
+            }
           </Text>
         )}
       </View>
