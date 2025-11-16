@@ -15,16 +15,27 @@ export function NoteWidget({ note, size }: NoteWidgetProps) {
 
   // Get content preview
   const getContentPreview = (): string => {
-    if (note.type === 'checklist' && note.checklistItems && note.checklistItems.length > 0) {
-      const items = note.checklistItems.slice(0, 3);
-      return items.map(item => `${item.completed ? '✓' : '○'} ${item.text}`).join('\n');
-    }
-    
-    if (note.content) {
+    let contentParts: string[] = [];
+
+    // Add text content if available
+    if (note.content && note.content.trim()) {
       const cleanContent = stripHtml(note.content);
-      return cleanContent;
+      if (cleanContent) {
+        contentParts.push(cleanContent);
+      }
     }
-    
+
+    // Add checklist items if available
+    if (note.checklistItems && note.checklistItems.length > 0) {
+      const items = note.checklistItems.slice(0, 5); // Show up to 5 checklist items
+      const checklistText = items.map(item => `${item.completed ? '✓' : '○'} ${item.text}`).join('\n');
+      contentParts.push(checklistText);
+    }
+
+    if (contentParts.length > 0) {
+      return contentParts.join('\n\n'); // Add a blank line between text and checklist
+    }
+
     return 'Empty note';
   };
 
