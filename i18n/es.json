@@ -193,10 +193,10 @@
   "widgetInstructions": {
     "title": "¡Widget Listo!",
     "subtitle": "Sigue estos pasos para agregarlo:",
-    "step1": "Mantén presionada la pantalla de inicio",
-    "step2": "Toca 'Widgets'",
-    "step3": "Busca 'FastNote' y arrastra el widget {{size}} a tu pantalla de inicio",
-    "hint": "El widget mostrará automáticamente el contenido de esta nota",
+    "step1": "Primero, mantén presionada la pantalla de inicio",
+    "step2": "Toca 'Widgets' y selecciona el tamaño que desees para FastNote",
+    "step3": "Después de colocar el widget en tu pantalla de inicio, regresa a la app y selecciona la nota que quieres mostrar",
+    "hint": "Es necesario seguir este orden: primero colocar el widget en la pantalla de inicio, luego elegir la nota",
     "understood": "¡Entendido!"
   },
   "alerts": {
