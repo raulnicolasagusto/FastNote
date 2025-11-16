@@ -22,7 +22,7 @@ const store = create<ThemeState>()(
       isDarkMode: false,
       colors: LIGHT_COLORS,
       calloutsEnabled: true,
-      currentLanguage: 'en',
+      currentLanguage: 'es',
       toggleTheme: () =>
         set((state) => ({
           isDarkMode: !state.isDarkMode,
@@ -78,7 +78,7 @@ export const useThemeStore = () => {
       isDarkMode: false,
       colors: LIGHT_COLORS,
       calloutsEnabled: true,
-      currentLanguage: 'en' as 'en' | 'es' | 'pt',
+      currentLanguage: 'es' as 'en' | 'es' | 'pt',
       toggleTheme: () => {},
       setDarkMode: () => {},
       toggleCallouts: () => {},
