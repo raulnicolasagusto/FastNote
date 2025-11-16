@@ -124,7 +124,7 @@ export default function Search() {
 
   const handleNotePress = (note: Note) => {
     router.push({
-      pathname: '/note-detail',
+      pathname: '/[noteId]',
       params: { noteId: note.id },
     });
   };

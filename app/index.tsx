@@ -82,7 +82,7 @@ export default function Home() {
     try {
       // Navigate to note detail/edit screen
       router.push({
-        pathname: '/note-detail',
+        pathname: '/[noteId]',
         params: { noteId: note.id },
       });
       console.log('🎯 NAVIGATION DEBUG - router.push completed successfully for noteId:', note.id);
@@ -111,7 +111,7 @@ export default function Home() {
 
     // Navigate directly to the note editor
     router.push({
-      pathname: '/note-detail',
+      pathname: '/[noteId]',
       params: { noteId },
     });
   };

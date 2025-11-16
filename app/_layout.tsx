@@ -10,7 +10,7 @@ import mobileAds from 'react-native-google-mobile-ads';
 
 import { useThemeStore } from '../store/theme/useThemeStore';
 import { t } from '../utils/i18n';
-import { useLanguage } from '../utils/useLanguage';
+import { useLanguage } from '../utils/i18n';
 
 export default function Layout() {
   useLanguage(); // Force re-render on language change
@@ -62,7 +62,11 @@ export default function Layout() {
   return (
     <SafeAreaProvider>
       <StatusBar hidden={true} />
-      <Stack />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
     </SafeAreaProvider>
   );
 }
