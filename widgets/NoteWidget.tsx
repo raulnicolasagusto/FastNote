@@ -64,8 +64,8 @@ export function NoteWidget({ note, size }: NoteWidgetProps) {
   // Medium widget: Title + preview (2 lines)
   if (size === 'medium') {
     const title = truncateText(note.title, 40);
-    const preview = truncateText(content, 60);
-    
+    const preview = truncateText(content, 2000);
+
     return (
       <FlexWidget
         style={{
@@ -101,8 +101,8 @@ export function NoteWidget({ note, size }: NoteWidgetProps) {
 
   // Large widget: Title + full content
   const title = truncateText(note.title, 50);
-  const largeContent = truncateText(content, 200);
-  
+  const largeContent = truncateText(content, 4000);
+
   return (
     <FlexWidget
       style={{
