@@ -126,6 +126,10 @@ export default function InstructionsModal({ visible, onClose }: InstructionsModa
               <Text style={[styles.instructionText, { color: colors.textPrimary }]}>
                 {t('instructions.voiceNoteInApp.description')}
               </Text>
+            </View>
+
+            {/* Agregar imagen VoiceNote1.png después del párrafo mencionado */}
+            <View style={styles.instructionSection}>
               <InstructionImage source={images.voiceNote1} />
             </View>
 

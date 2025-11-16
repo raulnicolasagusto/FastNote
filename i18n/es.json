@@ -303,7 +303,7 @@
     },
     "voiceNoteInApp": {
       "title": "Nota de Voz en la App",
-      "description": "O dentro de la app, presiona en nota rápida, y comenzará a grabar y luego transcribirá a la nota. Recuerda que puedes grabar una lista y también guardar un recordatorio.\n\n📋 CREAR CHECKLISTS CON:\n• \"Lista de [nombre]\" - Ejemplo: \"Lista de supermercado, leche, pan, huevos\" → Título: \"Supermercado DD/MM/AA HH:MM\"\n• \"Lista del [nombre]\" - Ejemplo: \"Lista del gimnasio, pesas, cardio\"\n• \"Lista para [nombre]\" - Ejemplo: \"Lista para el viaje, pasaporte, ropa\"\n• \"Nueva lista\", \"Lista de compras\", \"Lista de tareas\", \"Checklist\"\n\n✅ SEPARADORES: Usa comas, puntos, \"y\"\n\nEjemplo: \"Lista de compras, leche, pan, huevos y manteca. Recuérdame mañana a las 2pm\"\n\n➕ AGREGAR A LISTA EXISTENTE: Di \"Agrega\", \"Agrega a esta lista\" + nombre del ítem"
+      "description": "O dentro de la app, presiona en Nota de voz rápida, y comenzará a grabar y luego transcribirá a la nota. Recuerda que puedes grabar una lista y también guardar un recordatorio.\n\n📋 CREA LISTAS DEPENDIENDO DEL NOMBRE:\n• \"Lista de supermercado\": Crea una lista titulada \"Supermercado\" con los ítems que menciones\n• \"Lista del gimnasio\": Crea una lista titulada \"Gimnasio\" con ejercicios o cosas que necesites\n• \"Lista de tareas\": Crea una lista general de tareas pendientes\n• \"Lista para el viaje\": Crea una lista titulada \"Viaje\" con cosas que necesites para tu viaje\n\nFUNCIONA CON CUALQUIER NOMBRE: Solo di \"Lista de [lo que sea]\" y se creará automáticamente una lista con ese nombre."
     },
     "ocrFeature": {
       "title": "Reconocimiento de Texto OCR",
