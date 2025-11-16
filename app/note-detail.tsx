@@ -586,18 +586,17 @@ export default function NoteDetail() {
 
   const handleHighlightPress = () => {
     console.log('Highlight pressed');
+    const highlightColor = isDarkMode ? "#D97706" : "yellow";
+    
     if (activeFormats.highlight) {
       // Deactivate highlight - restore default background
       richTextRef.current?.commandDOM(`
-        document.execCommand("backColor", false, "inherit");
+        document.execCommand("backColor", false, "transparent");
       `);
     } else {
-      // Activate highlight - use different color based on theme
-      // Dark mode: darker orange/amber for better contrast with black background
-      // Light mode: bright yellow for traditional highlight
-      const highlightColor = isDarkMode ? "#D97706" : "yellow";
+      // Activate highlight - use backColor instead of hiliteColor
       richTextRef.current?.commandDOM(`
-        document.execCommand("hiliteColor", false, "${highlightColor}");
+        document.execCommand("backColor", false, "${highlightColor}");
       `);
     }
     setActiveFormats(prev => ({ ...prev, highlight: !prev.highlight }));
@@ -693,21 +692,50 @@ export default function NoteDetail() {
 
               // Apply styles based on tag type
               if (tagName === 'b' || tagName === 'strong') {
-                tagStyle = { ...baseStyle, fontWeight: 'bold' };
+                tagStyle = {
+                  fontSize: baseStyle.fontSize || styles.contentText.fontSize,
+                  color: baseStyle.color || textColors.primary,
+                  fontWeight: 'bold',
+                  textDecorationLine: 'none', // Prevent inherited decoration
+                };
               } else if (tagName === 'i' || tagName === 'em') {
-                tagStyle = { ...baseStyle, fontStyle: 'italic' };
+                tagStyle = {
+                  fontSize: baseStyle.fontSize || styles.contentText.fontSize,
+                  color: baseStyle.color || textColors.primary,
+                  fontStyle: 'italic',
+                  textDecorationLine: 'none', // Prevent inherited decoration
+                };
               } else if (tagName === 'u') {
-                tagStyle = { ...baseStyle, textDecorationLine: 'underline' };
+                tagStyle = {
+                  fontSize: baseStyle.fontSize || styles.contentText.fontSize,
+                  color: baseStyle.color || textColors.primary,
+                  textDecorationLine: 'underline',
+                };
               } else if (tagName === 's') {
-                tagStyle = { ...baseStyle, textDecorationLine: 'line-through' };
+                tagStyle = {
+                  fontSize: baseStyle.fontSize || styles.contentText.fontSize,
+                  color: baseStyle.color || textColors.primary,
+                  textDecorationLine: 'line-through',
+                };
               } else if (tagName === 'span') {
                 // Handle span with specific styles
-                if (tagAttributes.includes('background') || tagAttributes.includes('yellow') || tagAttributes.includes('highlight')) {
-                  // Detect highlight color based on theme
-                  const highlightBg = isDarkMode ? '#D97706' : 'yellow'; // Different color for dark mode
-                  tagStyle = { ...baseStyle, backgroundColor: highlightBg };
+                if (tagAttributes.includes('background-color') || tagAttributes.includes('yellow') || tagAttributes.includes('#D97706') || tagAttributes.includes('highlight')) {
+                  // Extract the actual background color from style attribute if possible
+                  let bgColor = 'yellow'; // default
+                  if (tagAttributes.includes('#D97706')) {
+                    bgColor = '#D97706';
+                  } else if (tagAttributes.includes('yellow')) {
+                    bgColor = 'yellow';
+                  }
+                  // Create clean style for highlight - explicitly remove textDecorationLine
+                  tagStyle = {
+                    fontSize: baseStyle.fontSize || styles.contentText.fontSize,
+                    color: baseStyle.color || textColors.primary,
+                    backgroundColor: bgColor,
+                    textDecorationLine: 'none', // Explicitly prevent strikethrough
+                  };
                 } else if (tagAttributes.includes('font-weight') && tagAttributes.includes('bold')) {
-                  tagStyle = { ...baseStyle, fontWeight: 'bold' };
+                  tagStyle = { ...baseStyle, fontWeight: 'bold', textDecorationLine: 'none' };
                 }
                 // Add more span processing as needed
               }
@@ -2432,8 +2460,8 @@ export default function NoteDetail() {
             <RichEditor
               ref={richTextRef}
               style={{
-                minHeight: 50,
-                maxHeight: 300,
+                minHeight: 200,
+                flex: 1,
               }}
               initialContentHTML={editedContent}
               onChange={setEditedContent}

@@ -51,8 +51,8 @@ const IMAGES = {
   en: {
     voiceNote: require('../../assets/app-instructions/English/VoiceNote.png'),
     voiceNote1: require('../../assets/app-instructions/English/VoiceNote1.png'),
-    voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.jpeg'),
-    voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.jpeg'),
+    voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.png'),
+    voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.png'),
     voiceNote4_5: require('../../assets/app-instructions/English/VoiceNote4.5.png'),
     voiceNote5: require('../../assets/app-instructions/English/VoiceNote5.png'),
     voiceNote6: require('../../assets/app-instructions/English/VoiceNote6.png'),
@@ -61,8 +61,8 @@ const IMAGES = {
     // TODO: Agregar imágenes en español cuando estén disponibles
     voiceNote: require('../../assets/app-instructions/English/VoiceNote.png'),
     voiceNote1: require('../../assets/app-instructions/English/VoiceNote1.png'),
-    voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.jpeg'),
-    voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.jpeg'),
+    voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.png'),
+    voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.png'),
     voiceNote4_5: require('../../assets/app-instructions/English/VoiceNote4.5.png'),
     voiceNote5: require('../../assets/app-instructions/English/VoiceNote5.png'),
     voiceNote6: require('../../assets/app-instructions/English/VoiceNote6.png'),
@@ -71,8 +71,8 @@ const IMAGES = {
     // TODO: Agregar imágenes en portugués cuando estén disponibles
     voiceNote: require('../../assets/app-instructions/English/VoiceNote.png'),
     voiceNote1: require('../../assets/app-instructions/English/VoiceNote1.png'),
-    voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.jpeg'),
-    voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.jpeg'),
+    voiceNote2: require('../../assets/app-instructions/English/VoiceNote2.png'),
+    voiceNote3: require('../../assets/app-instructions/English/VoiceNote3.png'),
     voiceNote4_5: require('../../assets/app-instructions/English/VoiceNote4.5.png'),
     voiceNote5: require('../../assets/app-instructions/English/VoiceNote5.png'),
     voiceNote6: require('../../assets/app-instructions/English/VoiceNote6.png'),
