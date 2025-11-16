@@ -15,6 +15,9 @@ interface VoiceRecordingModalProps {
   recordingDuration: number;
   onCancel: () => void;
   onStop: () => void;
+  showLimitsInfo?: boolean;
+  showTimer?: boolean;
+  stopButtonText?: string;
 }
 
 export const VoiceRecordingModal: React.FC<VoiceRecordingModalProps> = ({
@@ -23,6 +26,9 @@ export const VoiceRecordingModal: React.FC<VoiceRecordingModalProps> = ({
   recordingDuration,
   onCancel,
   onStop,
+  showLimitsInfo,
+  showTimer,
+  stopButtonText,
 }) => {
   const { colors } = useThemeStore();
   const { getRemainingTranscriptions } = useTranscriptionLimitsStore();
@@ -44,15 +50,17 @@ export const VoiceRecordingModal: React.FC<VoiceRecordingModalProps> = ({
               {isRecording ? t('recording.recording') : t('recording.transcribing')}
             </Text>
 
-            {/* Limits Info - Always visible */}
-            <View style={styles.limitsContainer}>
-              <Text style={[styles.limitsText, { color: colors.textSecondary }]}>
-                {t('recording.maxDuration')} • {t('recording.transcriptionsLeft', { count: getRemainingTranscriptions() })}
-              </Text>
-            </View>
+            {/* Limits Info */}
+            {showLimitsInfo !== false && (
+              <View style={styles.limitsContainer}>
+                <Text style={[styles.limitsText, { color: colors.textSecondary }]}>
+                  {t('recording.maxDuration')} • {t('recording.transcriptionsLeft', { count: getRemainingTranscriptions() })}
+                </Text>
+              </View>
+            )}
 
             {/* Timer and Warning */}
-            {isRecording && (
+            {showTimer !== false && isRecording && (
               <View style={styles.timerContainer}>
                 <Text style={[styles.timerText, {
                   color: recordingDuration >= FREE_TIER_LIMITS.WARNING_THRESHOLD_SECONDS
@@ -83,7 +91,7 @@ export const VoiceRecordingModal: React.FC<VoiceRecordingModalProps> = ({
                 style={[styles.recordingButton, styles.confirmButton, { backgroundColor: colors.accent.green }]}
                 onPress={onStop}>
                 <MaterialIcons name="check" size={24} color={colors.cardBackground} />
-                <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{t('recording.stop')}</Text>
+                <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{stopButtonText || t('recording.stop')}</Text>
               </TouchableOpacity>
             )}
           </View>

@@ -38,6 +38,7 @@ import ImagePickerModal from '../components/ui/ImagePickerModal';
 import { DrawingCanvas } from '../components/ui/DrawingCanvas';
 import AudioRecorder from '../components/ui/AudioRecorder';
 import AudioPlayer from '../components/ui/AudioPlayer';
+import { VoiceRecordingModal } from '../components/ui/VoiceRecordingModal';
 import { useCalloutRotation } from '../utils/useCalloutRotation';
 import { extractReminderDetails } from '../utils/voiceReminderAnalyzer';
 import { NotificationService } from '../utils/notifications';
@@ -113,6 +114,7 @@ export default function NoteDetail() {
   const matchViewRefs = useRef<{ [key: number]: View | null }>({});
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [showKeyboardToolbar, setShowKeyboardToolbar] = useState(false);
@@ -1141,6 +1143,15 @@ export default function NoteDetail() {
 
       setRecording(newRecording);
       setIsRecording(true);
+      setRecordingDuration(0); // Reset duration when starting
+
+      // Update recording duration every second
+      const interval = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
+
+      // Store interval reference to clear it later
+      (newRecording as any).durationInterval = interval;
     } catch (err) {
       console.error('Failed to start recording', err);
       Alert.alert(i18n.t('alerts.errorTitle'), i18n.t('alerts.recordingStartError'));
@@ -1151,11 +1162,17 @@ export default function NoteDetail() {
     if (!recording) return;
 
     try {
+      // Clear the duration interval if it exists
+      if ((recording as any).durationInterval) {
+        clearInterval((recording as any).durationInterval);
+      }
+
       await recording.stopAndUnloadAsync();
       await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
 
       const uri = recording.getURI();
       setIsRecording(false);
+      setRecordingDuration(0); // Reset duration after stopping
 
       if (uri) {
         await transcribeAudio(uri);
@@ -1168,11 +1185,17 @@ export default function NoteDetail() {
 
   const cancelRecording = async () => {
     if (recording) {
+      // Clear the duration interval if it exists
+      if ((recording as any).durationInterval) {
+        clearInterval((recording as any).durationInterval);
+      }
+
       await recording.stopAndUnloadAsync();
       await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
       setRecording(null);
     }
     setIsRecording(false);
+    setRecordingDuration(0); // Reset duration after canceling
     setShowRecordingModal(false);
   };
 
@@ -2635,41 +2658,17 @@ export default function NoteDetail() {
         </View>
       )}
 
-      {/* Recording Modal */}
-      {showRecordingModal && (
-        <View style={styles.modalOverlay}>
-          <View style={[styles.recordingModal, { backgroundColor: colors.cardBackground }]}>
-            <View style={styles.recordingIndicator}>
-              <MaterialIcons
-                name="mic"
-                size={48}
-                color={isRecording ? colors.accent.red : colors.textSecondary}
-              />
-              <Text style={[styles.recordingText, { color: colors.textPrimary }]}>
-                {isRecording ? t('recording.recording') : t('recording.transcribing')}
-              </Text>
-            </View>
-
-            <View style={styles.recordingActions}>
-              <TouchableOpacity
-                style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.accent.red }]}
-                onPress={cancelRecording}>
-                <MaterialIcons name="close" size={24} color={colors.cardBackground} />
-                <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{t('common.cancel')}</Text>
-              </TouchableOpacity>
-
-              {isRecording && (
-                <TouchableOpacity
-                  style={[styles.recordingButton, styles.confirmButton, { backgroundColor: colors.accent.green }]}
-                  onPress={stopRecording}>
-                  <MaterialIcons name="check" size={24} color={colors.cardBackground} />
-                  <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{t('recording.stopRecording')}</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </View>
-      )}
+      {/* Recording Modal - Using shared component */}
+      <VoiceRecordingModal
+        visible={showRecordingModal}
+        isRecording={isRecording}
+        recordingDuration={recordingDuration}
+        onCancel={cancelRecording}
+        onStop={stopRecording}
+        showLimitsInfo={false}
+        showTimer={false}
+        stopButtonText={t('recording.stopRecording')}
+      />
 
       {/* Audio Choice Modal */}
       {showAudioChoiceModal && (
