@@ -181,6 +181,15 @@ export default function NoteDetail() {
     }
   }, [showKeyboardToolbar]);
 
+  // Focus RichEditor when editing content
+  useEffect(() => {
+    if (editingElement === 'content' && richTextRef.current) {
+      setTimeout(() => {
+        richTextRef.current?.focusContentEditor();
+      }, 100);
+    }
+  }, [editingElement]);
+
   // Search logic - find matches in title, content, and checklist
   useEffect(() => {
     if (!note || !searchQuery.trim()) {
@@ -2468,8 +2477,12 @@ export default function NoteDetail() {
               placeholder="Start writing..."
               editorStyle={{
                 backgroundColor: 'transparent',
-                color: textColors.primary
+                color: textColors.primary,
+                userSelect: 'text',
+                WebkitUserSelect: 'text',
               }}
+              useContainer={false}
+              initialHeight={200}
             />
             
             {/* Show images and audio during editing - RESTORED */}
