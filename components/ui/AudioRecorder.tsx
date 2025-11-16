@@ -249,7 +249,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
             onPress={handleClose}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <MaterialIcons name="close" size={24} color={colors.textPrimary} />
+            <MaterialIcons name="close" size={24} color={colors.accent.red} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
             Grabar Audio

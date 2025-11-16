@@ -2646,16 +2646,16 @@ export default function NoteDetail() {
                 color={isRecording ? colors.accent.red : colors.textSecondary}
               />
               <Text style={[styles.recordingText, { color: colors.textPrimary }]}>
-                {isRecording ? 'Recording...' : 'Transcribing...'}
+                {isRecording ? t('recording.recording') : t('recording.transcribing')}
               </Text>
             </View>
 
             <View style={styles.recordingActions}>
               <TouchableOpacity
-                style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
+                style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.accent.red }]}
                 onPress={cancelRecording}>
                 <MaterialIcons name="close" size={24} color={colors.cardBackground} />
-                <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Cancel</Text>
+                <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{t('common.cancel')}</Text>
               </TouchableOpacity>
 
               {isRecording && (
@@ -2663,7 +2663,7 @@ export default function NoteDetail() {
                   style={[styles.recordingButton, styles.confirmButton, { backgroundColor: colors.accent.green }]}
                   onPress={stopRecording}>
                   <MaterialIcons name="check" size={24} color={colors.cardBackground} />
-                  <Text style={[styles.buttonText, { color: colors.cardBackground }]}>Stop & Transcribe</Text>
+                  <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{t('recording.stopRecording')}</Text>
                 </TouchableOpacity>
               )}
             </View>

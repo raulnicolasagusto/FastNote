@@ -72,7 +72,7 @@ export const VoiceRecordingModal: React.FC<VoiceRecordingModalProps> = ({
 
           <View style={styles.recordingActions}>
             <TouchableOpacity
-              style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.textSecondary }]}
+              style={[styles.recordingButton, styles.cancelButton, { backgroundColor: colors.accent.red }]}
               onPress={onCancel}>
               <MaterialIcons name="close" size={24} color={colors.cardBackground} />
               <Text style={[styles.buttonText, { color: colors.cardBackground }]}>{t('common.cancel')}</Text>
