@@ -25,7 +25,11 @@
       "Bash(cat:*)",
       "Bash(if exist modules rmdir /s /q modules)",
       "Bash(curl -I \"https://fastvoicenote.blogspot.com/app-ads.txt\")",
-      "Bash(curl -L \"https://fastvoicenote.blogspot.com/app-ads.txt\")"
+      "Bash(curl -L \"https://fastvoicenote.blogspot.com/app-ads.txt\")",
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(awk:*)",
+      "Bash(del temp_update*.ps1 new_render_function.txt 2)",
+      "Bash(nul)"
     ],
     "deny": [],
     "ask": []
