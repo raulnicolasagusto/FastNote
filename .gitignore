@@ -28,9 +28,8 @@ android
 .env.local
 .env.*.local
 
-# Archivos de documentación interna (opcional - comentar si quieres versionar)
-# implementation-cloudflareWorker.md
-# PLAYSTORE_DEPLOYMENT_GUIDE.md
+# Archivos de documentación interna y carpeta plan
+plan/
 
 # Build outputs
 *.aab
